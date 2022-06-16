@@ -1,5 +1,6 @@
 from arekit.common.data.input.sample import InputSampleBase
 from arekit.common.linkage.text_opinions import TextOpinionsLinkage
+from arekit.common.news.parsed.base import ParsedNews
 from arekit.common.news.parsed.providers.entity_service import EntityServiceProvider
 from arekit.common.news.parsed.service import ParsedNewsService
 from arekit.common.news.parser import NewsParser
@@ -10,11 +11,17 @@ from arekit.common.text_opinions.base import TextOpinion
 from collection.reader import CollectionNewsReader
 
 
-def __to_text_opinion_linkages(text_opinions, filter_func, tag_value_func):
+def __to_text_opinion_linkages(parsed_news, text_opinions, filter_func, tag_value_func):
+    assert(isinstance(parsed_news, ParsedNews))
     assert(callable(filter_func))
 
     for text_opinion in text_opinions:
         assert(isinstance(text_opinion, TextOpinion))
+
+        print("S, T:", text_opinion.SourceId, text_opinion.TargetId)
+        if parsed_news.find_entity(text_opinion.SourceId) is None or \
+           parsed_news.find_entity(text_opinion.TargetId) is None:
+            continue
 
         linkage = TextOpinionsLinkage(
             [TextOpinion.create_copy(text_opinion, keep_text_opinion_id=False)]
@@ -45,6 +52,7 @@ def text_opinions_to_opinion_linkages_pipeline(text_parser, label_formatter, ter
 
         # (news, service, parsed_news) -> (text_opinions).
         MapPipelineItem(map_func=lambda data: __to_text_opinion_linkages(
+            parsed_news=data[2],
             tag_value_func=lambda _: data[1],
             text_opinions=data[0].TextOpinions,
             filter_func=lambda text_opinion: InputSampleBase.check_ability_to_create_sample(

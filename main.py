@@ -3,9 +3,8 @@ from arekit.common.experiment.engine import ExperimentEngine
 from arekit.common.experiment.name_provider import ExperimentNameProvider
 from arekit.common.folding.nofold import NoFolding
 from arekit.common.frames.variants.collection import FrameVariantsCollection
-from arekit.common.labels.base import NoLabel
-from arekit.common.labels.scaler.single import SingleLabelScaler
 from arekit.common.text.parser import BaseTextParser
+from arekit.contrib.experiment_rusentrel.entities.str_rus_nocased_fmt import RussianEntitiesFormatter
 from arekit.contrib.experiment_rusentrel.entities.str_simple_uppercase_fmt import SimpleUppercasedEntityFormatter
 from arekit.contrib.experiment_rusentrel.labels.formatters.rusentiframes import ExperimentRuSentiFramesLabelsFormatter
 # TODO. remove experiment_rusentrel dependency.
@@ -23,6 +22,7 @@ from doc_ops import CustomDocOperations
 from embedding import RusvectoresEmbedding
 from exp_ctx import CustomNetworkSerializationContext
 from exp_io import CustomExperimentSerializationIO
+from label_scaler import CustomLabelScaler
 from pipeline import text_opinions_to_opinion_linkages_pipeline
 
 
@@ -32,7 +32,8 @@ if __name__ == '__main__':
 
      label_formatter = CustomLabelFormatter()
      terms_per_context = 50
-     pos_tagger = POSMystemWrapper(mystem=MystemWrapper().MystemInstance)
+     stemmer = MystemWrapper()
+     pos_tagger = POSMystemWrapper(mystem=stemmer.MystemInstance)
 
      # Frames initialization
      frames_collection = RuSentiFramesCollection.read_collection(
@@ -46,13 +47,17 @@ if __name__ == '__main__':
 
      data_folding = NoFolding(doc_ids_to_fold=[doc_id], supported_data_types=[DataType.Train])
 
+     embedding = RusvectoresEmbedding.from_word2vec_format(
+         filepath="data/news_mystem_skipgram_1000_20_2015.bin.gz", binary=True)
+     embedding.set_stemmer(stemmer)
+
      exp_ctx = CustomNetworkSerializationContext(
-        labels_scaler=SingleLabelScaler(NoLabel()),
-        embedding=RusvectoresEmbedding.from_word2vec_format(
-            filepath="data/news_mystem_skipgram_1000_20_2015.bin.gz", binary=True),
+        labels_scaler=CustomLabelScaler(),
+        embedding=embedding,
         annotator=None,
         terms_per_context=terms_per_context,
-        str_entity_formatter=SimpleUppercasedEntityFormatter(),
+        # str_entity_formatter=SimpleUppercasedEntityFormatter(),
+        str_entity_formatter=RussianEntitiesFormatter(),
         pos_tagger=pos_tagger,
         name_provider=ExperimentNameProvider(name="serialize", suffix="nn"),
         frames_collection=frames_collection,
@@ -69,7 +74,7 @@ if __name__ == '__main__':
                  BratTextEntitiesParser(),
                  DefaultTextTokenizer(keep_tokens=True),
                  LemmasBasedFrameVariantsParser(frame_variants=exp_ctx.FrameVariantCollection,
-                                                stemmer=MystemWrapper())]
+                                                stemmer=stemmer)]
              )),
          exp_ctx=exp_ctx,
          doc_ops=CustomDocOperations(exp_ctx=exp_ctx))
