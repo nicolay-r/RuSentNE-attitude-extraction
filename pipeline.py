@@ -18,7 +18,6 @@ def __to_text_opinion_linkages(parsed_news, text_opinions, filter_func, tag_valu
     for text_opinion in text_opinions:
         assert(isinstance(text_opinion, TextOpinion))
 
-        print("S, T:", text_opinion.SourceId, text_opinion.TargetId)
         if parsed_news.find_entity(text_opinion.SourceId) is None or \
            parsed_news.find_entity(text_opinion.TargetId) is None:
             continue
