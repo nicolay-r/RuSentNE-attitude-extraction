@@ -1,6 +1,5 @@
 from arekit.common.labels.str_fmt import StringLabelsFormatter
-
-from collection import labels
+import labels
 
 
 class CustomLabelFormatter(StringLabelsFormatter):

@@ -4,13 +4,12 @@ from arekit.common.experiment.name_provider import ExperimentNameProvider
 from arekit.common.folding.nofold import NoFolding
 from arekit.common.frames.variants.collection import FrameVariantsCollection
 from arekit.common.text.parser import BaseTextParser
-from arekit.contrib.experiment_rusentrel.entities.str_rus_nocased_fmt import RussianEntitiesFormatter
-from arekit.contrib.experiment_rusentrel.entities.str_simple_uppercase_fmt import SimpleUppercasedEntityFormatter
-from arekit.contrib.experiment_rusentrel.labels.formatters.rusentiframes import ExperimentRuSentiFramesLabelsFormatter
 # TODO. remove experiment_rusentrel dependency.
+from arekit.contrib.experiment_rusentrel.entities.str_rus_nocased_fmt import RussianEntitiesFormatter
 from arekit.contrib.networks.handlers.serializer import NetworksInputSerializerExperimentIteration
 from arekit.contrib.source.brat.entities.parser import BratTextEntitiesParser
 from arekit.contrib.source.rusentiframes.collection import RuSentiFramesCollection
+from arekit.contrib.source.rusentiframes.labels_fmt import RuSentiFramesLabelsFormatter
 from arekit.contrib.source.rusentiframes.types import RuSentiFramesVersions
 from arekit.processing.lemmatization.mystem import MystemWrapper
 from arekit.processing.pos.mystem_wrap import POSMystemWrapper
@@ -38,7 +37,7 @@ if __name__ == '__main__':
      # Frames initialization
      frames_collection = RuSentiFramesCollection.read_collection(
          version=RuSentiFramesVersions.V20,
-         labels_fmt=ExperimentRuSentiFramesLabelsFormatter())
+         labels_fmt=RuSentiFramesLabelsFormatter())
      frame_variant_collection = FrameVariantsCollection()
      frame_variant_collection.fill_from_iterable(
          variants_with_id=frames_collection.iter_frame_id_and_variants(),

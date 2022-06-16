@@ -1,10 +1,11 @@
 from arekit.common.entities.str_fmt import StringEntitiesFormatter
 from arekit.contrib.experiment_rusentrel.connotations.provider import RuSentiFramesConnotationProvider
-from arekit.contrib.experiment_rusentrel.labels.scalers.three import ThreeLabelScaler
 from arekit.contrib.networks.core.input.ctx_serialization import NetworkSerializationContext
 from arekit.contrib.networks.embeddings.base import Embedding
 from arekit.contrib.source.rusentiframes.collection import RuSentiFramesCollection
 from arekit.processing.pos.base import POSTagger
+
+from label_scaler import ThreeLabelScaler
 
 
 class CustomNetworkSerializationContext(NetworkSerializationContext):
