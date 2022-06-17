@@ -4,6 +4,7 @@ from arekit.common.news.parsed.base import ParsedNews
 from arekit.common.news.parsed.providers.base import BaseParsedNewsServiceProvider
 from arekit.common.news.parsed.providers.entity_service import EntityServiceProvider
 from arekit.common.news.parsed.service import ParsedNewsService
+from arekit.common.news.parsed.term_position import TermPositionTypes
 from arekit.common.news.parser import NewsParser
 from arekit.common.pipeline.base import BasePipeline
 from arekit.common.pipeline.item_map import MapPipelineItem
@@ -49,6 +50,13 @@ def __to_text_opinion_linkages(news, parsed_news, filter_func, parsed_news_servi
             convert_func=lambda origin_id: __convert_opinion_id(news=news, origin_id=origin_id, esp=esp))
 
         if internal_opinion is None:
+            continue
+
+        s_ind = esp.get_entity_position(internal_opinion.SourceId, position_type=TermPositionTypes.SentenceIndex)
+        t_ind = esp.get_entity_position(internal_opinion.TargetId, position_type=TermPositionTypes.SentenceIndex)
+
+        if s_ind != t_ind:
+            # AREkit does not provide a support for multi-sentence opinions at present.
             continue
 
         linkage = TextOpinionsLinkage([internal_opinion])
