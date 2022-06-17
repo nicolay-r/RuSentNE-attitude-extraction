@@ -20,7 +20,8 @@ class CustomLabelScaler(BaseLabelScaler):
             (labels.PosStateFrom(), 5),
             (labels.NegativeTo(), 6),
             (labels.PositiveTo(), 7),
-            (labels.StateBelongsTo(), 8)
+            (labels.StateBelongsTo(), 8),
+            (labels.PosAuthorFrom(), 9)
         ])
 
         super(CustomLabelScaler, self).__init__(int_dict=self.__uint_to_label_dict,

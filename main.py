@@ -15,11 +15,11 @@ from arekit.processing.pos.mystem_wrap import POSMystemWrapper
 from arekit.processing.text.pipeline_frames_lemmatized import LemmasBasedFrameVariantsParser
 from arekit.processing.text.pipeline_tokenizer import DefaultTextTokenizer
 
-from collection.opinions.label_fmt import CustomLabelFormatter
 from doc_ops import CustomDocOperations
 from embedding import RusvectoresEmbedding
 from exp_ctx import CustomNetworkSerializationContext
 from exp_io import CustomExperimentSerializationIO
+from label_fmt import CustomLabelFormatter
 from label_scaler import CustomLabelScaler
 from pipeline import text_opinions_to_opinion_linkages_pipeline
 

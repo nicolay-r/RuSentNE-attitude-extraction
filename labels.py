@@ -21,6 +21,10 @@ class PosEffectFrom(Label):
     pass
 
 
+class PosAuthorFrom(Label):
+    pass
+
+
 class PosStateFrom(Label):
     pass
 
