@@ -14,29 +14,23 @@ from collection.news import CustomNews
 from collection.reader import CollectionNewsReader
 
 
-def __convert_opinion_to_internal(news, text_opinion, esp):
+def __convert_opinion_id(news, origin_id, esp):
+    assert(isinstance(news, CustomNews))
+    assert(isinstance(origin_id, int))
     assert(isinstance(esp, BaseParsedNewsServiceProvider))
 
-    if not news.contains_entity(text_opinion.SourceId) or not news.contains_entity(text_opinion.TargetId):
+    if not news.contains_entity(origin_id):
         # Due to the complexity of entities, some entities might be nested.
         # Therefore the latter, some entities might be discarded.
         return None
 
-    entity_source = news.get_entity_by_id(text_opinion.SourceId)
-    entity_target = news.get_entity_by_id(text_opinion.TargetId)
+    origin_entity = news.get_entity_by_id(origin_id)
 
-    if not esp.contains_entity(entity_source) or not esp.contains_entity(entity_target):
+    if not esp.contains_entity(origin_entity):
         return None
 
-    document_entity_source = esp.get_document_entity(entity_source)
-    document_entity_target = esp.get_document_entity(entity_source)
-
-    return TextOpinion(doc_id=news.ID,
-                       text_opinion_id=None,
-                       source_id=document_entity_source.IdInDocument,
-                       target_id=document_entity_target.IdInDocument,
-                       owner=text_opinion.Owner,
-                       label=text_opinion.Sentiment)
+    document_entity = esp.get_document_entity(origin_entity)
+    return document_entity.IdInDocument
 
 
 def __to_text_opinion_linkages(news, parsed_news, filter_func, parsed_news_service):
@@ -50,7 +44,9 @@ def __to_text_opinion_linkages(news, parsed_news, filter_func, parsed_news_servi
     for text_opinion in news.TextOpinions:
         assert(isinstance(text_opinion, TextOpinion))
 
-        internal_opinion = __convert_opinion_to_internal(news=news, text_opinion=text_opinion, esp=esp)
+        internal_opinion = text_opinion.try_convert(
+            other=text_opinion,
+            convert_func=lambda origin_id: __convert_opinion_id(news=news, origin_id=origin_id, esp=esp))
 
         if internal_opinion is None:
             continue

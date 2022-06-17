@@ -26,7 +26,7 @@ from pipeline import text_opinions_to_opinion_linkages_pipeline
 
 if __name__ == '__main__':
 
-     doc_id = 15088
+     doc_ids = [15088]
 
      label_formatter = CustomLabelFormatter()
      terms_per_context = 50
@@ -43,7 +43,7 @@ if __name__ == '__main__':
          overwrite_existed_variant=True,
          raise_error_on_existed_variant=False)
 
-     data_folding = NoFolding(doc_ids_to_fold=[doc_id], supported_data_types=[DataType.Train])
+     data_folding = NoFolding(doc_ids_to_fold=doc_ids, supported_data_types=[DataType.Train])
 
      embedding = RusvectoresEmbedding.from_word2vec_format(
          filepath="data/news_mystem_skipgram_1000_20_2015.bin.gz", binary=True)
