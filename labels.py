@@ -25,6 +25,10 @@ class PosAuthorFrom(Label):
     pass
 
 
+class NegAuthorFrom(Label):
+    pass
+
+
 class PosStateFrom(Label):
     pass
 
@@ -37,5 +41,13 @@ class PositiveTo(Label):
     pass
 
 
+class AlternativeName(Label):
+    pass
+
+
 class StateBelongsTo(Label):
+    pass
+
+
+class OriginsFrom(Label):
     pass

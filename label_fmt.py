@@ -16,7 +16,10 @@ class CustomLabelFormatter(StringLabelsFormatter):
             "NEGATIVE_TO": labels.NegativeTo,
             "POSITIVE_TO": labels.PositiveTo,
             "STATE_BELONGS_TO": labels.StateBelongsTo,
-            "POS_AUTHOR_FROM": labels.PosAuthorFrom
+            "POS_AUTHOR_FROM": labels.PosAuthorFrom,
+            "NEG_AUTHOR_FROM": labels.NegAuthorFrom,
+            "ALTERNATIVE_NAME": labels.AlternativeName,
+            "ORIGINS_FROM": labels.OriginsFrom
         }
 
         super(CustomLabelFormatter, self).__init__(stol=stol)
