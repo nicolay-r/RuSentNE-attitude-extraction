@@ -1,3 +1,4 @@
+import os
 from enum import Enum
 from os import path
 
@@ -33,12 +34,18 @@ class CollectionIOUtils(ZipArchiveUtils):
 
     @staticmethod
     def __number_from_string(s):
-        digit_chars = [chr for chr in s if chr.isdigit()]
+        digit_chars_prefix = []
 
-        if len(digit_chars) == 0:
+        for chr in s:
+            if chr.isdigit():
+                digit_chars_prefix.append(chr)
+            else:
+                break
+
+        if len(digit_chars_prefix) == 0:
             return None
 
-        return int("".join(digit_chars))
+        return int("".join(digit_chars_prefix))
 
     @staticmethod
     def __iter_indicies_from_dataset(folder_name):
@@ -46,11 +53,11 @@ class CollectionIOUtils(ZipArchiveUtils):
 
         used = set()
 
-        for filename in ZipArchiveUtils.iter_filenames_from_zip(CollectionVersions.NO):
+        for filename in CollectionIOUtils.iter_filenames_from_zip(CollectionVersions.NO):
             if not folder_name in filename:
                 continue
 
-            index = CollectionIOUtils.__number_from_string(filename)
+            index = CollectionIOUtils.__number_from_string(os.path.basename(filename))
 
             if index is None:
                 continue
