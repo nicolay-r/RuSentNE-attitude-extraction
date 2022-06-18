@@ -15,6 +15,7 @@ from arekit.processing.pos.mystem_wrap import POSMystemWrapper
 from arekit.processing.text.pipeline_frames_lemmatized import LemmasBasedFrameVariantsParser
 from arekit.processing.text.pipeline_tokenizer import DefaultTextTokenizer
 
+from collection.io_utils import CollectionIOUtils
 from doc_ops import CustomDocOperations
 from embedding import RusvectoresEmbedding
 from exp_ctx import CustomNetworkSerializationContext
@@ -26,11 +27,13 @@ from pipeline import text_opinions_to_opinion_linkages_pipeline
 
 if __name__ == '__main__':
 
-     doc_ids = [15088]
+     doc_ids = list(CollectionIOUtils.iter_collection_indices())
 
-     label_formatter = CustomLabelFormatter()
+     print("Documents count:", len(doc_ids))
+
      terms_per_context = 50
      stemmer = MystemWrapper()
+     label_formatter = CustomLabelFormatter()
      pos_tagger = POSMystemWrapper(mystem=stemmer.MystemInstance)
 
      # Frames initialization
