@@ -84,7 +84,10 @@ if __name__ == '__main__':
                                         stemmer=stemmer)]
      )
 
-     doc_ops = CustomDocOperations(exp_ctx=exp_ctx)
+     doc_ops = CustomDocOperations(exp_ctx=exp_ctx,
+                                   label_formatter=label_formatter,
+                                   doc_ids=doc_ids)
+
      test_synonyms = StemmerBasedSynonymCollection(iter_group_values_lists=[],
                                                    stemmer=MystemWrapper(),
                                                    is_read_only=False,
@@ -92,22 +95,23 @@ if __name__ == '__main__':
 
      # This is a pipeline for training data annotation.
      train_pipeline = text_opinions_to_opinion_linkages_pipeline(
-         label_formatter=label_formatter,
          terms_per_context=terms_per_context,
+         get_doc_func=lambda doc_id: doc_ops.get_doc(doc_id),
          text_parser=text_parser)
 
      # This is a pipeline for TEST data annotation.
      # We perform annotation of the attitudes.
      test_pipeline = attitude_extraction_default_pipeline(
-         annotator=DefaultAnnotator(annot_algo=PairBasedAnnotationAlgorithm(
-             dist_in_terms_bound=50,
-             label_provider=ConstantLabelProvider(NoLabel())),
+         annotator=DefaultAnnotator(
+             annot_algo=PairBasedAnnotationAlgorithm(
+                 dist_in_terms_bound=50,
+                 label_provider=ConstantLabelProvider(NoLabel())),
              create_empty_collection_func=lambda: OpinionCollection(
                  opinions=[],
                  synonyms=test_synonyms,
                  error_on_duplicates=True,
                  error_on_synonym_end_missed=False),
-             get_doc_etalon_opins_func=lambda: []),
+             get_doc_etalon_opins_func=lambda _: []),
          data_type=DataType.Test,
          get_doc_func=lambda doc_id: doc_ops.get_doc(doc_id),
          text_parser=text_parser,

@@ -12,7 +12,6 @@ from arekit.common.pipeline.items.flatten import FlattenIterPipelineItem
 from arekit.common.text_opinions.base import TextOpinion
 
 from collection.news import CustomNews
-from collection.reader import CollectionNewsReader
 
 
 def __convert_opinion_id(news, origin_id, esp):
@@ -64,13 +63,13 @@ def __to_text_opinion_linkages(news, parsed_news, filter_func, parsed_news_servi
         yield linkage
 
 
-def text_opinions_to_opinion_linkages_pipeline(text_parser, label_formatter, terms_per_context):
+def text_opinions_to_opinion_linkages_pipeline(text_parser, get_doc_func, terms_per_context):
+    assert(callable(get_doc_func))
     assert(isinstance(terms_per_context, int))
 
     return BasePipeline([
         # (doc_id) -> (news)
-        MapPipelineItem(map_func=lambda doc_id:
-        CollectionNewsReader.read_document(doc_id=doc_id, label_formatter=label_formatter)),
+        MapPipelineItem(map_func=lambda doc_id: get_doc_func(doc_id)),
 
         # (news) -> (news, parsed_news)
         MapPipelineItem(map_func=lambda news: (news, NewsParser.parse(news, text_parser))),
