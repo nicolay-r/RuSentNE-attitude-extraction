@@ -77,8 +77,9 @@ if __name__ == '__main__':
                  LemmasBasedFrameVariantsParser(frame_variants=exp_ctx.FrameVariantCollection,
                                                 stemmer=stemmer)]
              )),
-         exp_ctx=exp_ctx,
+         exp_ctx=exp_ctx,   # TODO: parameter to be removed. Use data_types instead.
          doc_ops=CustomDocOperations(exp_ctx=exp_ctx))
 
-     engine = ExperimentEngine(data_folding)
-     engine.run(handlers=[handler])
+     engine = ExperimentEngine()
+     engine.run(states_iter=data_folding.iter_states(),
+                handlers=[handler])

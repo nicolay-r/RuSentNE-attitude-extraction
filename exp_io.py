@@ -1,10 +1,9 @@
 import os
 
-# TODO. Refactor, move from experiment rusentrel
-from arekit.contrib.experiment_rusentrel.model_io.tf_networks import RuSentRelExperimentNetworkIOUtils
+from arekit.contrib.utils.model_io.tf_networks import DefaultNetworkIOUtils
 
 
-class CustomExperimentSerializationIO(RuSentRelExperimentNetworkIOUtils):
+class CustomExperimentSerializationIO(DefaultNetworkIOUtils):
 
     def __init__(self, output_dir, exp_ctx):
         assert(isinstance(output_dir, str))
