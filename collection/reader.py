@@ -24,7 +24,8 @@ class CollectionNewsReader(object):
             process_func=lambda input_file: [
                 CollectionOpinionConverter.to_text_opinion(relation, doc_id=doc_id, label_formatter=label_formatter)
                 for relation in
-                BratAnnotationParser.parse_annotations(input_file=input_file, encoding='utf-8-sig')["relations"]],
+                BratAnnotationParser.parse_annotations(input_file=input_file, encoding='utf-8-sig')["relations"]
+                if label_formatter.supports_value(relation.Type)],
             version=version)
 
     @staticmethod
