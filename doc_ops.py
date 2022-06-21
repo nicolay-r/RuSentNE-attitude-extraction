@@ -12,4 +12,6 @@ class CustomDocOperations(DocumentOperations):
         self.__doc_ids = doc_ids
 
     def get_doc(self, doc_id):
-        return CollectionNewsReader.read_document(doc_id=doc_id, label_formatter=self.__label_formatter)
+        return CollectionNewsReader.read_document(doc_id=doc_id,
+                                                  label_formatter=self.__label_formatter,
+                                                  keep_any_opinion=False)

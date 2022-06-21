@@ -14,7 +14,7 @@ from collection.opinions.converter import CollectionOpinionConverter
 class CollectionNewsReader(object):
 
     @staticmethod
-    def read_opinions(doc_id, entities, version, label_formatter):
+    def read_opinions(doc_id, entities, version, label_formatter, keep_any_type):
         assert(isinstance(label_formatter, StringLabelsFormatter))
         assert(isinstance(entities, EntityCollection))
         assert(isinstance(doc_id, int))
@@ -25,12 +25,13 @@ class CollectionNewsReader(object):
                 CollectionOpinionConverter.to_text_opinion(relation, doc_id=doc_id, label_formatter=label_formatter)
                 for relation in
                 BratAnnotationParser.parse_annotations(input_file=input_file, encoding='utf-8-sig')["relations"]
-                if label_formatter.supports_value(relation.Type)],
+                if label_formatter.supports_value(relation.Type) or keep_any_type],
             version=version)
 
     @staticmethod
-    def read_document(doc_id, label_formatter):
+    def read_document(doc_id, label_formatter, keep_any_opinion):
         assert(isinstance(label_formatter, StringLabelsFormatter))
+        assert(isinstance(keep_any_opinion, bool))
 
         def file_to_doc(input_file):
             sentences = BratDocumentSentencesReader.from_file(input_file=input_file, entities=entities)
@@ -47,7 +48,8 @@ class CollectionNewsReader(object):
             doc_id=doc_id, synonyms=synonyms, version=CollectionVersions.NO)
 
         opinions = CollectionNewsReader.read_opinions(
-            doc_id=doc_id, entities=entities, version=CollectionVersions.NO, label_formatter=label_formatter)
+            doc_id=doc_id, entities=entities, version=CollectionVersions.NO, label_formatter=label_formatter,
+            keep_any_type=keep_any_opinion)
 
         return CollectionIOUtils.read_from_zip(
             inner_path=CollectionIOUtils.get_news_innerpath(doc_id),
