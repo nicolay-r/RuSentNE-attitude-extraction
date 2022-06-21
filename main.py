@@ -123,7 +123,11 @@ if __name__ == '__main__':
      handler = NetworksInputSerializerExperimentIteration(
          balance=True,
          exp_io=CustomExperimentSerializationIO(output_dir="out", exp_ctx=exp_ctx),
-         pipeline=train_pipeline,
+         data_type_pipelines={
+            DataType.Train: train_pipeline,
+            DataType.Test: test_pipeline
+         },
+         save_labels_func=lambda data_type: data_type == DataType.Train,
          exp_ctx=exp_ctx,
          doc_ops=doc_ops)
 
