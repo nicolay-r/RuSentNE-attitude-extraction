@@ -8,12 +8,19 @@ from collection.io_utils import CollectionIOUtils, CollectionVersions
 
 class CollectionEntityCollection(EntityCollection):
 
+    entities_to_ignore = [
+        "EFFECT_NEG",
+        "EFFECT_POS",
+        "ARGUMENT_NEG",
+        "ARGUMENT_POS",
+        "EVENT"
+    ]
+
     def __init__(self, contents, value_to_group_id_func):
         assert(isinstance(contents, dict))
         assert("entities" in contents)
 
-        lst = ["EFFECT_NEG", "EFFECT_POS"]
-        self.__dicard_entities = set(lst)
+        self.__dicard_entities = set(self.entities_to_ignore)
 
         contents["entities"] = [e for e in contents["entities"] if self.__keep_entity(e)]
 
