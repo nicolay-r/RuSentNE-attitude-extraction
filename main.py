@@ -15,7 +15,6 @@ from arekit.contrib.source.brat.entities.parser import BratTextEntitiesParser
 from arekit.contrib.source.rusentiframes.collection import RuSentiFramesCollection
 from arekit.contrib.source.rusentiframes.labels_fmt import RuSentiFramesLabelsFormatter
 from arekit.contrib.source.rusentiframes.types import RuSentiFramesVersions
-from arekit.contrib.utils.entities.formatters.str_rus_nocased_fmt import RussianEntitiesFormatter
 from arekit.contrib.utils.pipelines.annot.base import attitude_extraction_default_pipeline
 from arekit.contrib.utils.synonyms.stemmer_based import StemmerBasedSynonymCollection
 
@@ -28,6 +27,7 @@ from collection.entities import CollectionEntityCollection
 from collection.io_utils import CollectionIOUtils
 from doc_ops import CustomDocOperations
 from embedding import RusvectoresEmbedding
+from enitity_fmt import CustomEntitiesFormatter
 from exp_ctx import CustomNetworkSerializationContext
 from exp_io import CustomExperimentSerializationIO
 from labels.formatter import CustomLabelFormatter
@@ -70,7 +70,7 @@ if __name__ == '__main__':
         embedding=embedding,
         annotator=None,
         terms_per_context=terms_per_context,
-        str_entity_formatter=RussianEntitiesFormatter(),
+        str_entity_formatter=CustomEntitiesFormatter(),
         pos_tagger=pos_tagger,
         name_provider=ExperimentNameProvider(name="serialize", suffix="nn"),
         frames_collection=frames_collection,
