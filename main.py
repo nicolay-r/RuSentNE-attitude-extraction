@@ -30,8 +30,8 @@ from doc_ops import CustomDocOperations
 from embedding import RusvectoresEmbedding
 from exp_ctx import CustomNetworkSerializationContext
 from exp_io import CustomExperimentSerializationIO
-from label_fmt import CustomLabelFormatter
-from label_scaler import CustomLabelScaler
+from labels.formatter import CustomLabelFormatter
+from labels.scaler import CustomLabelScaler
 from pipeline import text_opinions_to_opinion_linkages_pipeline
 
 

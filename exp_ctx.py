@@ -5,7 +5,7 @@ from arekit.contrib.networks.embeddings.base import Embedding
 from arekit.contrib.source.rusentiframes.collection import RuSentiFramesCollection
 from arekit.processing.pos.base import POSTagger
 
-from label_scaler import ThreeLabelScaler
+from labels.scaler import ThreeLabelScaler
 
 
 class CustomNetworkSerializationContext(NetworkSerializationContext):
@@ -38,10 +38,6 @@ class CustomNetworkSerializationContext(NetworkSerializationContext):
 
     @property
     def StringEntityFormatter(self):
-        return self.__str_entity_formatter
-
-    @property
-    def StringEntityEmbeddingFormatter(self):
         return self.__str_entity_formatter
 
     @property
