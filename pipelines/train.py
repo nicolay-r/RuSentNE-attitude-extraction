@@ -14,6 +14,15 @@ from arekit.common.text_opinions.base import TextOpinion
 from collection.news import CustomNews
 
 
+def create_train_pipeline(text_parser, doc_ops, terms_per_context):
+    """ Train pipeline is based on the predefined annotations.
+    """
+    return text_opinions_to_opinion_linkages_pipeline(
+        terms_per_context=terms_per_context,
+        get_doc_func=lambda doc_id: doc_ops.get_doc(doc_id),
+        text_parser=text_parser)
+
+
 def __convert_opinion_id(news, origin_id, esp):
     assert(isinstance(news, CustomNews))
     assert(isinstance(origin_id, int))
