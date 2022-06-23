@@ -14,13 +14,14 @@ from collection.opinions.converter import CollectionOpinionConverter
 class CollectionNewsReader(object):
 
     @staticmethod
-    def read_opinions(doc_id, entities, version, label_formatter, keep_any_type):
+    def read_opinions(filename, doc_id, entities, version, label_formatter, keep_any_type):
+        assert(isinstance(filename, str))
         assert(isinstance(label_formatter, StringLabelsFormatter))
         assert(isinstance(entities, EntityCollection))
         assert(isinstance(doc_id, int))
 
         return CollectionIOUtils.read_from_zip(
-            inner_path=CollectionIOUtils.get_annotation_innerpath(doc_id),
+            inner_path=CollectionIOUtils.get_annotation_innerpath(filename),
             process_func=lambda input_file: [
                 CollectionOpinionConverter.to_text_opinion(relation, doc_id=doc_id, label_formatter=label_formatter)
                 for relation in
@@ -29,7 +30,9 @@ class CollectionNewsReader(object):
             version=version)
 
     @staticmethod
-    def read_document(doc_id, label_formatter, keep_any_opinion):
+    def read_document(filename, doc_id, label_formatter, keep_any_opinion):
+        assert(isinstance(filename, str))
+        assert(isinstance(doc_id, int))
         assert(isinstance(label_formatter, StringLabelsFormatter))
         assert(isinstance(keep_any_opinion, bool))
 
@@ -45,13 +48,17 @@ class CollectionNewsReader(object):
                                                  debug=False)
 
         entities = CollectionEntityCollection.read_collection(
-            doc_id=doc_id, synonyms=synonyms, version=CollectionVersions.NO)
+            filename=filename, synonyms=synonyms, version=CollectionVersions.NO)
 
         opinions = CollectionNewsReader.read_opinions(
-            doc_id=doc_id, entities=entities, version=CollectionVersions.NO, label_formatter=label_formatter,
+            doc_id=doc_id,
+            filename=filename,
+            entities=entities,
+            version=CollectionVersions.NO,
+            label_formatter=label_formatter,
             keep_any_type=keep_any_opinion)
 
         return CollectionIOUtils.read_from_zip(
-            inner_path=CollectionIOUtils.get_news_innerpath(doc_id),
+            inner_path=CollectionIOUtils.get_news_innerpath(filename=filename),
             process_func=file_to_doc,
             version=CollectionVersions.NO)

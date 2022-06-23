@@ -45,12 +45,12 @@ class CollectionEntityCollection(EntityCollection):
         return synonyms.get_synonym_group_index(value)
 
     @classmethod
-    def read_collection(cls, doc_id, synonyms, version=CollectionVersions.NO):
+    def read_collection(cls, filename, synonyms, version=CollectionVersions.NO):
+        assert(isinstance(filename, str))
         assert(isinstance(synonyms, SynonymsCollection))
-        assert(isinstance(doc_id, int))
 
         return CollectionIOUtils.read_from_zip(
-            inner_path=CollectionIOUtils.get_annotation_innerpath(doc_id),
+            inner_path=CollectionIOUtils.get_annotation_innerpath(filename),
             process_func=lambda input_file: cls(
                 contents=BratAnnotationParser.parse_annotations(input_file=input_file, encoding='utf-8-sig'),
                 value_to_group_id_func=lambda value: cls.get_synonym_group_index_or_add(synonyms, value)),

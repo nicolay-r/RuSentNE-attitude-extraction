@@ -1,3 +1,6 @@
+import itertools
+from collections import OrderedDict
+
 from arekit.common.experiment.data_type import DataType
 from arekit.common.experiment.engine import ExperimentEngine
 from arekit.common.experiment.name_provider import ExperimentNameProvider
@@ -28,18 +31,21 @@ from pipelines.test import create_test_pipeline
 from pipelines.train import create_train_pipeline
 
 
-def serialize_nn(limit=None):
+def serialize_nn(suffix, limit=None):
     """ Run data preparation process for neural networks, i.e.
         convolutional neural networks and recurrent-based neural networks.
     """
+    assert(isinstance(suffix, str))
     assert(isinstance(limit, int) or limit is None)
 
-    doc_ids = list(CollectionIOUtils.iter_collection_indices())
+    filenames_by_ids = OrderedDict(CollectionIOUtils.iter_collection_filenames())
 
     if limit is not None:
-        doc_ids = doc_ids[:limit]
+        filenames_by_ids = OrderedDict(itertools.islice(filenames_by_ids.items(), limit))
 
-    print("Documents count:", len(doc_ids))
+    print(filenames_by_ids)
+
+    print("Documents count:", len(filenames_by_ids))
 
     terms_per_context = 50
     stemmer = MystemWrapper()
@@ -56,6 +62,7 @@ def serialize_nn(limit=None):
         overwrite_existed_variant=True,
         raise_error_on_existed_variant=False)
 
+    doc_ids = list(list(filenames_by_ids.keys()))
     middle = int(len(doc_ids) / 2)
 
     data_folding = FixedFolding.from_parts(
@@ -72,7 +79,7 @@ def serialize_nn(limit=None):
        terms_per_context=terms_per_context,
        str_entity_formatter=CustomEntitiesFormatter(),
        pos_tagger=pos_tagger,
-       name_provider=ExperimentNameProvider(name="serialize", suffix="nn"),
+       name_provider=ExperimentNameProvider(name="serialize", suffix=suffix),
        frames_collection=frames_collection,
        frame_variant_collection=frame_variant_collection,
        data_folding=data_folding)
@@ -86,7 +93,7 @@ def serialize_nn(limit=None):
 
     doc_ops = CustomDocOperations(exp_ctx=exp_ctx,
                                   label_formatter=label_formatter,
-                                  doc_ids=doc_ids)
+                                  filename_by_id=filenames_by_ids)
 
     handler = NetworksInputSerializerExperimentIteration(
         balance=True,
@@ -108,4 +115,4 @@ def serialize_nn(limit=None):
 
 
 if __name__ == '__main__':
-    serialize_nn()
+    serialize_nn(suffix="nn")
