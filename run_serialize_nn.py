@@ -23,8 +23,8 @@ from experiment.doc_ops import CustomDocOperations
 from experiment.io import CustomExperimentSerializationIO
 
 from folding.fixed import create_train_test_folding
-from labels.formatter import CustomLabelFormatter
-from labels.scaler import CustomLabelScaler
+from labels.formatter import SentimentLabelFormatter
+from labels.scaler import PosNegRelationsLabelScaler
 from pipelines.test import create_test_pipeline
 from pipelines.train import create_train_pipeline
 from utils import read_train_test
@@ -49,7 +49,7 @@ def serialize_nn(suffix, limit=None):
 
     terms_per_context = 50
     stemmer = MystemWrapper()
-    label_formatter = CustomLabelFormatter()
+    label_formatter = SentimentLabelFormatter()
     pos_tagger = POSMystemWrapper(mystem=stemmer.MystemInstance)
 
     # Frames initialization
@@ -67,7 +67,7 @@ def serialize_nn(suffix, limit=None):
     embedding.set_stemmer(stemmer)
 
     exp_ctx = CustomNetworkSerializationContext(
-       labels_scaler=CustomLabelScaler(),
+       labels_scaler=PosNegRelationsLabelScaler(),
        embedding=embedding,
        annotator=None,
        terms_per_context=terms_per_context,

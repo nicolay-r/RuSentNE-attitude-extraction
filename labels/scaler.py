@@ -31,6 +31,19 @@ class CustomLabelScaler(BaseLabelScaler):
                                                 uint_dict=self.__uint_to_label_dict)
 
 
+class PosNegRelationsLabelScaler(BaseLabelScaler):
+
+    def __init__(self):
+
+        self.__uint_to_label_dict = OrderedDict([
+            (labels.NegativeTo(), 0),
+            (labels.PositiveTo(), 1),
+        ])
+
+        super(PosNegRelationsLabelScaler, self).__init__(int_dict=self.__uint_to_label_dict,
+                                                         uint_dict=self.__uint_to_label_dict)
+
+
 class ThreeLabelScaler(SentimentLabelScaler):
     """ For frames annotation
     """

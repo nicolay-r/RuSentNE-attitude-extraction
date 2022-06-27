@@ -24,3 +24,14 @@ class CustomLabelFormatter(StringLabelsFormatter):
         }
 
         super(CustomLabelFormatter, self).__init__(stol=stol)
+
+
+class SentimentLabelFormatter(StringLabelsFormatter):
+
+    def __init__(self):
+        stol = {
+            "NEGATIVE_TO": labels.NegativeTo,
+            "POSITIVE_TO": labels.PositiveTo,
+        }
+
+        super(SentimentLabelFormatter, self).__init__(stol=stol)
