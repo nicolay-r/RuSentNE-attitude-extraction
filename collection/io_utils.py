@@ -38,21 +38,6 @@ class CollectionIOUtils(ZipArchiveUtils):
     # endregion
 
     @staticmethod
-    def __number_from_string(s):
-        digit_chars_prefix = []
-
-        for chr in s:
-            if chr.isdigit():
-                digit_chars_prefix.append(chr)
-            else:
-                break
-
-        if len(digit_chars_prefix) == 0:
-            return None
-
-        return int("".join(digit_chars_prefix))
-
-    @staticmethod
     def __iter_filenames_from_dataset(folder_name):
         assert(isinstance(folder_name, str))
 

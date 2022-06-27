@@ -1,10 +1,6 @@
-import itertools
-from collections import OrderedDict
-
 from arekit.common.experiment.data_type import DataType
 from arekit.common.experiment.engine import ExperimentEngine
 from arekit.common.experiment.name_provider import ExperimentNameProvider
-from arekit.common.folding.fixed import FixedFolding
 from arekit.common.frames.variants.collection import FrameVariantsCollection
 from arekit.common.text.parser import BaseTextParser
 
@@ -19,16 +15,23 @@ from arekit.processing.pos.mystem_wrap import POSMystemWrapper
 from arekit.processing.text.pipeline_frames_lemmatized import LemmasBasedFrameVariantsParser
 from arekit.processing.text.pipeline_tokenizer import DefaultTextTokenizer
 
-from collection.io_utils import CollectionIOUtils
 from doc_ops import CustomDocOperations
 from embedding import RusvectoresEmbedding
 from enitity_fmt import CustomEntitiesFormatter
 from exp_ctx import CustomNetworkSerializationContext
 from exp_io import CustomExperimentSerializationIO
+from folding.fixed import create_train_test_folding
 from labels.formatter import CustomLabelFormatter
 from labels.scaler import CustomLabelScaler
 from pipelines.test import create_test_pipeline
 from pipelines.train import create_train_pipeline
+
+
+def read_train_test(filepath):
+    with open(filepath, "r") as f:
+        train = f.readline().split(',')
+        test = f.readline().split(',')
+    return train, test
 
 
 def serialize_nn(suffix, limit=None):
@@ -38,12 +41,13 @@ def serialize_nn(suffix, limit=None):
     assert(isinstance(suffix, str))
     assert(isinstance(limit, int) or limit is None)
 
-    filenames_by_ids = OrderedDict(CollectionIOUtils.iter_collection_filenames())
-
+    train_filenames, test_filenames = read_train_test("data/split_fixed.txt")
     if limit is not None:
-        filenames_by_ids = OrderedDict(itertools.islice(filenames_by_ids.items(), limit))
+        train_filenames = train_filenames[:limit]
+        test_filenames = test_filenames[:limit]
 
-    print(filenames_by_ids)
+    filenames_by_ids, data_folding = create_train_test_folding(train_filenames=train_filenames,
+                                                               test_filenames=test_filenames)
 
     print("Documents count:", len(filenames_by_ids))
 
@@ -61,12 +65,6 @@ def serialize_nn(suffix, limit=None):
         variants_with_id=frames_collection.iter_frame_id_and_variants(),
         overwrite_existed_variant=True,
         raise_error_on_existed_variant=False)
-
-    doc_ids = list(list(filenames_by_ids.keys()))
-    middle = int(len(doc_ids) / 2)
-
-    data_folding = FixedFolding.from_parts(
-        {DataType.Train: doc_ids[:middle], DataType.Test: doc_ids[middle:]})
 
     embedding = RusvectoresEmbedding.from_word2vec_format(
         filepath="data/news_mystem_skipgram_1000_20_2015.bin.gz", binary=True)
