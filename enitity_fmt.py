@@ -2,6 +2,8 @@ from arekit.common.entities.base import Entity
 from arekit.common.entities.str_fmt import StringEntitiesFormatter
 from arekit.common.entities.types import OpinionEntityType
 
+from entity_helper import EntityHelper
+
 
 class CustomEntitiesFormatter(StringEntitiesFormatter):
 
@@ -10,10 +12,11 @@ class CustomEntitiesFormatter(StringEntitiesFormatter):
         assert(isinstance(entity_type, OpinionEntityType))
 
         if entity_type == OpinionEntityType.Other:
-            return original_value.Type
+            return EntityHelper.format(original_value.Type) if \
+                EntityHelper.is_supported(original_value.Type) else original_value.Value
         elif entity_type == OpinionEntityType.Object or entity_type == OpinionEntityType.SynonymObject:
-            return "[OBJ]"
+            return "[объект]"
         elif entity_type == OpinionEntityType.Subject or entity_type == OpinionEntityType.SynonymSubject:
-            return "[SUBJ]"
+            return "[субъект]"
 
         return None
