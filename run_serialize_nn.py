@@ -15,11 +15,13 @@ from arekit.processing.pos.mystem_wrap import POSMystemWrapper
 from arekit.processing.text.pipeline_frames_lemmatized import LemmasBasedFrameVariantsParser
 from arekit.processing.text.pipeline_tokenizer import DefaultTextTokenizer
 
-from doc_ops import CustomDocOperations
 from embedding import RusvectoresEmbedding
 from entity.formatter import CustomEntitiesFormatter
-from exp_ctx import CustomNetworkSerializationContext
-from exp_io import CustomExperimentSerializationIO
+
+from experiment.ctx import CustomNetworkSerializationContext
+from experiment.doc_ops import CustomDocOperations
+from experiment.io import CustomExperimentSerializationIO
+
 from folding.fixed import create_train_test_folding
 from labels.formatter import CustomLabelFormatter
 from labels.scaler import CustomLabelScaler
@@ -89,7 +91,7 @@ def serialize_nn(suffix, limit=None):
 
     handler = NetworksInputSerializerExperimentIteration(
         balance=True,
-        exp_io=CustomExperimentSerializationIO(output_dir="out", exp_ctx=exp_ctx),
+        exp_io=CustomExperimentSerializationIO(output_dir="_out", exp_ctx=exp_ctx),
         data_type_pipelines={
            DataType.Train: create_train_pipeline(text_parser=text_parser,
                                                  doc_ops=doc_ops,

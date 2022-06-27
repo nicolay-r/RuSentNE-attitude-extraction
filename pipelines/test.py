@@ -2,7 +2,6 @@ from arekit.common.experiment.api.ops_doc import DocumentOperations
 from arekit.common.experiment.data_type import DataType
 from arekit.common.labels.base import NoLabel
 from arekit.common.labels.provider.constant import ConstantLabelProvider
-from arekit.common.opinions.annot.algo.pair_based import PairBasedAnnotationAlgorithm
 from arekit.common.opinions.annot.default import DefaultAnnotator
 from arekit.common.opinions.collection import OpinionCollection
 from arekit.common.text.parser import BaseTextParser
@@ -10,6 +9,7 @@ from arekit.contrib.utils.pipelines.annot.base import attitude_extraction_defaul
 from arekit.contrib.utils.synonyms.stemmer_based import StemmerBasedSynonymCollection
 from arekit.processing.lemmatization.mystem import MystemWrapper
 
+from annot import create_annot
 from collection.entities import CollectionEntityCollection
 
 
@@ -28,7 +28,7 @@ def create_test_pipeline(text_parser, doc_ops, terms_per_context):
 
     return attitude_extraction_default_pipeline(
         annotator=DefaultAnnotator(
-            annot_algo=PairBasedAnnotationAlgorithm(
+            annot_algo=create_annot(
                 dist_in_terms_bound=terms_per_context,
                 label_provider=ConstantLabelProvider(NoLabel())),
             create_empty_collection_func=lambda: OpinionCollection(
