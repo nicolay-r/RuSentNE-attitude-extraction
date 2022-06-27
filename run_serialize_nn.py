@@ -17,7 +17,7 @@ from arekit.processing.text.pipeline_tokenizer import DefaultTextTokenizer
 
 from doc_ops import CustomDocOperations
 from embedding import RusvectoresEmbedding
-from enitity_fmt import CustomEntitiesFormatter
+from entity.formatter import CustomEntitiesFormatter
 from exp_ctx import CustomNetworkSerializationContext
 from exp_io import CustomExperimentSerializationIO
 from folding.fixed import create_train_test_folding
@@ -25,13 +25,7 @@ from labels.formatter import CustomLabelFormatter
 from labels.scaler import CustomLabelScaler
 from pipelines.test import create_test_pipeline
 from pipelines.train import create_train_pipeline
-
-
-def read_train_test(filepath):
-    with open(filepath, "r") as f:
-        train = f.readline().split(',')
-        test = f.readline().split(',')
-    return train, test
+from utils import read_train_test
 
 
 def serialize_nn(suffix, limit=None):
