@@ -3,13 +3,16 @@ from arekit.common.experiment.engine import ExperimentEngine
 from arekit.common.experiment.name_provider import ExperimentNameProvider
 from arekit.common.frames.variants.collection import FrameVariantsCollection
 from arekit.common.text.parser import BaseTextParser
+from arekit.contrib.networks.core.input.term_types import TermTypes
 
 from arekit.contrib.networks.handlers.serializer import NetworksInputSerializerExperimentIteration
 from arekit.contrib.source.brat.entities.parser import BratTextEntitiesParser
 from arekit.contrib.source.rusentiframes.collection import RuSentiFramesCollection
 from arekit.contrib.source.rusentiframes.labels_fmt import RuSentiFramesLabelsFormatter
 from arekit.contrib.source.rusentiframes.types import RuSentiFramesVersions
-from arekit.contrib.utils.embeddings.rusvectores import RusvectoresEmbedding
+from arekit.contrib.utils.resources import load_embedding_news_mystem_skipgram_1000_20_2015
+from arekit.contrib.utils.vectorizers.bpe import BPEVectorizer
+from arekit.contrib.utils.vectorizers.random_norm import RandomNormalVectorizer
 
 from arekit.processing.lemmatization.mystem import MystemWrapper
 from arekit.processing.pos.mystem_wrap import POSMystemWrapper
@@ -62,13 +65,9 @@ def serialize_nn(suffix, limit=None):
         overwrite_existed_variant=True,
         raise_error_on_existed_variant=False)
 
-    embedding = RusvectoresEmbedding.from_word2vec_format(
-        filepath="data/news_mystem_skipgram_1000_20_2015.bin.gz", binary=True)
-    embedding.set_stemmer(stemmer)
-
     exp_ctx = CustomNetworkSerializationContext(
        labels_scaler=PosNegRelationsLabelScaler(),
-       embedding=embedding,
+       embedding=load_embedding_news_mystem_skipgram_1000_20_2015(),
        annotator=None,
        terms_per_context=terms_per_context,
        str_entity_formatter=CustomEntitiesFormatter(),
@@ -89,8 +88,18 @@ def serialize_nn(suffix, limit=None):
                                   label_formatter=label_formatter,
                                   filename_by_id=filenames_by_ids)
 
+    bpe_vectorizer = BPEVectorizer(embedding=exp_ctx.WordEmbedding, max_part_size=3)
+    norm_vectorizer = RandomNormalVectorizer(vector_size=exp_ctx.WordEmbedding.VectorSize,
+                                             token_offset=12345)
+
     handler = NetworksInputSerializerExperimentIteration(
         balance=True,
+        vectorizers={
+            TermTypes.WORD: bpe_vectorizer,
+            TermTypes.ENTITY: bpe_vectorizer,
+            TermTypes.FRAME: bpe_vectorizer,
+            TermTypes.TOKEN: norm_vectorizer
+        },
         exp_io=CustomExperimentSerializationIO(output_dir="_out", exp_ctx=exp_ctx),
         data_type_pipelines={
            DataType.Train: create_train_pipeline(text_parser=text_parser,
