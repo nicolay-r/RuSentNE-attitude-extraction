@@ -19,3 +19,14 @@ class CustomExperimentSerializationIO(DefaultNetworkIOUtils):
 
     def create_opinion_collection_target(self, doc_id, data_type, check_existance=False):
         return self.__create_annot_input_target(doc_id=doc_id, data_type=data_type)
+
+
+class CustomExperimentTrainIO(DefaultNetworkIOUtils):
+
+    def __init__(self, source_dir, exp_ctx):
+        assert(isinstance(source_dir, str))
+        super(CustomExperimentTrainIO, self).__init__(exp_ctx=exp_ctx)
+        self.__source_dir = source_dir
+
+    def _get_experiment_sources_dir(self):
+        return self.__source_dir
