@@ -42,11 +42,34 @@ def __convert_opinion_id(news, origin_id, esp):
     return document_entity.IdInDocument
 
 
-def __to_text_opinion_linkages(news, parsed_news, filter_func, parsed_news_service):
+def __filter_internal_opinion(internal_opinion, esp, terms_per_context):
+    """ This method describes internal opinion filtering
+    """
+    assert(isinstance(internal_opinion, TextOpinion) or internal_opinion is None)
+
+    if internal_opinion is None:
+        return False
+
+    s_ind = esp.get_entity_position(internal_opinion.SourceId,
+                                    position_type=TermPositionTypes.SentenceIndex)
+    t_ind = esp.get_entity_position(internal_opinion.TargetId,
+                                    position_type=TermPositionTypes.SentenceIndex)
+
+    if s_ind != t_ind:
+        # AREkit does not provide a support for multi-sentence opinions at present.
+        return False
+
+    return InputSampleBase.check_ability_to_create_sample(
+        entity_service=esp,
+        text_opinion=internal_opinion,
+        window_size=terms_per_context)
+
+
+def __to_text_opinion_linkages(news, parsed_news, parsed_news_service, terms_per_context):
     assert(isinstance(news, CustomNews))
     assert(isinstance(parsed_news, ParsedNews))
-    assert(callable(filter_func))
     assert(isinstance(parsed_news_service, ParsedNewsService))
+    assert(isinstance(terms_per_context, int))
 
     esp = parsed_news_service.get_provider("entity-service-provider")
 
@@ -57,14 +80,11 @@ def __to_text_opinion_linkages(news, parsed_news, filter_func, parsed_news_servi
             other=text_opinion,
             convert_func=lambda origin_id: __convert_opinion_id(news=news, origin_id=origin_id, esp=esp))
 
-        if internal_opinion is None:
-            continue
+        keep_internal_opinion = __filter_internal_opinion(internal_opinion=internal_opinion,
+                                                          esp=esp,
+                                                          terms_per_context=terms_per_context)
 
-        s_ind = esp.get_entity_position(internal_opinion.SourceId, position_type=TermPositionTypes.SentenceIndex)
-        t_ind = esp.get_entity_position(internal_opinion.TargetId, position_type=TermPositionTypes.SentenceIndex)
-
-        if s_ind != t_ind:
-            # AREkit does not provide a support for multi-sentence opinions at present.
+        if not keep_internal_opinion:
             continue
 
         linkage = TextOpinionsLinkage([internal_opinion])
@@ -96,10 +116,7 @@ def text_opinions_to_opinion_linkages_pipeline(text_parser, get_doc_func, terms_
             news=data[0],
             parsed_news=data[2],
             parsed_news_service=data[1],
-            filter_func=lambda text_opinion: InputSampleBase.check_ability_to_create_sample(
-                entity_service=data[2].get_provider(EntityServiceProvider.NAME),
-                text_opinion=text_opinion,
-                window_size=terms_per_context))),
+            terms_per_context=terms_per_context)),
 
         # linkages[] -> linkages.
         FlattenIterPipelineItem()
