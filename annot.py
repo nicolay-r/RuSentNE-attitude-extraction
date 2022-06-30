@@ -53,6 +53,6 @@ def create_neutral_annotator(terms_per_context):
             synonyms=synonyms,
             error_on_duplicates=True,
             error_on_synonym_end_missed=False),
-        get_doc_etalon_opins_func=lambda _: [])
+        get_doc_etalon_opins_func=lambda _: None)
 
     return annotator, synonyms
