@@ -79,8 +79,13 @@ def iter_train_text_opinion_linkages(news, parsed_news, annotator, parsed_news_s
     assert(isinstance(parsed_news_service, ParsedNewsService))
     assert(isinstance(terms_per_context, int))
 
+    def __to_id(text_opinion):
+        return "{}_{}".format(text_opinion.SourceId, text_opinion.TargetId)
+
     esp = parsed_news_service.get_provider(EntityServiceProvider.NAME)
     topp = parsed_news_service.get_provider(TextOpinionPairsProvider.NAME)
+
+    predefined = set()
 
     # Predefined sentiment annotation.
     for text_opinion in news.TextOpinions:
@@ -97,11 +102,16 @@ def iter_train_text_opinion_linkages(news, parsed_news, annotator, parsed_news_s
         if not keep_internal_opinion:
             continue
 
+        predefined.add(__to_id(text_opinion))
+
         linkage = TextOpinionsLinkage([internal_opinion])
         linkage.set_tag(parsed_news_service)
         yield linkage
 
     # Neutral annotation.
+    # Выполнено через следующий механизм: сначала выполняется разметка на уровне
+    # отношений документа (annotator), а потом из них выполняется преобразование в контекстыные отношения
+    # с выполнением проверки на корректность, а также отбросом отношений которые были в размете.
     for opinion in annotator.annotate_collection(data_type=DataType.Train, parsed_news=parsed_news):
         for neut_text_opinion in topp.iter_from_opinion(opinion):
             assert(isinstance(neut_text_opinion, TextOpinion))
@@ -113,7 +123,9 @@ def iter_train_text_opinion_linkages(news, parsed_news, annotator, parsed_news_s
             if not keep_internal_opinion:
                 continue
 
-            # TODO. add check for existed.
+            if __to_id(neut_text_opinion) in predefined:
+                # We reject those one which was already obtained from the predefined sentiment annotation.
+                continue
 
             linkage = TextOpinionsLinkage([neut_text_opinion])
             linkage.set_tag(parsed_news_service)
