@@ -1,3 +1,6 @@
+from arekit.common.entities.base import Entity
+
+
 class EntityHelper(object):
     """ Форматирование типов сущностей в тексте.
     """
@@ -101,11 +104,8 @@ class EntityHelper(object):
     __supported_set = set(__supported_list)
 
     @staticmethod
-    def format(entity_type):
-        assert(isinstance(entity_type, str))
-        return EntityHelper.__types_fmt[entity_type]
-
-    @staticmethod
-    def is_supported(entity_type):
-        assert(isinstance(entity_type, str))
-        return entity_type in EntityHelper.__supported_set
+    def format(entity):
+        assert(isinstance(entity, Entity))
+        return EntityHelper.__types_fmt[entity.Type] \
+            if entity.Type in EntityHelper.__supported_set \
+            else entity.Value

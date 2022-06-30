@@ -22,8 +22,7 @@ class CustomEntitiesFormatter(StringEntitiesFormatter):
         assert(isinstance(entity_type, OpinionEntityType))
 
         if entity_type == OpinionEntityType.Other:
-            return EntityHelper.format(original_value.Type) if \
-                EntityHelper.is_supported(original_value.Type) else original_value.Value
+            return EntityHelper.format(original_value)
         elif entity_type == OpinionEntityType.Object or entity_type == OpinionEntityType.SynonymObject:
             return "[объект]"
         elif entity_type == OpinionEntityType.Subject or entity_type == OpinionEntityType.SynonymSubject:
