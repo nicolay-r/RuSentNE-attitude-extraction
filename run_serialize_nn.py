@@ -19,6 +19,7 @@ from arekit.processing.pos.mystem_wrap import POSMystemWrapper
 from arekit.processing.text.pipeline_frames_lemmatized import LemmasBasedFrameVariantsParser
 from arekit.processing.text.pipeline_tokenizer import DefaultTextTokenizer
 
+from annot import create_neutral_annotator
 from entity.formatter import CustomEntitiesFormatter
 
 from experiment.ctx import CustomNetworkSerializationContext
@@ -92,6 +93,9 @@ def serialize_nn(suffix, limit=None):
     norm_vectorizer = RandomNormalVectorizer(vector_size=exp_ctx.WordEmbedding.VectorSize,
                                              token_offset=12345)
 
+    train_neut_annot, train_synonyms = create_neutral_annotator(terms_per_context)
+    test_neut_annot, test_synonyms = create_neutral_annotator(terms_per_context)
+
     handler = NetworksInputSerializerExperimentIteration(
         balance=True,
         vectorizers={
@@ -104,9 +108,13 @@ def serialize_nn(suffix, limit=None):
         data_type_pipelines={
            DataType.Train: create_train_pipeline(text_parser=text_parser,
                                                  doc_ops=doc_ops,
+                                                 neut_annotator=train_neut_annot,
+                                                 synonyms=train_synonyms,
                                                  terms_per_context=terms_per_context),
            DataType.Test: create_test_pipeline(text_parser=text_parser,
                                                doc_ops=doc_ops,
+                                               neut_annotator=test_neut_annot,
+                                               synonyms=test_synonyms,
                                                terms_per_context=terms_per_context)
         },
         save_labels_func=lambda data_type: data_type == DataType.Train,

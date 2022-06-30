@@ -1,26 +1,33 @@
 from arekit.common.data.input.sample import InputSampleBase
+from arekit.common.experiment.data_type import DataType
 from arekit.common.linkage.text_opinions import TextOpinionsLinkage
 from arekit.common.news.parsed.base import ParsedNews
 from arekit.common.news.parsed.providers.base import BaseParsedNewsServiceProvider
 from arekit.common.news.parsed.providers.entity_service import EntityServiceProvider
+from arekit.common.news.parsed.providers.text_opinion_pairs import TextOpinionPairsProvider
 from arekit.common.news.parsed.service import ParsedNewsService
 from arekit.common.news.parsed.term_position import TermPositionTypes
 from arekit.common.news.parser import NewsParser
+from arekit.common.opinions.annot.base import BaseAnnotator
 from arekit.common.pipeline.base import BasePipeline
 from arekit.common.pipeline.item_map import MapPipelineItem
 from arekit.common.pipeline.items.flatten import FlattenIterPipelineItem
 from arekit.common.text_opinions.base import TextOpinion
 
+from collection.entities import CollectionEntityCollection
 from collection.news import CustomNews
 
 
-def create_train_pipeline(text_parser, doc_ops, terms_per_context):
+def create_train_pipeline(text_parser, doc_ops, neut_annotator, synonyms, terms_per_context):
     """ Train pipeline is based on the predefined annotations.
     """
     return text_opinions_to_opinion_linkages_pipeline(
         terms_per_context=terms_per_context,
         get_doc_func=lambda doc_id: doc_ops.get_doc(doc_id),
-        text_parser=text_parser)
+        text_parser=text_parser,
+        neut_annotator=neut_annotator,
+        value_to_group_id_func=lambda value: CollectionEntityCollection.get_synonym_group_index_or_add(
+            synonyms=synonyms, value=value))
 
 
 def __convert_opinion_id(news, origin_id, esp):
@@ -65,14 +72,17 @@ def __filter_internal_opinion(internal_opinion, esp, terms_per_context):
         window_size=terms_per_context)
 
 
-def __to_text_opinion_linkages(news, parsed_news, parsed_news_service, terms_per_context):
+def iter_train_text_opinion_linkages(news, parsed_news, annotator, parsed_news_service, terms_per_context):
     assert(isinstance(news, CustomNews))
+    assert(isinstance(annotator, BaseAnnotator))
     assert(isinstance(parsed_news, ParsedNews))
     assert(isinstance(parsed_news_service, ParsedNewsService))
     assert(isinstance(terms_per_context, int))
 
-    esp = parsed_news_service.get_provider("entity-service-provider")
+    esp = parsed_news_service.get_provider(EntityServiceProvider.NAME)
+    topp = parsed_news_service.get_provider(TextOpinionPairsProvider.NAME)
 
+    # Predefined sentiment annotation
     for text_opinion in news.TextOpinions:
         assert(isinstance(text_opinion, TextOpinion))
 
@@ -91,10 +101,21 @@ def __to_text_opinion_linkages(news, parsed_news, parsed_news_service, terms_per
         linkage.set_tag(parsed_news_service)
         yield linkage
 
+    # Neutral annotation.
+    for opinion in annotator.annotate_collection(data_type=DataType.Train, parsed_news=parsed_news):
+        for neut_text_opinion in topp.iter_from_opinion(opinion):
+            # TODO. add check for existed.
+            linkage = TextOpinionsLinkage([neut_text_opinion])
+            linkage.set_tag(parsed_news_service)
+            yield linkage
 
-def text_opinions_to_opinion_linkages_pipeline(text_parser, get_doc_func, terms_per_context):
+
+def text_opinions_to_opinion_linkages_pipeline(text_parser, get_doc_func, neut_annotator, terms_per_context,
+                                               value_to_group_id_func):
     assert(callable(get_doc_func))
+    assert(isinstance(neut_annotator, BaseAnnotator))
     assert(isinstance(terms_per_context, int))
+    assert(callable(value_to_group_id_func))
 
     return BasePipeline([
         # (doc_id) -> (news)
@@ -107,13 +128,15 @@ def text_opinions_to_opinion_linkages_pipeline(text_parser, get_doc_func, terms_
         MapPipelineItem(map_func=lambda data: (
             data[0],
             ParsedNewsService(parsed_news=data[1], providers=[
-                EntityServiceProvider(lambda brat_entity: brat_entity.ID)
+                EntityServiceProvider(lambda brat_entity: brat_entity.ID),
+                TextOpinionPairsProvider(value_to_group_id_func),
             ]),
             data[1])),
 
         # (news, service, parsed_news) -> (text_opinions).
-        MapPipelineItem(map_func=lambda data: __to_text_opinion_linkages(
+        MapPipelineItem(map_func=lambda data: iter_train_text_opinion_linkages(
             news=data[0],
+            annotator=neut_annotator,
             parsed_news=data[2],
             parsed_news_service=data[1],
             terms_per_context=terms_per_context)),
