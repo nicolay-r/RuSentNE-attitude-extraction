@@ -2,8 +2,8 @@ from arekit.common.entities.base import Entity
 from arekit.common.entities.types import OpinionEntityType
 from arekit.common.labels.base import NoLabel
 from arekit.common.labels.provider.constant import ConstantLabelProvider
-from arekit.common.opinions.annot.algo.pair_based import PairBasedAnnotationAlgorithm
-from arekit.common.opinions.annot.default import DefaultAnnotator
+from arekit.common.opinions.annot.algo.pair_based import PairBasedOpinionAnnotationAlgorithm
+from arekit.common.opinions.annot.default import DefaultOpinionAnnotator
 from arekit.common.opinions.collection import OpinionCollection
 from arekit.contrib.utils.synonyms.stemmer_based import StemmerBasedSynonymCollection
 from arekit.processing.lemmatization.mystem import MystemWrapper
@@ -42,8 +42,8 @@ def create_neutral_annotator(terms_per_context):
                                              is_read_only=False,
                                              debug=False)
 
-    annotator = DefaultAnnotator(
-        annot_algo=PairBasedAnnotationAlgorithm(
+    annotator = DefaultOpinionAnnotator(
+        annot_algo=PairBasedOpinionAnnotationAlgorithm(
             dist_in_sents=0,
             is_entity_ignored_func=is_entity_ignored,
             dist_in_terms_bound=terms_per_context,

@@ -1,6 +1,6 @@
 from arekit.common.experiment.api.ops_doc import DocumentOperations
 from arekit.common.experiment.data_type import DataType
-from arekit.common.opinions.annot.base import BaseAnnotator
+from arekit.common.opinions.annot.base import BaseOpinionAnnotator
 from arekit.common.synonyms import SynonymsCollection
 from arekit.common.text.parser import BaseTextParser
 from arekit.contrib.utils.pipelines.annot.base import attitude_extraction_default_pipeline
@@ -12,7 +12,7 @@ def create_test_pipeline(text_parser, doc_ops, neut_annotator, synonyms, terms_p
         We perform annotation of the attitudes.
     """
     assert(isinstance(text_parser, BaseTextParser))
-    assert(isinstance(neut_annotator, BaseAnnotator))
+    assert(isinstance(neut_annotator, BaseOpinionAnnotator))
     assert(isinstance(doc_ops, DocumentOperations))
     assert(isinstance(synonyms, SynonymsCollection))
     assert(isinstance(terms_per_context, int))

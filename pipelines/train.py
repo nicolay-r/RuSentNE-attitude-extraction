@@ -8,7 +8,7 @@ from arekit.common.news.parsed.providers.text_opinion_pairs import TextOpinionPa
 from arekit.common.news.parsed.service import ParsedNewsService
 from arekit.common.news.parsed.term_position import TermPositionTypes
 from arekit.common.news.parser import NewsParser
-from arekit.common.opinions.annot.base import BaseAnnotator
+from arekit.common.opinions.annot.base import BaseOpinionAnnotator
 from arekit.common.pipeline.base import BasePipeline
 from arekit.common.pipeline.item_map import MapPipelineItem
 from arekit.common.pipeline.items.flatten import FlattenIterPipelineItem
@@ -74,7 +74,7 @@ def __filter_internal_opinion(internal_opinion, esp, terms_per_context):
 
 def iter_train_text_opinion_linkages(news, parsed_news, annotator, parsed_news_service, terms_per_context):
     assert(isinstance(news, CustomNews))
-    assert(isinstance(annotator, BaseAnnotator))
+    assert(isinstance(annotator, BaseOpinionAnnotator))
     assert(isinstance(parsed_news, ParsedNews))
     assert(isinstance(parsed_news_service, ParsedNewsService))
     assert(isinstance(terms_per_context, int))
@@ -135,7 +135,7 @@ def iter_train_text_opinion_linkages(news, parsed_news, annotator, parsed_news_s
 def text_opinions_to_opinion_linkages_pipeline(text_parser, get_doc_func, neut_annotator, terms_per_context,
                                                value_to_group_id_func):
     assert(callable(get_doc_func))
-    assert(isinstance(neut_annotator, BaseAnnotator))
+    assert(isinstance(neut_annotator, BaseOpinionAnnotator))
     assert(isinstance(terms_per_context, int))
     assert(callable(value_to_group_id_func))
 
