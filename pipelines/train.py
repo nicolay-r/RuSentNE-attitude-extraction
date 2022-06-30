@@ -102,7 +102,7 @@ def iter_train_text_opinion_linkages(news, parsed_news, annotator, parsed_news_s
         if not keep_internal_opinion:
             continue
 
-        predefined.add(__to_id(text_opinion))
+        predefined.add(__to_id(internal_opinion))
 
         linkage = TextOpinionsLinkage([internal_opinion])
         linkage.set_tag(parsed_news_service)
