@@ -24,9 +24,9 @@ if __name__ == '__main__':
 
     model_load_dir = "_model/cnn"
     exp_name = "serialize"
-    extra_name_suffix = "nn"
+    extra_name_suffix = "nn-test"
     epochs_count = 100
-    labels_count = 2
+    labels_count = 3
     model_name = ModelNames.CNN
 
     train_filenames, test_filenames = read_train_test("data/split_fixed.txt")
@@ -67,7 +67,7 @@ if __name__ == '__main__':
     config.modify_use_class_weights(True)
     config.modify_dropout_keep_prob(0.9)
     config.modify_bag_size(1)
-    config.modify_bags_per_minibatch(1)
+    config.modify_bags_per_minibatch(4)
     config.modify_embedding_dropout_keep_prob(1.0)
     config.modify_terms_per_context(50)
     config.modify_use_entity_types_in_embedding(False)
