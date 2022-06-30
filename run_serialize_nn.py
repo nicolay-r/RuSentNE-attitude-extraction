@@ -28,7 +28,7 @@ from experiment.io import CustomExperimentSerializationIO
 
 from folding.fixed import create_train_test_folding
 from labels.formatter import SentimentLabelFormatter
-from labels.scaler import PosNegRelationsLabelScaler
+from labels.scaler import PosNegNeuRelationsLabelScaler
 from pipelines.test import create_test_pipeline
 from pipelines.train import create_train_pipeline
 from utils import read_train_test
@@ -67,7 +67,7 @@ def serialize_nn(suffix, limit=None):
         raise_error_on_existed_variant=False)
 
     exp_ctx = CustomNetworkSerializationContext(
-       labels_scaler=PosNegRelationsLabelScaler(),
+       labels_scaler=PosNegNeuRelationsLabelScaler(),
        embedding=load_embedding_news_mystem_skipgram_1000_20_2015(),
        annotator=None,
        terms_per_context=terms_per_context,
