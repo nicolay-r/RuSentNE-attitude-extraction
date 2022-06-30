@@ -82,7 +82,7 @@ def iter_train_text_opinion_linkages(news, parsed_news, annotator, parsed_news_s
     esp = parsed_news_service.get_provider(EntityServiceProvider.NAME)
     topp = parsed_news_service.get_provider(TextOpinionPairsProvider.NAME)
 
-    # Predefined sentiment annotation
+    # Predefined sentiment annotation.
     for text_opinion in news.TextOpinions:
         assert(isinstance(text_opinion, TextOpinion))
 
@@ -104,7 +104,17 @@ def iter_train_text_opinion_linkages(news, parsed_news, annotator, parsed_news_s
     # Neutral annotation.
     for opinion in annotator.annotate_collection(data_type=DataType.Train, parsed_news=parsed_news):
         for neut_text_opinion in topp.iter_from_opinion(opinion):
+            assert(isinstance(neut_text_opinion, TextOpinion))
+
+            keep_internal_opinion = __filter_internal_opinion(internal_opinion=neut_text_opinion,
+                                                              esp=esp,
+                                                              terms_per_context=terms_per_context)
+
+            if not keep_internal_opinion:
+                continue
+
             # TODO. add check for existed.
+
             linkage = TextOpinionsLinkage([neut_text_opinion])
             linkage.set_tag(parsed_news_service)
             yield linkage
