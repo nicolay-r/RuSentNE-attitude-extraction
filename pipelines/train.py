@@ -19,7 +19,8 @@ from collection.news import CustomNews
 
 
 def create_train_pipeline(text_parser, doc_ops, neut_annotator, synonyms, terms_per_context):
-    """ Train pipeline is based on the predefined annotations.
+    """ Train pipeline is based on the predefined annotations and
+        automatic annotations of other pairs with a NoLabel.
     """
     return text_opinions_to_opinion_linkages_pipeline(
         terms_per_context=terms_per_context,
