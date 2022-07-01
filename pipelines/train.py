@@ -22,6 +22,8 @@ def create_train_pipeline(text_parser, doc_ops, neut_annotator, synonyms, terms_
     """ Train pipeline is based on the predefined annotations and
         automatic annotations of other pairs with a NoLabel.
     """
+    assert(isinstance(neut_annotator, BaseOpinionAnnotator) or neut_annotator is None)
+
     return text_opinions_to_opinion_linkages_pipeline(
         terms_per_context=terms_per_context,
         get_doc_func=lambda doc_id: doc_ops.get_doc(doc_id),
@@ -75,7 +77,7 @@ def __filter_internal_opinion(internal_opinion, esp, terms_per_context):
 
 def iter_train_text_opinion_linkages(news, parsed_news, annotator, parsed_news_service, terms_per_context):
     assert(isinstance(news, CustomNews))
-    assert(isinstance(annotator, BaseOpinionAnnotator))
+    assert(isinstance(annotator, BaseOpinionAnnotator) or annotator is None)
     assert(isinstance(parsed_news, ParsedNews))
     assert(isinstance(parsed_news_service, ParsedNewsService))
     assert(isinstance(terms_per_context, int))
@@ -113,6 +115,10 @@ def iter_train_text_opinion_linkages(news, parsed_news, annotator, parsed_news_s
     # Выполнено через следующий механизм: сначала выполняется разметка на уровне
     # отношений документа (annotator), а потом из них выполняется преобразование в контекстыные отношения
     # с выполнением проверки на корректность, а также отбросом отношений которые были в размете.
+
+    if annotator is None:
+        return
+
     for opinion in annotator.annotate_collection(data_type=DataType.Train, parsed_news=parsed_news):
         for neut_text_opinion in topp.iter_from_opinion(opinion):
             assert(isinstance(neut_text_opinion, TextOpinion))
@@ -136,7 +142,6 @@ def iter_train_text_opinion_linkages(news, parsed_news, annotator, parsed_news_s
 def text_opinions_to_opinion_linkages_pipeline(text_parser, get_doc_func, neut_annotator, terms_per_context,
                                                value_to_group_id_func):
     assert(callable(get_doc_func))
-    assert(isinstance(neut_annotator, BaseOpinionAnnotator))
     assert(isinstance(terms_per_context, int))
     assert(callable(value_to_group_id_func))
 

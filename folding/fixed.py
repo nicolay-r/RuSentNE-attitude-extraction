@@ -20,7 +20,8 @@ def create_train_test_folding(train_filenames, test_filenames):
     train_doc_ids = [ids_by_filenames[filename] for filename in train_filenames]
     test_doc_ids = [ids_by_filenames[filename] for filename in test_filenames]
 
-    folding = FixedFolding.from_parts({DataType.Train: train_doc_ids, DataType.Test: test_doc_ids})
+    train_test_folding = FixedFolding.from_parts({DataType.Train: train_doc_ids, DataType.Test: test_doc_ids})
+    etalon_folding = FixedFolding.from_parts({DataType.Etalon: test_doc_ids})
 
-    return filenames_by_ids, folding
+    return filenames_by_ids, train_test_folding, etalon_folding
 
