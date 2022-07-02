@@ -126,7 +126,8 @@ def serialize_nn(suffix, limit=None):
         },
         save_labels_func=lambda data_type: data_type == DataType.Train,
         exp_ctx=exp_ctx,
-        doc_ops=doc_ops)
+        doc_ops=doc_ops,
+        save_embedding=True)
 
     engine = ExperimentEngine()
     engine.run(states_iter=[0], handlers=[train_test_handler])
@@ -144,9 +145,7 @@ def serialize_nn(suffix, limit=None):
             TermTypes.FRAME: bpe_vectorizer,
             TermTypes.TOKEN: norm_vectorizer
         },
-        exp_io=CustomExperimentSerializationIO(
-            output_dir=join("_out", name_provider.provide(), "etalon"),
-            exp_ctx=exp_ctx),
+        exp_io=CustomExperimentSerializationIO(output_dir="_out", exp_ctx=exp_ctx),
         data_type_pipelines={
             DataType.Etalon: create_etalon_pipeline(text_parser=text_parser,
                                                     doc_ops=doc_ops,
@@ -155,7 +154,8 @@ def serialize_nn(suffix, limit=None):
         },
         save_labels_func=lambda data_type: data_type == DataType.Etalon,
         exp_ctx=exp_ctx,
-        doc_ops=doc_ops)
+        doc_ops=doc_ops,
+        save_embedding=False)
 
     engine.run(states_iter=[0], handlers=[etalon_handler])
 
