@@ -30,7 +30,7 @@ if __name__ == '__main__':
     model_name = ModelNames.CNN
 
     train_filenames, test_filenames = read_train_test("data/split_fixed.txt")
-    filenames_by_ids, data_folding = create_train_test_folding(
+    filenames_by_ids, data_folding, etalon_folding = create_train_test_folding(
         train_filenames=train_filenames,
         test_filenames=test_filenames)
 
