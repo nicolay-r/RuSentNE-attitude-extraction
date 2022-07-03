@@ -21,26 +21,28 @@ from folding.fixed import create_train_test_folding
 from utils import read_train_test
 
 
-def train_nn(extra_name_suffix, epochs_count=100, labels_count=3, model_name=ModelNames.CNN):
+def train_nn(output_dir, model_log_dir, split_source, extra_name_suffix="nn",
+             epochs_count=100, labels_count=3, model_name=ModelNames.CNN):
     """ Training TensorFlow-based model (version 1.14),
         provided by contributional part of the AREkit framework.
         From the list of the predefined moels.
         NOTE/TODO:
         We adopt handler, but in futher handlers might be switched to pipeline items
     """
+    assert(isinstance(output_dir, str))
 
     exp_name = "serialize"
 
-    train_filenames, test_filenames = read_train_test("data/split_fixed.txt")
+    train_filenames, test_filenames = read_train_test(split_source)
     filenames_by_ids, data_folding, etalon_folding = create_train_test_folding(
         train_filenames=train_filenames,
         test_filenames=test_filenames)
 
     full_model_name = "-".join([data_folding.Name, model_name.value])
-    model_target_dir = join("_model", full_model_name)
+    model_target_dir = join(model_log_dir, full_model_name)
 
     model_io = NeuralNetworkModelIO(full_model_name=full_model_name,
-                                    target_dir="_out",
+                                    target_dir=output_dir,
                                     model_name_tag=u'')
 
     exp_ctx = ExperimentTrainingContext(
@@ -50,7 +52,8 @@ def train_nn(extra_name_suffix, epochs_count=100, labels_count=3, model_name=Mod
 
     exp_ctx.set_model_io(model_io)
 
-    exp_io = CustomExperimentTrainIO(exp_ctx=exp_ctx, source_dir="_out")
+    exp_io = CustomExperimentTrainIO(exp_ctx=exp_ctx,
+                                     source_dir=output_dir)
 
     data_writer = NpzDataWriter()
 
@@ -95,4 +98,6 @@ def train_nn(extra_name_suffix, epochs_count=100, labels_count=3, model_name=Mod
 
 if __name__ == '__main__':
 
-    train_nn(extra_name_suffix="nn")
+    train_nn(output_dir="_out",
+             model_log_dir="_model",
+             split_source="data/split_fixed.txt")

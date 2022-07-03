@@ -35,11 +35,13 @@ from pipelines.train import create_train_pipeline
 from utils import read_train_test
 
 
-def serialize_nn(suffix, limit=None):
+def serialize_nn(output_dir, limit=None, suffix="nn"):
     """ Run data preparation process for neural networks, i.e.
         convolutional neural networks and recurrent-based neural networks.
+        Implementation based on AREkit toolkit API.
     """
     assert(isinstance(suffix, str))
+    assert(isinstance(output_dir, str))
     assert(isinstance(limit, int) or limit is None)
 
     train_filenames, test_filenames = read_train_test("data/split_fixed.txt")
@@ -109,7 +111,7 @@ def serialize_nn(suffix, limit=None):
             TermTypes.FRAME: bpe_vectorizer,
             TermTypes.TOKEN: norm_vectorizer
         },
-        exp_io=CustomExperimentSerializationIO(output_dir="_out", exp_ctx=exp_ctx),
+        exp_io=CustomExperimentSerializationIO(output_dir=output_dir, exp_ctx=exp_ctx),
         data_type_pipelines={
            DataType.Train: create_train_pipeline(text_parser=text_parser,
                                                  doc_ops=doc_ops,
@@ -143,7 +145,7 @@ def serialize_nn(suffix, limit=None):
             TermTypes.FRAME: bpe_vectorizer,
             TermTypes.TOKEN: norm_vectorizer
         },
-        exp_io=CustomExperimentSerializationIO(output_dir="_out", exp_ctx=exp_ctx),
+        exp_io=CustomExperimentSerializationIO(output_dir=output_dir, exp_ctx=exp_ctx),
         data_type_pipelines={
             DataType.Etalon: create_etalon_pipeline(text_parser=text_parser,
                                                     doc_ops=doc_ops,
@@ -159,4 +161,4 @@ def serialize_nn(suffix, limit=None):
 
 
 if __name__ == '__main__':
-    serialize_nn(suffix="nn")
+    serialize_nn(output_dir="_out")
