@@ -20,14 +20,16 @@ from experiment.io import CustomExperimentTrainIO
 from folding.fixed import create_train_test_folding
 from utils import read_train_test
 
-if __name__ == '__main__':
 
-    model_load_dir = "_model/cnn"
+def train_nn(extra_name_suffix, epochs_count=100, labels_count=3, model_name=ModelNames.CNN):
+    """ Training TensorFlow-based model (version 1.14),
+        provided by contributional part of the AREkit framework.
+        From the list of the predefined moels.
+        NOTE/TODO:
+        We adopt handler, but in futher handlers might be switched to pipeline items
+    """
+
     exp_name = "serialize"
-    extra_name_suffix = "nn-test"
-    epochs_count = 100
-    labels_count = 3
-    model_name = ModelNames.CNN
 
     train_filenames, test_filenames = read_train_test("data/split_fixed.txt")
     filenames_by_ids, data_folding, etalon_folding = create_train_test_folding(
@@ -37,7 +39,9 @@ if __name__ == '__main__':
     full_model_name = "-".join([data_folding.Name, model_name.value])
     model_target_dir = join("_model", full_model_name)
 
-    model_io = NeuralNetworkModelIO(full_model_name=full_model_name, target_dir="_out", model_name_tag=u'')
+    model_io = NeuralNetworkModelIO(full_model_name=full_model_name,
+                                    target_dir="_out",
+                                    model_name_tag=u'')
 
     exp_ctx = ExperimentTrainingContext(
         labels_count=labels_count,
@@ -61,6 +65,7 @@ if __name__ == '__main__':
         InputHiddenStatesWriterCallback(log_dir=model_target_dir, writer=data_writer)
     ]
 
+    # Configuration initialization.
     config = network_config_func()
     config.modify_classes_count(value=labels_count)
     config.modify_learning_rate(0.01)
@@ -74,7 +79,7 @@ if __name__ == '__main__':
     config.set_pos_count(PartOfSpeechTypesService.get_mystem_pos_count())
 
     training_handler = NetworksTrainingIterationHandler(
-        load_model=model_load_dir is not None,
+        load_model=True,
         exp_ctx=exp_ctx,
         exp_io=exp_io,
         create_network_func=network_func,
@@ -86,3 +91,8 @@ if __name__ == '__main__':
     engine = ExperimentEngine()
 
     engine.run(states_iter=[0], handlers=[training_handler])
+
+
+if __name__ == '__main__':
+
+    train_nn(extra_name_suffix="nn")

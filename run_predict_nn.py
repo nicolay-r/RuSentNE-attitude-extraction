@@ -136,13 +136,14 @@ class TensorflowNetworkInferencePipelineItem(BasePipelineItem):
         model.predict(do_compile=True)
 
 
-if __name__ == '__main__':
-
-    data_folding_name = 'fixed'
-    labels_count = 3
+def predict_nn(extra_name_suffix, data_folding_name="fixed",
+               model_name=ModelNames.CNN, labels_count=3):
+    """ Perform inference for dataset using a pre-trained collection
+        This is a pipeline-based impelementation, taken from
+        the ARElight repository, see the following code for reference:
+            https://github.com/nicolay-r/ARElight/blob/v0.22.0/arelight/pipelines/inference_nn.py
+    """
     exp_name = "serialize"
-    extra_name_suffix = "nn-test"
-    model_name = ModelNames.CNN
 
     full_model_name = "-".join([data_folding_name, model_name.value])
     model_io = NeuralNetworkModelIO(full_model_name=full_model_name,
@@ -171,3 +172,7 @@ if __name__ == '__main__':
         data_folding=NoFolding(doc_ids_to_fold=[], supported_data_types=[DataType.Test]))
 
     ppl.run(InferIOUtils(output_dir="_out", exp_ctx=exp_ctx), {})
+
+
+if __name__ == '__main__':
+    predict_nn(extra_name_suffix="nn")
