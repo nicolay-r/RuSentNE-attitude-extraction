@@ -136,7 +136,7 @@ def serialize_nn(suffix, limit=None):
 
     exp_ctx.set_data_folding(etalon_data_folding)
     etalon_handler = NetworksInputSerializerExperimentIteration(
-        balance=True,
+        balance=False,
         vectorizers={                           # TODO. Формально это не нужно для Etalon.
             TermTypes.WORD: bpe_vectorizer,
             TermTypes.ENTITY: bpe_vectorizer,
