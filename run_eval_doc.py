@@ -1,3 +1,9 @@
+from arekit.common.evaluation.comparators.opinions import OpinionBasedComparator
+from arekit.common.evaluation.evaluators.modes import EvaluationModes
+from arekit.common.evaluation.utils import OpinionCollectionsToCompareUtils
+from arekit.common.opinions.collection import OpinionCollection
+from arekit.common.utils import progress_bar_iter
+from arekit.contrib.utils.evaluation.evaluators.two_class import TwoClassEvaluator
 from tqdm import tqdm
 from collections import OrderedDict
 from os.path import exists
@@ -84,12 +90,12 @@ def __gather_opinion_and_group_ids_from_etalon(etalon_view, label_scaler):
     return opinion_by_row_id, text_opinion_ids_by_row_id
 
 
-def __compose_test_opinions(etalon_opinions_by_row_id, etalon_text_opinion_ids_by_row_id,
-                            test_opinions_by_id, label_scaler):
+def __compose_test_opinions_by_doc_id(etalon_opinions_by_row_id, etalon_text_opinion_ids_by_row_id,
+                                      test_opinions_by_id, label_scaler):
 
     used = set()
 
-    test_opinions = []
+    test_opinions_by_doc_id = {}
     for row_id, etalon_opinion in etalon_opinions_by_row_id.items():
         tid_list = etalon_text_opinion_ids_by_row_id[row_id]
         labels = [label_scaler.label_to_int(test_opinions_by_id[tid].Sentiment) for tid in tid_list]
@@ -105,7 +111,11 @@ def __compose_test_opinions(etalon_opinions_by_row_id, etalon_text_opinion_ids_b
                                target_value=etalon_opinion.TargetValue,
                                sentiment=label_scaler.int_to_label(vote_label))
 
-        test_opinions.append(test_opinion)
+        doc_id = test_opinions_by_id[tid_list[0]].DocID
+
+        if doc_id not in test_opinions_by_doc_id:
+            test_opinions_by_doc_id[doc_id] = []
+        test_opinions_by_doc_id[doc_id].append(test_opinion)
 
         # отмечаем как used.
         for tid in tid_list:
@@ -113,7 +123,7 @@ def __compose_test_opinions(etalon_opinions_by_row_id, etalon_text_opinion_ids_b
 
     # TODO. Осталось учесть тех, что нет в Etalon.
 
-    return test_opinions
+    return test_opinions_by_doc_id
 
 
 def opinions_per_document_result_evaluation(
@@ -139,12 +149,38 @@ def opinions_per_document_result_evaluation(
     etalon_view = BaseSampleStorageView(storage=BaseRowsStorage.from_tsv(filepath=etalon_samples_filepath),
                                         row_ids_provider=MultipleIDProvider())
 
-    test_opinions_by_id = __extract_text_opinions_from_test(test_view=test_view, label_scaler=label_scaler)
+    test_opinions_by_id = __extract_text_opinions_from_test(
+        test_view=test_view, label_scaler=label_scaler)
     etalon_opinions_by_row_id, etalon_text_opinion_ids_by_row_id = __gather_opinion_and_group_ids_from_etalon(
         etalon_view=etalon_view, label_scaler=label_scaler)
-    test_opinions = __compose_test_opinions(etalon_opinions_by_row_id=etalon_opinions_by_row_id,
-                                            etalon_text_opinion_ids_by_row_id=etalon_text_opinion_ids_by_row_id,
-                                            test_opinions_by_id=test_opinions_by_id,
-                                            label_scaler=label_scaler)
+    test_opinions_by_doc_id = __compose_test_opinions_by_doc_id(
+        etalon_opinions_by_row_id=etalon_opinions_by_row_id,
+        etalon_text_opinion_ids_by_row_id=etalon_text_opinion_ids_by_row_id,
+        test_opinions_by_id=test_opinions_by_id,
+        label_scaler=label_scaler)
 
-    return
+    doc_ids = []
+    etalon_synonyms = None
+    etalon_opinions_by_doc_id = {}      # TODO: нужно тоже заполнить.
+
+    cmp_pairs_iter = OpinionCollectionsToCompareUtils.iter_comparable_collections(
+        doc_ids=doc_ids,
+        read_etalon_collection_func=lambda doc_id: OpinionCollection(
+            opinions=lambda doc_id: etalon_opinions_by_doc_id[doc_id],
+            synonyms=etalon_synonyms,
+            error_on_duplicates=False,
+            error_on_synonym_end_missed=True),
+        read_test_collection_func=lambda doc_id: OpinionCollection(
+            opinions=lambda doc_id: test_opinions_by_doc_id[doc_id],
+            synonyms=etalon_synonyms,
+            error_on_duplicates=False,
+            error_on_synonym_end_missed=False))
+
+    # getting evaluator.
+    evaluator = TwoClassEvaluator(comparator=OpinionBasedComparator(eval_mode=EvaluationModes.Extraction),
+                                  label1=label_scaler.uint_to_label(1),
+                                  label2=label_scaler.uint_to_label(2))
+
+    # evaluate every document.
+    logged_cmp_pairs_it = progress_bar_iter(cmp_pairs_iter, desc="Evaluate", unit='pairs')
+    result = evaluator.evaluate(cmp_pairs=logged_cmp_pairs_it)
