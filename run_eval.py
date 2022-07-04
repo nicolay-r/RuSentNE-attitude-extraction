@@ -37,9 +37,9 @@ def __extract_text_opinions(filename, label_scaler):
         returns: dict
             (row_id, text_opinion)
     """
-    etalon_view = BaseSampleStorageView(storage=BaseRowsStorage.from_tsv(filepath=filename),
-                                        row_ids_provider=MultipleIDProvider())
-    etalon_linked_iter = etalon_view.iter_rows_linked_by_text_opinions()
+    view = BaseSampleStorageView(storage=BaseRowsStorage.from_tsv(filepath=filename),
+                                 row_ids_provider=MultipleIDProvider())
+    etalon_linked_iter = view.iter_rows_linked_by_text_opinions()
     opinions_by_row_id = OrderedDict()
     for linkage in tqdm(etalon_linked_iter):
         for row in linkage:
@@ -81,8 +81,9 @@ def __assign_labels(filename, text_opinions, row_id_to_text_opin_id_func, label_
             text_opinion.set_label(label_scaler.uint_to_label(int(np.argmax(uint_labels))))
 
 
-def monolith_collection_result_evaluator(predict_filename, etalon_samples_filepath, test_samples_filepath,
-                                         label_scaler=PosNegNeuRelationsLabelScaler()):
+def text_opinion_monolith_collection_result_evaluator(
+        predict_filename, etalon_samples_filepath, test_samples_filepath,
+        label_scaler=PosNegNeuRelationsLabelScaler()):
     """ Single-document like (whole collection) evaluator.
         Considering text_opinion instances as items for comparison.
 
@@ -99,6 +100,9 @@ def monolith_collection_result_evaluator(predict_filename, etalon_samples_filepa
 
     if not exists(etalon_samples_filepath):
         raise FileNotFoundError(etalon_samples_filepath)
+
+    if not exists(test_samples_filepath):
+        raise FileNotFoundError(test_samples_filepath)
 
     # Reading collection through storage views.
     etalon_opins_by_row_id = __extract_text_opinions(filename=etalon_samples_filepath, label_scaler=label_scaler)
@@ -131,7 +135,7 @@ if __name__ == '__main__':
     samples_etalon = "sample-etalon-0.tsv.gz"
     serialize_dir = "serialize-nn_3l"
 
-    result = monolith_collection_result_evaluator(
+    result = text_opinion_monolith_collection_result_evaluator(
         predict_filename=join(output_dir, serialize_dir, source_filename),
         etalon_samples_filepath=join(output_dir, serialize_dir, samples_etalon),
         test_samples_filepath=join(output_dir, serialize_dir, samples_test))
