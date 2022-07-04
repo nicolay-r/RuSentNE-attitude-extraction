@@ -87,10 +87,12 @@ class TensorflowNetworkInferencePipelineItem(BasePipelineItem):
 
         # Setup predicted result writer.
         tgt = pipeline_ctx.provide_or_none("predict_fp")
+        full_model_name = pipeline_ctx.provide_or_none("full_model_name")
+
         if tgt is None:
             exp_root = join(input_data._get_experiment_sources_dir(),
                             input_data.get_experiment_folder_name())
-            tgt = join(exp_root, "predict.tsv.gz")
+            tgt = join(exp_root, "predict-{}.tsv.gz".format(full_model_name))
 
         # Update for further pipeline items.
         pipeline_ctx.update("predict_fp", tgt)
@@ -174,7 +176,10 @@ def predict_nn(extra_name_suffix,
         name_provider=ExperimentNameProvider(name=exp_name, suffix=extra_name_suffix),
         data_folding=NoFolding(doc_ids_to_fold=[], supported_data_types=[DataType.Test]))
 
-    ppl.run(InferIOUtils(output_dir=output_dir, exp_ctx=exp_ctx), {})
+    ppl.run(InferIOUtils(output_dir=output_dir, exp_ctx=exp_ctx),
+            {
+                "full_model_name": model_name.value
+            })
 
 
 if __name__ == '__main__':

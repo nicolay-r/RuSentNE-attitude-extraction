@@ -17,7 +17,7 @@ class TestEval(unittest.TestCase):
         current_dir = dirname(realpath(__file__))
         output_dir = join(current_dir, "_out")
 
-        source_filename = "predict.tsv.gz"
+        source_filename = "predict-cnn.tsv.gz"
         serialize_dir = "serialize-nn_3l"
 
         predict_filename = join(output_dir, serialize_dir, source_filename)
