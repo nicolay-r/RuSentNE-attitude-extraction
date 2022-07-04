@@ -1,13 +1,14 @@
-from arekit.common.evaluation.comparators.opinions import OpinionBasedComparator
-from arekit.common.evaluation.evaluators.modes import EvaluationModes
+from arekit.common.evaluation.results.utils import calc_f1_macro
 from arekit.common.evaluation.utils import OpinionCollectionsToCompareUtils
 from arekit.common.opinions.collection import OpinionCollection
-from arekit.common.synonyms import SynonymsCollection
 from arekit.common.utils import progress_bar_iter
-from arekit.contrib.utils.evaluation.evaluators.two_class import TwoClassEvaluator
+from arekit.contrib.utils.evaluation.evaluators.three_class import ThreeClassOpinionEvaluator
+from arekit.contrib.utils.evaluation.results.three_class import ThreeClassEvalResult
+from arekit.contrib.utils.synonyms.stemmer_based import StemmerBasedSynonymCollection
+from arekit.processing.lemmatization.mystem import MystemWrapper
 from tqdm import tqdm
 from collections import OrderedDict
-from os.path import exists
+from os.path import exists, join
 
 from arekit.common.data.row_ids.multiple import MultipleIDProvider
 from arekit.common.data.storages.base import BaseRowsStorage
@@ -82,14 +83,23 @@ def __gather_opinion_and_group_ids_from_etalon(etalon_view, label_scaler):
     """
     opinion_by_row_id = OrderedDict()
     text_opinion_ids_by_row_id = OrderedDict()
+    etalon_opinions_by_doc_id = OrderedDict()
     for linkage in tqdm(etalon_view.iter_rows_linked_by_text_opinions()):
+
         first_row = linkage[0]
         first_row_id = first_row["id"]
-        opinion_by_row_id[first_row_id] = __row_to_opinion(first_row, label_scaler)
+        doc_id = first_row["doc_id"]
+        opinion = __row_to_opinion(first_row, label_scaler)
+
+        opinion_by_row_id[first_row_id] = opinion
         text_opinion_ids_by_row_id[first_row_id] = [__row_to_text_opinion(row, label_scaler).TextOpinionID
                                                     for row in linkage]
 
-    return opinion_by_row_id, text_opinion_ids_by_row_id
+        if doc_id not in etalon_opinions_by_doc_id:
+            etalon_opinions_by_doc_id[doc_id] = []
+        etalon_opinions_by_doc_id[doc_id].append(opinion)
+
+    return opinion_by_row_id, text_opinion_ids_by_row_id, etalon_opinions_by_doc_id
 
 
 def __compose_test_opinions_by_doc_id(etalon_opinions_by_row_id, etalon_text_opinion_ids_by_row_id,
@@ -100,7 +110,13 @@ def __compose_test_opinions_by_doc_id(etalon_opinions_by_row_id, etalon_text_opi
     test_opinions_by_doc_id = {}
     for row_id, etalon_opinion in etalon_opinions_by_row_id.items():
         tid_list = etalon_text_opinion_ids_by_row_id[row_id]
-        labels = [label_scaler.label_to_int(test_opinions_by_id[tid].Sentiment) for tid in tid_list]
+
+        existed_tids = [tid for tid in tid_list if tid in test_opinions_by_id]
+
+        if len(existed_tids) == 0:
+            continue
+
+        labels = [label_scaler.label_to_int(test_opinions_by_id[tid].Sentiment) for tid in existed_tids]
 
         # используем метод голосования
         vote_label = sum(labels)
@@ -113,7 +129,7 @@ def __compose_test_opinions_by_doc_id(etalon_opinions_by_row_id, etalon_text_opi
                                target_value=etalon_opinion.TargetValue,
                                sentiment=label_scaler.int_to_label(vote_label))
 
-        doc_id = test_opinions_by_id[tid_list[0]].DocID
+        doc_id = test_opinions_by_id[existed_tids[0]].DocID
 
         if doc_id not in test_opinions_by_doc_id:
             test_opinions_by_doc_id[doc_id] = []
@@ -153,37 +169,61 @@ def opinions_per_document_result_evaluation(
 
     test_opinions_by_id = __extract_text_opinions_from_test(
         test_view=test_view, label_scaler=label_scaler)
-    etalon_opinions_by_row_id, etalon_text_opinion_ids_by_row_id = __gather_opinion_and_group_ids_from_etalon(
-        etalon_view=etalon_view, label_scaler=label_scaler)
+    etalon_opinions_by_row_id, etalon_text_opinion_ids_by_row_id, etalon_opinions_by_doc_id = \
+        __gather_opinion_and_group_ids_from_etalon(etalon_view=etalon_view, label_scaler=label_scaler)
     test_opinions_by_doc_id = __compose_test_opinions_by_doc_id(
         etalon_opinions_by_row_id=etalon_opinions_by_row_id,
         etalon_text_opinion_ids_by_row_id=etalon_text_opinion_ids_by_row_id,
         test_opinions_by_id=test_opinions_by_id,
         label_scaler=label_scaler)
 
-    etalon_synonyms = SynonymsCollection([], is_read_only=False, debug=False)       # TODO. нужно тоже заполнить.
-    etalon_opinions_by_doc_id = {}                                                  # TODO: нужно тоже заполнить.
+    synonyms = StemmerBasedSynonymCollection(iter_group_values_lists=[],
+                                             stemmer=MystemWrapper(),
+                                             is_read_only=False,
+                                             debug=False)
 
     cmp_pairs_iter = OpinionCollectionsToCompareUtils.iter_comparable_collections(
         doc_ids=test_opinions_by_doc_id.keys(),
         read_etalon_collection_func=lambda doc_id: OpinionCollection(
             opinions=etalon_opinions_by_doc_id[doc_id],
-            synonyms=etalon_synonyms,
+            synonyms=synonyms,
             error_on_duplicates=False,
             error_on_synonym_end_missed=True),
         read_test_collection_func=lambda doc_id: OpinionCollection(
             opinions=test_opinions_by_doc_id[doc_id],
-            synonyms=etalon_synonyms,
+            synonyms=synonyms,
             error_on_duplicates=False,
             error_on_synonym_end_missed=False))
 
     # getting evaluator.
-    evaluator = TwoClassEvaluator(comparator=OpinionBasedComparator(eval_mode=EvaluationModes.Extraction),
-                                  label1=label_scaler.uint_to_label(1),
-                                  label2=label_scaler.uint_to_label(2))
+    evaluator = ThreeClassOpinionEvaluator(label1=label_scaler.uint_to_label(1),
+                                           label2=label_scaler.uint_to_label(2),
+                                           no_label=label_scaler.uint_to_label(0))
 
     # evaluate every document.
     logged_cmp_pairs_it = progress_bar_iter(cmp_pairs_iter, desc="Evaluate", unit='pairs')
     result = evaluator.evaluate(cmp_pairs=logged_cmp_pairs_it)
 
     return result
+
+
+if __name__ == '__main__':
+
+    output_dir = "_out"
+    source_filename = "predict-cnn.tsv.gz"
+    samples_test = "sample-test-0.tsv.gz"
+    samples_etalon = "sample-etalon-0.tsv.gz"
+    serialize_dir = "serialize-nn_3l"
+
+    result = opinions_per_document_result_evaluation(
+        predict_filename=join(output_dir, serialize_dir, source_filename),
+        etalon_samples_filepath=join(output_dir, serialize_dir, samples_etalon),
+        test_samples_filepath=join(output_dir, serialize_dir, samples_test))
+
+    r = calc_f1_macro(pos_prec=result.TotalResult[ThreeClassEvalResult.C_POS_PREC],
+                      neg_prec=result.TotalResult[ThreeClassEvalResult.C_NEG_PREC],
+                      pos_recall=result.TotalResult[ThreeClassEvalResult.C_POS_RECALL],
+                      neg_recall=result.TotalResult[ThreeClassEvalResult.C_NEG_RECALL])
+
+    print(result.TotalResult)
+    print(r)
