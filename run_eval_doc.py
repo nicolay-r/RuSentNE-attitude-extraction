@@ -2,6 +2,7 @@ from arekit.common.evaluation.comparators.opinions import OpinionBasedComparator
 from arekit.common.evaluation.evaluators.modes import EvaluationModes
 from arekit.common.evaluation.utils import OpinionCollectionsToCompareUtils
 from arekit.common.opinions.collection import OpinionCollection
+from arekit.common.synonyms import SynonymsCollection
 from arekit.common.utils import progress_bar_iter
 from arekit.contrib.utils.evaluation.evaluators.two_class import TwoClassEvaluator
 from tqdm import tqdm
@@ -26,12 +27,13 @@ def __row_to_opinion(row, label_scaler):
     uint_label = int(row["label"]) if "label" in row \
         else label_scaler.label_to_uint(NoLabel())
 
-    source_id = int(row["s_ind"])
-    target_id = int(row["t_ind"])
+    source_index = int(row["s_ind"])
+    target_index = int(row["t_ind"])
+    entities = [int(e) for e in row["entities"].split(',')]
     entity_values = row["entity_values"].split(',')
 
-    return Opinion(source_value=entity_values[source_id],
-                   target_value=entity_values[target_id],
+    return Opinion(source_value=entity_values[entities.index(source_index)],
+                   target_value=entity_values[entities.index(target_index)],
                    sentiment=label_scaler.uint_to_label(uint_label))
 
 
@@ -159,19 +161,18 @@ def opinions_per_document_result_evaluation(
         test_opinions_by_id=test_opinions_by_id,
         label_scaler=label_scaler)
 
-    doc_ids = []
-    etalon_synonyms = None
-    etalon_opinions_by_doc_id = {}      # TODO: нужно тоже заполнить.
+    etalon_synonyms = SynonymsCollection([], is_read_only=False, debug=False)       # TODO. нужно тоже заполнить.
+    etalon_opinions_by_doc_id = {}                                                  # TODO: нужно тоже заполнить.
 
     cmp_pairs_iter = OpinionCollectionsToCompareUtils.iter_comparable_collections(
-        doc_ids=doc_ids,
+        doc_ids=test_opinions_by_doc_id.keys(),
         read_etalon_collection_func=lambda doc_id: OpinionCollection(
-            opinions=lambda doc_id: etalon_opinions_by_doc_id[doc_id],
+            opinions=etalon_opinions_by_doc_id[doc_id],
             synonyms=etalon_synonyms,
             error_on_duplicates=False,
             error_on_synonym_end_missed=True),
         read_test_collection_func=lambda doc_id: OpinionCollection(
-            opinions=lambda doc_id: test_opinions_by_doc_id[doc_id],
+            opinions=test_opinions_by_doc_id[doc_id],
             synonyms=etalon_synonyms,
             error_on_duplicates=False,
             error_on_synonym_end_missed=False))
@@ -184,3 +185,5 @@ def opinions_per_document_result_evaluation(
     # evaluate every document.
     logged_cmp_pairs_it = progress_bar_iter(cmp_pairs_iter, desc="Evaluate", unit='pairs')
     result = evaluator.evaluate(cmp_pairs=logged_cmp_pairs_it)
+
+    return result
