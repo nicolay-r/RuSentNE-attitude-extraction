@@ -35,16 +35,17 @@ from pipelines.train import create_train_pipeline
 from utils import read_train_test
 
 
-def serialize_nn(output_dir, limit=None, suffix="nn"):
+def serialize_nn(output_dir, fixed_split_filepath, limit=None, suffix="nn"):
     """ Run data preparation process for neural networks, i.e.
         convolutional neural networks and recurrent-based neural networks.
         Implementation based on AREkit toolkit API.
     """
     assert(isinstance(suffix, str))
     assert(isinstance(output_dir, str))
+    assert(isinstance(fixed_split_filepath, str))
     assert(isinstance(limit, int) or limit is None)
 
-    train_filenames, test_filenames = read_train_test("data/split_fixed.txt")
+    train_filenames, test_filenames = read_train_test(fixed_split_filepath)
     if limit is not None:
         train_filenames = train_filenames[:limit]
         test_filenames = test_filenames[:limit]
@@ -161,4 +162,4 @@ def serialize_nn(output_dir, limit=None, suffix="nn"):
 
 
 if __name__ == '__main__':
-    serialize_nn(output_dir="_out")
+    serialize_nn(output_dir="_out", fixed_split_filepath="data/split_fixed.txt")

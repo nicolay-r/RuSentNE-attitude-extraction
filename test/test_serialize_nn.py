@@ -11,7 +11,7 @@ class TestSerializeNeuralNetwork(unittest.TestCase):
         current_dir = dirname(realpath(__file__))
         output_dir = join(current_dir, "_out")
 
-        serialize_nn(limit=1, output_dir=output_dir)
+        serialize_nn(limit=1, output_dir=output_dir, fixed_split_filepath="../data/split_fixed.txt")
 
 
 if __name__ == '__main__':

@@ -1,6 +1,6 @@
 from enum import Enum
 from os import path
-from os.path import basename
+from os.path import basename, dirname, realpath, join
 
 from arekit.contrib.source.zip_utils import ZipArchiveUtils
 
@@ -20,7 +20,8 @@ class CollectionIOUtils(ZipArchiveUtils):
     @staticmethod
     def get_archive_filepath(version):
         # local_path = CollectionIOUtils.get_data_root()
-        local_path = "data"
+        current_dir = dirname(realpath(__file__))
+        local_path = join(current_dir, "../data")
         return path.join(local_path, "sentiment_dataset.zip".format(version))
 
     # region internal methods
