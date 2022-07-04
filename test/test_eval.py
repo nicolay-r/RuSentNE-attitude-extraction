@@ -4,7 +4,7 @@ from os.path import join, dirname, realpath
 from arekit.contrib.utils.evaluation.results.three_class import ThreeClassEvalResult
 
 from labels.scaler import PosNegNeuRelationsLabelScaler
-from run_eval import monolith_collection_result_evaluator
+from run_eval import text_opinion_monolith_collection_result_evaluator
 
 
 class TestEval(unittest.TestCase):
@@ -24,7 +24,7 @@ class TestEval(unittest.TestCase):
         test_filename = join(output_dir, serialize_dir, "sample-test-0.tsv.gz")
         etalon_filename = join(output_dir, serialize_dir, "sample-etalon-0.tsv.gz")
 
-        result = monolith_collection_result_evaluator(
+        result = text_opinion_monolith_collection_result_evaluator(
             predict_filename=predict_filename,
             etalon_samples_filepath=etalon_filename,
             test_samples_filepath=test_filename,
