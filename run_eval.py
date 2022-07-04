@@ -8,6 +8,7 @@ from arekit.common.evaluation.comparators.text_opinions import TextOpinionBasedC
 from arekit.common.evaluation.evaluators.base import BaseEvaluator
 from arekit.common.evaluation.evaluators.modes import EvaluationModes
 from arekit.common.evaluation.pairs.single import SingleDocumentDataPairsToCompare
+from arekit.common.evaluation.results.utils import calc_f1_macro
 from arekit.common.labels.base import NoLabel
 from arekit.common.text_opinions.base import TextOpinion
 from arekit.contrib.utils.evaluation.results.three_class import ThreeClassEvalResult
@@ -84,6 +85,10 @@ def monolith_collection_result_evaluator(predict_filename, etalon_samples_filepa
                                          label_scaler=PosNegNeuRelationsLabelScaler()):
     """ Single-document like (whole collection) evaluator.
         Considering text_opinion instances as items for comparison.
+
+        Оценка выполняется на уровне контекстных отношений.
+        Учет по документам не идет, т.е. предполагается
+        целая коллекция как один огромный документ.
     """
     assert(isinstance(predict_filename, str))
     assert(isinstance(etalon_samples_filepath, str))
@@ -131,4 +136,10 @@ if __name__ == '__main__':
         etalon_samples_filepath=join(output_dir, serialize_dir, samples_etalon),
         test_samples_filepath=join(output_dir, serialize_dir, samples_test))
 
+    r = calc_f1_macro(pos_prec=result.TotalResult[ThreeClassEvalResult.C_POS_PREC],
+                      neg_prec=result.TotalResult[ThreeClassEvalResult.C_NEG_PREC],
+                      pos_recall=result.TotalResult[ThreeClassEvalResult.C_POS_RECALL],
+                      neg_recall=result.TotalResult[ThreeClassEvalResult.C_NEG_RECALL])
+
     print(result.TotalResult)
+    print(r)
