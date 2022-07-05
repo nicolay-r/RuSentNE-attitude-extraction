@@ -1,7 +1,6 @@
 import unittest
 from os.path import dirname, realpath, join
-
-from run_serialize_nn import serialize_nn
+from models.nn.serialize import serialize_nn
 
 
 class TestSerializeNeuralNetwork(unittest.TestCase):

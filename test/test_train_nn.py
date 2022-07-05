@@ -1,7 +1,7 @@
 import unittest
 from os.path import dirname, realpath, join
 
-from run_predict_nn import predict_nn
+from models.nn.predict import predict_nn
 from run_train_nn import train_nn
 
 
