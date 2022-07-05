@@ -7,11 +7,10 @@ from arekit.common.data.views.samples import BaseSampleStorageView
 from arekit.common.evaluation.comparators.text_opinions import TextOpinionBasedComparator
 from arekit.common.evaluation.evaluators.modes import EvaluationModes
 from arekit.common.evaluation.pairs.single import SingleDocumentDataPairsToCompare
-from arekit.common.text_opinions.base import TextOpinion
 from arekit.contrib.utils.evaluation.evaluators.two_class import TwoClassEvaluator
 from tqdm import tqdm
 
-from evaluation.utils import assign_labels
+from evaluation.utils import assign_labels, row_to_text_opinion
 from labels.scaler import PosNegNeuRelationsLabelScaler
 
 
@@ -26,21 +25,8 @@ def __extract_text_opinions(filename, label_scaler, no_label):
     opinions_by_row_id = OrderedDict()
     for linkage in tqdm(etalon_linked_iter):
         for row in linkage:
-            uint_label = int(row["label"]) if "label" in row \
-                else label_scaler.label_to_uint(no_label)
-
-            text_opinion = TextOpinion(
-                doc_id=int(row["doc_id"]),
-                text_opinion_id=None,
-                source_id=int(row["s_ind"]),
-                target_id=int(row["t_ind"]),
-                owner=None,
-                label=label_scaler.uint_to_label(uint_label))
-
-            tid = TextOpinionBasedComparator.text_opinion_to_id(text_opinion)
-            text_opinion.set_text_opinion_id(tid)
-
-            opinions_by_row_id[row["id"]] = text_opinion
+            opinions_by_row_id[row["id"]] = row_to_text_opinion(
+                row=row, label_scaler=label_scaler, default_label=no_label)
 
     return opinions_by_row_id
 
@@ -75,7 +61,7 @@ def text_opinion_monolith_collection_two_class_result_evaluator(
                                                      no_label=no_label)
     test_opins_by_row_id = __extract_text_opinions(filename=test_samples_filepath, label_scaler=label_scaler,
                                                    no_label=no_label)
-    assign_labels(filename=test_predict_filepath,
+    assign_labels(test_predict_filepath=test_predict_filepath,
                   text_opinions=test_opins_by_row_id.values(),
                   row_id_to_text_opin_id_func=lambda row_id: test_opins_by_row_id[row_id].TextOpinionID,
                   label_scaler=label_scaler)

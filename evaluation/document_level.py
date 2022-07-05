@@ -1,6 +1,8 @@
+from os.path import exists
 from arekit.common.labels.base import Label
 from tqdm import tqdm
 from collections import OrderedDict
+
 from arekit.processing.lemmatization.mystem import MystemWrapper
 from arekit.common.evaluation.comparators.opinions import OpinionBasedComparator
 from arekit.common.evaluation.evaluators.modes import EvaluationModes
@@ -9,59 +11,15 @@ from arekit.common.opinions.collection import OpinionCollection
 from arekit.common.utils import progress_bar_iter
 from arekit.contrib.utils.evaluation.evaluators.two_class import TwoClassEvaluator
 from arekit.contrib.utils.synonyms.stemmer_based import StemmerBasedSynonymCollection
-from os.path import exists
-
 from arekit.common.data.row_ids.multiple import MultipleIDProvider
 from arekit.common.data.storages.base import BaseRowsStorage
 from arekit.common.data.views.samples import BaseSampleStorageView
-from arekit.common.evaluation.comparators.text_opinions import TextOpinionBasedComparator
 from arekit.common.labels.scaler.base import BaseLabelScaler
 from arekit.common.opinions.base import Opinion
-from arekit.common.text_opinions.base import TextOpinion
 
 from evaluation.instance_level import assign_labels
+from evaluation.utils import row_to_text_opinion, row_to_opinion
 from labels.scaler import PosNegNeuRelationsLabelScaler
-
-
-def __row_to_opinion(row, label_scaler, default_label):
-    """ составление Opinion из ряда данных sample.
-    """
-    assert(isinstance(default_label, Label))
-
-    uint_label = int(row["label"]) if "label" in row \
-        else label_scaler.label_to_uint(default_label)
-
-    source_index = int(row["s_ind"])
-    target_index = int(row["t_ind"])
-    entities = [int(e) for e in row["entities"].split(',')]
-    entity_values = row["entity_values"].split(',')
-
-    return Opinion(source_value=entity_values[entities.index(source_index)],
-                   target_value=entity_values[entities.index(target_index)],
-                   sentiment=label_scaler.uint_to_label(uint_label))
-
-
-def __row_to_text_opinion(row, label_scaler, default_label):
-    """ Чтение text_opinion из ряда данных sample.
-    """
-    assert(isinstance(label_scaler, BaseLabelScaler))
-    assert(isinstance(default_label, Label))
-
-    uint_label = int(row["label"]) if "label" in row \
-        else label_scaler.label_to_uint(default_label)
-
-    text_opinion = TextOpinion(
-        doc_id=int(row["doc_id"]),
-        text_opinion_id=None,
-        source_id=int(row["s_ind"]),
-        target_id=int(row["t_ind"]),
-        owner=None,
-        label=label_scaler.uint_to_label(uint_label))
-
-    tid = TextOpinionBasedComparator.text_opinion_to_id(text_opinion)
-    text_opinion.set_text_opinion_id(tid)
-
-    return text_opinion
 
 
 def __extract_text_opinions_from_test(test_view, label_scaler, default_label):
@@ -76,7 +34,7 @@ def __extract_text_opinions_from_test(test_view, label_scaler, default_label):
     text_opinion_by_row_id = OrderedDict()
     for linkage in tqdm(test_view.iter_rows_linked_by_text_opinions()):
         for row in linkage:
-            text_opinion = __row_to_text_opinion(row, label_scaler, default_label=default_label)
+            text_opinion = row_to_text_opinion(row, label_scaler, default_label=default_label)
             text_opinion_by_id[text_opinion.TextOpinionID] = text_opinion
             text_opinion_by_row_id[row["id"]] = text_opinion
 
@@ -97,11 +55,11 @@ def __gather_opinion_and_group_ids_from_view(view, label_scaler, default_label):
         first_row = linkage[0]
         first_row_id = first_row["id"]
         doc_id = first_row["doc_id"]
-        opinion = __row_to_opinion(first_row, label_scaler, default_label=default_label)
+        opinion = row_to_opinion(first_row, label_scaler, default_label=default_label)
 
         opinion_by_row_id[first_row_id] = opinion
         text_opinion_ids_by_row_id[first_row_id] = [
-            __row_to_text_opinion(row, label_scaler, default_label).TextOpinionID for row in linkage
+            row_to_text_opinion(row, label_scaler, default_label).TextOpinionID for row in linkage
         ]
 
         if doc_id not in opinions_by_doc_id:
@@ -236,7 +194,7 @@ def opinions_per_document_two_class_result_evaluation(
     test_opinions_by_row_id, test_text_opinion_ids_by_row_id, _ = \
         __gather_opinion_and_group_ids_from_view(view=test_view, label_scaler=label_scaler, default_label=no_label)
 
-    assign_labels(filename=test_predict_filepath,
+    assign_labels(test_predict_filepath=test_predict_filepath,
                   text_opinions=test_text_opinions_by_id.values(),
                   row_id_to_text_opin_id_func=lambda row_id: test_text_opinions_by_row_id[row_id].TextOpinionID,
                   label_scaler=label_scaler)
