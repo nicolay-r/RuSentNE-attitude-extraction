@@ -5,34 +5,17 @@ from arekit.common.data.row_ids.multiple import MultipleIDProvider
 from arekit.common.data.storages.base import BaseRowsStorage
 from arekit.common.data.views.samples import BaseSampleStorageView
 from arekit.common.evaluation.comparators.text_opinions import TextOpinionBasedComparator
-from arekit.common.evaluation.evaluators.base import BaseEvaluator
 from arekit.common.evaluation.evaluators.modes import EvaluationModes
 from arekit.common.evaluation.pairs.single import SingleDocumentDataPairsToCompare
-from arekit.common.evaluation.results.utils import calc_f1_macro
-from arekit.common.labels.base import NoLabel
 from arekit.common.text_opinions.base import TextOpinion
-from arekit.contrib.utils.evaluation.results.three_class import ThreeClassEvalResult
+from arekit.contrib.utils.evaluation.evaluators.two_class import TwoClassEvaluator
 from pandas import np
 from tqdm import tqdm
 
 from labels.scaler import PosNegNeuRelationsLabelScaler
 
 
-class ThreeClassTextOpinionEvaluator(BaseEvaluator):
-
-    def __init__(self, comparator, label1, label2, no_label):
-        super(ThreeClassTextOpinionEvaluator, self).__init__(comparator)
-
-        self.__label1 = label1
-        self.__label2 = label2
-        self.__no_label = no_label
-
-    def _create_eval_result(self):
-        return ThreeClassEvalResult(label1=self.__label1, label2=self.__label2, no_label=self.__no_label,
-                                    get_item_label_func=lambda text_opinion: text_opinion.Sentiment)
-
-
-def __extract_text_opinions(filename, label_scaler):
+def __extract_text_opinions(filename, label_scaler, no_label):
     """ Reading data from tsv-gz via storage view
         returns: dict
             (row_id, text_opinion)
@@ -44,7 +27,7 @@ def __extract_text_opinions(filename, label_scaler):
     for linkage in tqdm(etalon_linked_iter):
         for row in linkage:
             uint_label = int(row["label"]) if "label" in row \
-                else label_scaler.label_to_uint(NoLabel())
+                else label_scaler.label_to_uint(no_label)
 
             text_opinion = TextOpinion(
                 doc_id=int(row["doc_id"]),
@@ -104,20 +87,28 @@ def text_opinion_monolith_collection_result_evaluator(
     if not exists(test_samples_filepath):
         raise FileNotFoundError(test_samples_filepath)
 
+    no_label = label_scaler.uint_to_label(0)
+
     # Reading collection through storage views.
-    etalon_opins_by_row_id = __extract_text_opinions(filename=etalon_samples_filepath, label_scaler=label_scaler)
-    test_opins_by_row_id = __extract_text_opinions(filename=test_samples_filepath, label_scaler=label_scaler)
+    etalon_opins_by_row_id = __extract_text_opinions(filename=etalon_samples_filepath, label_scaler=label_scaler,
+                                                     no_label=no_label)
+    test_opins_by_row_id = __extract_text_opinions(filename=test_samples_filepath, label_scaler=label_scaler,
+                                                   no_label=no_label)
     __assign_labels(filename=predict_filename,
                     text_opinions=test_opins_by_row_id.values(),
                     row_id_to_text_opin_id_func=lambda row_id: test_opins_by_row_id[row_id].TextOpinionID,
                     label_scaler=label_scaler)
 
+    # Remove the one with NoLabel instance.
+    test_opins_by_row_id = {row_id: text_opinion for row_id, text_opinion in test_opins_by_row_id.items()
+                            if text_opinion.Sentiment != no_label}
+
     # Composing evaluator.
-    evaluator = ThreeClassTextOpinionEvaluator(
+    evaluator = TwoClassEvaluator(
         comparator=TextOpinionBasedComparator(eval_mode=EvaluationModes.Extraction),
         label1=label_scaler.uint_to_label(1),
         label2=label_scaler.uint_to_label(2),
-        no_label=label_scaler.uint_to_label(0))
+        get_item_label_func=lambda text_opinion: text_opinion.Sentiment)
 
     # evaluate every document.
     cmp_pair = SingleDocumentDataPairsToCompare(etalon_data=list(etalon_opins_by_row_id.values()),
@@ -130,7 +121,7 @@ def text_opinion_monolith_collection_result_evaluator(
 if __name__ == '__main__':
 
     output_dir = "_out"
-    source_filename = "predict.tsv.gz"
+    source_filename = "predict-cnn.tsv.gz"
     samples_test = "sample-test-0.tsv.gz"
     samples_etalon = "sample-etalon-0.tsv.gz"
     serialize_dir = "serialize-nn_3l"
@@ -140,10 +131,4 @@ if __name__ == '__main__':
         etalon_samples_filepath=join(output_dir, serialize_dir, samples_etalon),
         test_samples_filepath=join(output_dir, serialize_dir, samples_test))
 
-    r = calc_f1_macro(pos_prec=result.TotalResult[ThreeClassEvalResult.C_POS_PREC],
-                      neg_prec=result.TotalResult[ThreeClassEvalResult.C_NEG_PREC],
-                      pos_recall=result.TotalResult[ThreeClassEvalResult.C_POS_RECALL],
-                      neg_recall=result.TotalResult[ThreeClassEvalResult.C_NEG_RECALL])
-
     print(result.TotalResult)
-    print(r)
