@@ -1,32 +1,34 @@
-from arekit.common.evaluation.results.utils import calc_f1_macro
+from arekit.common.labels.base import Label
+from tqdm import tqdm
+from collections import OrderedDict
+from arekit.processing.lemmatization.mystem import MystemWrapper
+from arekit.common.evaluation.comparators.opinions import OpinionBasedComparator
+from arekit.common.evaluation.evaluators.modes import EvaluationModes
 from arekit.common.evaluation.utils import OpinionCollectionsToCompareUtils
 from arekit.common.opinions.collection import OpinionCollection
 from arekit.common.utils import progress_bar_iter
-from arekit.contrib.utils.evaluation.evaluators.three_class import ThreeClassOpinionEvaluator
-from arekit.contrib.utils.evaluation.results.three_class import ThreeClassEvalResult
+from arekit.contrib.utils.evaluation.evaluators.two_class import TwoClassEvaluator
 from arekit.contrib.utils.synonyms.stemmer_based import StemmerBasedSynonymCollection
-from arekit.processing.lemmatization.mystem import MystemWrapper
-from tqdm import tqdm
-from collections import OrderedDict
 from os.path import exists, join
 
 from arekit.common.data.row_ids.multiple import MultipleIDProvider
 from arekit.common.data.storages.base import BaseRowsStorage
 from arekit.common.data.views.samples import BaseSampleStorageView
 from arekit.common.evaluation.comparators.text_opinions import TextOpinionBasedComparator
-from arekit.common.labels.base import NoLabel
 from arekit.common.labels.scaler.base import BaseLabelScaler
 from arekit.common.opinions.base import Opinion
 from arekit.common.text_opinions.base import TextOpinion
 from labels.scaler import PosNegNeuRelationsLabelScaler
+from run_eval import assign_labels
 
 
-def __row_to_opinion(row, label_scaler):
+def __row_to_opinion(row, label_scaler, default_label):
     """ составление Opinion из ряда данных sample.
     """
+    assert(isinstance(default_label, Label))
 
     uint_label = int(row["label"]) if "label" in row \
-        else label_scaler.label_to_uint(NoLabel())
+        else label_scaler.label_to_uint(default_label)
 
     source_index = int(row["s_ind"])
     target_index = int(row["t_ind"])
@@ -38,13 +40,14 @@ def __row_to_opinion(row, label_scaler):
                    sentiment=label_scaler.uint_to_label(uint_label))
 
 
-def __row_to_text_opinion(row, label_scaler):
+def __row_to_text_opinion(row, label_scaler, default_label):
     """ Чтение text_opinion из ряда данных sample.
     """
     assert(isinstance(label_scaler, BaseLabelScaler))
+    assert(isinstance(default_label, Label))
 
     uint_label = int(row["label"]) if "label" in row \
-        else label_scaler.label_to_uint(NoLabel())
+        else label_scaler.label_to_uint(default_label)
 
     text_opinion = TextOpinion(
         doc_id=int(row["doc_id"]),
@@ -60,7 +63,7 @@ def __row_to_text_opinion(row, label_scaler):
     return text_opinion
 
 
-def __extract_text_opinions_from_test(test_view, label_scaler):
+def __extract_text_opinions_from_test(test_view, label_scaler, default_label):
     """
         return: dict { tid: TextOpinion },
         where:  tid -- is a TextOpininID
@@ -69,18 +72,22 @@ def __extract_text_opinions_from_test(test_view, label_scaler):
     assert(isinstance(label_scaler, BaseLabelScaler))
 
     text_opinion_by_id = OrderedDict()
+    text_opinion_by_row_id = OrderedDict()
     for linkage in tqdm(test_view.iter_rows_linked_by_text_opinions()):
         for row in linkage:
-            text_opinion = __row_to_text_opinion(row, label_scaler)
+            text_opinion = __row_to_text_opinion(row, label_scaler, default_label=default_label)
             text_opinion_by_id[text_opinion.TextOpinionID] = text_opinion
+            text_opinion_by_row_id[row["id"]] = text_opinion
 
-    return text_opinion_by_id
+    return text_opinion_by_id, text_opinion_by_row_id
 
 
-def __gather_opinion_and_group_ids_from_etalon(etalon_view, label_scaler):
+def __gather_opinion_and_group_ids_from_etalon(etalon_view, label_scaler, default_label):
     """ Из связок берем только первое отношение и считаем его Opinion.
         А также группируем TextOpinons относительно первого id.
     """
+    assert(isinstance(default_label, Label))
+
     opinion_by_row_id = OrderedDict()
     text_opinion_ids_by_row_id = OrderedDict()
     etalon_opinions_by_doc_id = OrderedDict()
@@ -89,11 +96,12 @@ def __gather_opinion_and_group_ids_from_etalon(etalon_view, label_scaler):
         first_row = linkage[0]
         first_row_id = first_row["id"]
         doc_id = first_row["doc_id"]
-        opinion = __row_to_opinion(first_row, label_scaler)
+        opinion = __row_to_opinion(first_row, label_scaler, default_label=default_label)
 
         opinion_by_row_id[first_row_id] = opinion
-        text_opinion_ids_by_row_id[first_row_id] = [__row_to_text_opinion(row, label_scaler).TextOpinionID
-                                                    for row in linkage]
+        text_opinion_ids_by_row_id[first_row_id] = [
+            __row_to_text_opinion(row, label_scaler, default_label).TextOpinionID for row in linkage
+        ]
 
         if doc_id not in etalon_opinions_by_doc_id:
             etalon_opinions_by_doc_id[doc_id] = []
@@ -103,7 +111,8 @@ def __gather_opinion_and_group_ids_from_etalon(etalon_view, label_scaler):
 
 
 def __compose_test_opinions_by_doc_id(etalon_opinions_by_row_id, etalon_text_opinion_ids_by_row_id,
-                                      test_opinions_by_id, label_scaler):
+                                      test_opinions_by_id, label_scaler, filter_by_label_func):
+    assert(callable(filter_by_label_func))
 
     used = set()
 
@@ -125,6 +134,9 @@ def __compose_test_opinions_by_doc_id(etalon_opinions_by_row_id, etalon_text_opi
         if vote_label > 0:
             vote_label = 1
 
+        if not filter_by_label_func(vote_label):
+            continue
+
         test_opinion = Opinion(source_value=etalon_opinion.SourceValue,
                                target_value=etalon_opinion.TargetValue,
                                sentiment=label_scaler.int_to_label(vote_label))
@@ -145,16 +157,16 @@ def __compose_test_opinions_by_doc_id(etalon_opinions_by_row_id, etalon_text_opi
 
 
 def opinions_per_document_result_evaluation(
-        predict_filename, etalon_samples_filepath, test_samples_filepath,
+        test_predict_filename, etalon_samples_filepath, test_samples_filepath,
         label_scaler=PosNegNeuRelationsLabelScaler()):
     """ Подокументное вычисление результатов разметки отношений типа Opninon (пар на уровне документа)
     """
-    assert(isinstance(predict_filename, str))
+    assert(isinstance(test_predict_filename, str))
     assert(isinstance(etalon_samples_filepath, str))
     assert(isinstance(test_samples_filepath, str))
 
-    if not exists(predict_filename):
-        raise FileNotFoundError(predict_filename)
+    if not exists(test_predict_filename):
+        raise FileNotFoundError(test_predict_filename)
 
     if not exists(etalon_samples_filepath):
         raise FileNotFoundError(etalon_samples_filepath)
@@ -162,20 +174,31 @@ def opinions_per_document_result_evaluation(
     if not exists(test_samples_filepath):
         raise FileNotFoundError(test_samples_filepath)
 
+    no_label = label_scaler.uint_to_label(0)
+
     test_view = BaseSampleStorageView(storage=BaseRowsStorage.from_tsv(filepath=test_samples_filepath),
                                       row_ids_provider=MultipleIDProvider())
     etalon_view = BaseSampleStorageView(storage=BaseRowsStorage.from_tsv(filepath=etalon_samples_filepath),
                                         row_ids_provider=MultipleIDProvider())
 
-    test_opinions_by_id = __extract_text_opinions_from_test(
-        test_view=test_view, label_scaler=label_scaler)
+    test_text_opinions_by_id, test_text_opinions_by_row_id = __extract_text_opinions_from_test(
+        test_view=test_view, label_scaler=label_scaler, default_label=no_label)
+
     etalon_opinions_by_row_id, etalon_text_opinion_ids_by_row_id, etalon_opinions_by_doc_id = \
-        __gather_opinion_and_group_ids_from_etalon(etalon_view=etalon_view, label_scaler=label_scaler)
+        __gather_opinion_and_group_ids_from_etalon(etalon_view=etalon_view,
+                                                   label_scaler=label_scaler,
+                                                   default_label=no_label)
+    assign_labels(filename=test_predict_filename,
+                  text_opinions=test_text_opinions_by_id.values(),
+                  row_id_to_text_opin_id_func=lambda row_id: test_text_opinions_by_row_id[row_id].TextOpinionID,
+                  label_scaler=label_scaler)
+
     test_opinions_by_doc_id = __compose_test_opinions_by_doc_id(
         etalon_opinions_by_row_id=etalon_opinions_by_row_id,
         etalon_text_opinion_ids_by_row_id=etalon_text_opinion_ids_by_row_id,
-        test_opinions_by_id=test_opinions_by_id,
-        label_scaler=label_scaler)
+        test_opinions_by_id=test_text_opinions_by_id,
+        label_scaler=label_scaler,
+        filter_by_label_func=lambda label: label_scaler.uint_to_label(label) != no_label)     # отбрасываем нейтральные
 
     synonyms = StemmerBasedSynonymCollection(iter_group_values_lists=[],
                                              stemmer=MystemWrapper(),
@@ -196,9 +219,11 @@ def opinions_per_document_result_evaluation(
             error_on_synonym_end_missed=False))
 
     # getting evaluator.
-    evaluator = ThreeClassOpinionEvaluator(label1=label_scaler.uint_to_label(1),
-                                           label2=label_scaler.uint_to_label(2),
-                                           no_label=label_scaler.uint_to_label(0))
+    evaluator = TwoClassEvaluator(
+        comparator=OpinionBasedComparator(eval_mode=EvaluationModes.Extraction),
+        label1=label_scaler.uint_to_label(1),
+        label2=label_scaler.uint_to_label(2),
+        get_item_label_func=lambda opinion: opinion.Sentiment)
 
     # evaluate every document.
     logged_cmp_pairs_it = progress_bar_iter(cmp_pairs_iter, desc="Evaluate", unit='pairs')
@@ -216,14 +241,8 @@ if __name__ == '__main__':
     serialize_dir = "serialize-nn_3l"
 
     result = opinions_per_document_result_evaluation(
-        predict_filename=join(output_dir, serialize_dir, source_filename),
+        test_predict_filename=join(output_dir, serialize_dir, source_filename),
         etalon_samples_filepath=join(output_dir, serialize_dir, samples_etalon),
         test_samples_filepath=join(output_dir, serialize_dir, samples_test))
 
-    r = calc_f1_macro(pos_prec=result.TotalResult[ThreeClassEvalResult.C_POS_PREC],
-                      neg_prec=result.TotalResult[ThreeClassEvalResult.C_NEG_PREC],
-                      pos_recall=result.TotalResult[ThreeClassEvalResult.C_POS_RECALL],
-                      neg_recall=result.TotalResult[ThreeClassEvalResult.C_NEG_RECALL])
-
     print(result.TotalResult)
-    print(r)
