@@ -26,7 +26,7 @@ class TestEval(unittest.TestCase):
         etalon_filename = join(output_dir, serialize_dir, "sample-etalon-0.tsv.gz")
 
         result = text_opinion_monolith_collection_result_evaluator(
-            predict_filename=predict_filename,
+            test_predict_filename=predict_filename,
             etalon_samples_filepath=etalon_filename,
             test_samples_filepath=test_filename,
             label_scaler=PosNegNeuRelationsLabelScaler())
@@ -49,7 +49,7 @@ class TestEval(unittest.TestCase):
         etalon_filename = join(output_dir, serialize_dir, "sample-etalon-0.tsv.gz")
 
         result = opinions_per_document_result_evaluation(
-            predict_filename=predict_filename,
+            test_predict_filename=predict_filename,
             etalon_samples_filepath=etalon_filename,
             test_samples_filepath=test_filename,
             label_scaler=PosNegNeuRelationsLabelScaler())
