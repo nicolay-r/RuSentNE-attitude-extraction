@@ -45,8 +45,10 @@ def __extract_text_opinions(filename, label_scaler, no_label):
     return opinions_by_row_id
 
 
-def __assign_labels(filename, text_opinions, row_id_to_text_opin_id_func, label_scaler):
-    assert (callable(row_id_to_text_opin_id_func))
+def assign_labels(filename, text_opinions, row_id_to_text_opin_id_func, label_scaler):
+    """ Назначение меток с результата разметки на TextOpinion соответствующего множества.
+    """
+    assert(callable(row_id_to_text_opin_id_func))
 
     text_opinons_by_id = {}
     for text_opinion in text_opinions:
@@ -65,7 +67,7 @@ def __assign_labels(filename, text_opinions, row_id_to_text_opin_id_func, label_
 
 
 def text_opinion_monolith_collection_result_evaluator(
-        predict_filename, etalon_samples_filepath, test_samples_filepath,
+        test_predict_filename, etalon_samples_filepath, test_samples_filepath,
         label_scaler=PosNegNeuRelationsLabelScaler()):
     """ Single-document like (whole collection) evaluator.
         Considering text_opinion instances as items for comparison.
@@ -74,12 +76,12 @@ def text_opinion_monolith_collection_result_evaluator(
         Учет по документам не идет, т.е. предполагается
         целая коллекция как один огромный документ.
     """
-    assert(isinstance(predict_filename, str))
+    assert(isinstance(test_predict_filename, str))
     assert(isinstance(etalon_samples_filepath, str))
     assert(isinstance(test_samples_filepath, str))
 
-    if not exists(predict_filename):
-        raise FileNotFoundError(predict_filename)
+    if not exists(test_predict_filename):
+        raise FileNotFoundError(test_predict_filename)
 
     if not exists(etalon_samples_filepath):
         raise FileNotFoundError(etalon_samples_filepath)
@@ -94,10 +96,10 @@ def text_opinion_monolith_collection_result_evaluator(
                                                      no_label=no_label)
     test_opins_by_row_id = __extract_text_opinions(filename=test_samples_filepath, label_scaler=label_scaler,
                                                    no_label=no_label)
-    __assign_labels(filename=predict_filename,
-                    text_opinions=test_opins_by_row_id.values(),
-                    row_id_to_text_opin_id_func=lambda row_id: test_opins_by_row_id[row_id].TextOpinionID,
-                    label_scaler=label_scaler)
+    assign_labels(filename=test_predict_filename,
+                  text_opinions=test_opins_by_row_id.values(),
+                  row_id_to_text_opin_id_func=lambda row_id: test_opins_by_row_id[row_id].TextOpinionID,
+                  label_scaler=label_scaler)
 
     # Remove the one with NoLabel instance.
     test_opins_by_row_id = {row_id: text_opinion for row_id, text_opinion in test_opins_by_row_id.items()
@@ -127,7 +129,7 @@ if __name__ == '__main__':
     serialize_dir = "serialize-nn_3l"
 
     result = text_opinion_monolith_collection_result_evaluator(
-        predict_filename=join(output_dir, serialize_dir, source_filename),
+        test_predict_filename=join(output_dir, serialize_dir, source_filename),
         etalon_samples_filepath=join(output_dir, serialize_dir, samples_etalon),
         test_samples_filepath=join(output_dir, serialize_dir, samples_test))
 
