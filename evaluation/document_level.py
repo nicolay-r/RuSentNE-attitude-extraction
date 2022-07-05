@@ -9,7 +9,7 @@ from arekit.common.opinions.collection import OpinionCollection
 from arekit.common.utils import progress_bar_iter
 from arekit.contrib.utils.evaluation.evaluators.two_class import TwoClassEvaluator
 from arekit.contrib.utils.synonyms.stemmer_based import StemmerBasedSynonymCollection
-from os.path import exists, join
+from os.path import exists
 
 from arekit.common.data.row_ids.multiple import MultipleIDProvider
 from arekit.common.data.storages.base import BaseRowsStorage
@@ -18,8 +18,9 @@ from arekit.common.evaluation.comparators.text_opinions import TextOpinionBasedC
 from arekit.common.labels.scaler.base import BaseLabelScaler
 from arekit.common.opinions.base import Opinion
 from arekit.common.text_opinions.base import TextOpinion
+
+from evaluation.instance_level import assign_labels
 from labels.scaler import PosNegNeuRelationsLabelScaler
-from run_eval import assign_labels
 
 
 def __row_to_opinion(row, label_scaler, default_label):
@@ -131,7 +132,7 @@ def __compose_test_opinions_by_doc_id(etalon_opinions_by_row_id,
                                       test_text_opinions_by_id,
                                       label_scaler,
                                       filter_opinion_func,
-                                      labels_to_label_func):
+                                      labels_agg_func):
 
     def __try_register_opinion(source_value, target_value, existed_tids):
         assert(isinstance(source_value, str))
@@ -144,7 +145,7 @@ def __compose_test_opinions_by_doc_id(etalon_opinions_by_row_id,
 
         # используем метод голосования.
         labels = [label_scaler.label_to_int(test_text_opinions_by_id[tid].Sentiment) for tid in existed_tids]
-        actual_label = labels_to_label_func(labels)
+        actual_label = labels_agg_func(labels)
 
         # создаем Opinion и фиксируем его.
         opinion = Opinion(source_value=source_value,
@@ -190,23 +191,34 @@ def __compose_test_opinions_by_doc_id(etalon_opinions_by_row_id,
     return test_opinions_by_doc_id
 
 
-def opinions_per_document_result_evaluation(
-        test_predict_filename, etalon_samples_filepath, test_samples_filepath,
+def opinions_per_document_two_class_result_evaluation(
+        test_predict_filepath, etalon_samples_filepath, test_samples_filepath,
+        synonyms=None,
+        labels_agg_func=__vote_label_func,
         label_scaler=PosNegNeuRelationsLabelScaler()):
     """ Подокументное вычисление результатов разметки отношений типа Opninon (пар на уровне документа)
+        Замечания:
+            - Коллекция синонимов составляется на лету в случае, когда она по-умолчанию не задана.
     """
-    assert(isinstance(test_predict_filename, str))
+    assert(isinstance(test_predict_filepath, str))
     assert(isinstance(etalon_samples_filepath, str))
     assert(isinstance(test_samples_filepath, str))
+    assert(callable(labels_agg_func))
 
-    if not exists(test_predict_filename):
-        raise FileNotFoundError(test_predict_filename)
+    if not exists(test_predict_filepath):
+        raise FileNotFoundError(test_predict_filepath)
 
     if not exists(etalon_samples_filepath):
         raise FileNotFoundError(etalon_samples_filepath)
 
     if not exists(test_samples_filepath):
         raise FileNotFoundError(test_samples_filepath)
+
+    if synonyms is None:
+        synonyms = StemmerBasedSynonymCollection(iter_group_values_lists=[],
+                                                 stemmer=MystemWrapper(),
+                                                 is_read_only=False,
+                                                 debug=False)
 
     no_label = label_scaler.uint_to_label(0)
 
@@ -224,7 +236,7 @@ def opinions_per_document_result_evaluation(
     test_opinions_by_row_id, test_text_opinion_ids_by_row_id, _ = \
         __gather_opinion_and_group_ids_from_view(view=test_view, label_scaler=label_scaler, default_label=no_label)
 
-    assign_labels(filename=test_predict_filename,
+    assign_labels(filename=test_predict_filepath,
                   text_opinions=test_text_opinions_by_id.values(),
                   row_id_to_text_opin_id_func=lambda row_id: test_text_opinions_by_row_id[row_id].TextOpinionID,
                   label_scaler=label_scaler)
@@ -237,12 +249,7 @@ def opinions_per_document_result_evaluation(
         test_text_opinions_by_id=test_text_opinions_by_id,
         label_scaler=label_scaler,
         filter_opinion_func=lambda opinion: opinion.Sentiment != no_label,      # не берем те, что c NoLabel
-        labels_to_label_func=__vote_label_func)                                 # создаем на основе метода голосования.
-
-    synonyms = StemmerBasedSynonymCollection(iter_group_values_lists=[],
-                                             stemmer=MystemWrapper(),
-                                             is_read_only=False,
-                                             debug=False)
+        labels_agg_func=labels_agg_func)                                        # создаем на основе метода голосования.
 
     cmp_pairs_iter = OpinionCollectionsToCompareUtils.iter_comparable_collections(
         doc_ids=test_opinions_by_doc_id.keys(),
@@ -270,19 +277,3 @@ def opinions_per_document_result_evaluation(
     result = evaluator.evaluate(cmp_pairs=logged_cmp_pairs_it)
 
     return result
-
-
-if __name__ == '__main__':
-
-    output_dir = "_out"
-    source_filename = "predict-cnn.tsv.gz"
-    samples_test = "sample-test-0.tsv.gz"
-    samples_etalon = "sample-etalon-0.tsv.gz"
-    serialize_dir = "serialize-nn_3l"
-
-    result = opinions_per_document_result_evaluation(
-        test_predict_filename=join(output_dir, serialize_dir, source_filename),
-        etalon_samples_filepath=join(output_dir, serialize_dir, samples_etalon),
-        test_samples_filepath=join(output_dir, serialize_dir, samples_test))
-
-    print(result.TotalResult)
