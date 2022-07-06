@@ -22,14 +22,20 @@ from utils import read_train_test
 
 
 def train_nn(output_dir, model_log_dir, split_source, extra_name_suffix="nn",
-             epochs_count=100, labels_count=3, model_name=ModelNames.CNN):
+             epochs_count=100, labels_count=3, model_name=ModelNames.CNN,
+             finetune_existed=True):
     """ Training TensorFlow-based model (version 1.14),
         provided by contributional part of the AREkit framework.
         From the list of the predefined moels.
+
+        finetune_existed: bool
+            flag that shows wheter there is need to keep saved state and proceed with its finetunning.
+
         NOTE/TODO:
         We adopt handler, but in futher handlers might be switched to pipeline items
     """
     assert(isinstance(output_dir, str))
+    assert(isinstance(finetune_existed, bool))
 
     exp_name = "serialize"
 
@@ -43,6 +49,7 @@ def train_nn(output_dir, model_log_dir, split_source, extra_name_suffix="nn",
 
     model_io = NeuralNetworkModelIO(full_model_name=full_model_name,
                                     target_dir=output_dir,
+                                    source_dir=output_dir if finetune_existed else None,
                                     model_name_tag=u'')
 
     exp_ctx = ExperimentTrainingContext(
