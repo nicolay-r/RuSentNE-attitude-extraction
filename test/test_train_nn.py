@@ -2,7 +2,7 @@ import unittest
 from os.path import dirname, realpath, join
 
 from models.nn.predict import predict_nn
-from run_train_nn import train_nn
+from models.nn.train import train_nn
 
 
 class TestNetworkTraining(unittest.TestCase):
