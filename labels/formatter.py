@@ -1,3 +1,4 @@
+from arekit.common.labels.base import NoLabel
 from arekit.common.labels.str_fmt import StringLabelsFormatter
 
 import labels.types as labels
@@ -35,3 +36,16 @@ class SentimentLabelFormatter(StringLabelsFormatter):
         }
 
         super(SentimentLabelFormatter, self).__init__(stol=stol)
+
+
+class PosNegNeuRelationsLabelFormatter(StringLabelsFormatter):
+
+    def __init__(self):
+
+        stol = {
+            "NEUTRAL": NoLabel,
+            "NEGATIVE_TO": labels.NegativeTo,
+            "POSITIVE_TO": labels.PositiveTo,
+        }
+
+        super(PosNegNeuRelationsLabelFormatter, self).__init__(stol=stol)
