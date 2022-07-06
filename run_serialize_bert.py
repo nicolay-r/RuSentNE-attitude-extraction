@@ -5,7 +5,7 @@ from arekit.contrib.bert.terms.mapper import BertDefaultStringTextTermsMapper
 from arekit.contrib.utils.entities.formatters.str_simple_sharp_prefixed_fmt import SharpPrefixedEntitiesSimpleFormatter
 
 from entity.formatter import CustomEntitiesFormatter
-from labels.formatter import SentimentLabelFormatter
+from labels.formatter import SentimentLabelFormatter, PosNegNeuRelationsLabelFormatter
 from labels.scaler import PosNegNeuRelationsLabelScaler
 from models.bert.serialize import BertTextsSerializationPipelineItem
 
@@ -23,7 +23,7 @@ if __name__ == '__main__':
             label_formatter=SentimentLabelFormatter(),
             sample_row_provider=NliMultipleSampleProvider(
                 label_scaler=PosNegNeuRelationsLabelScaler(),
-                text_b_labels_fmt=SentimentLabelFormatter(),
+                text_b_labels_fmt=PosNegNeuRelationsLabelFormatter(),
                 text_terms_mapper=BertDefaultStringTextTermsMapper(
                     entity_formatter=SharpPrefixedEntitiesSimpleFormatter()
                 )))
