@@ -133,17 +133,14 @@ class TensorflowNetworkInferencePipelineItem(BasePipelineItem):
         model.predict(do_compile=True)
 
 
-def predict_nn(extra_name_suffix,
-               output_dir, data_folding_name="fixed",
-               model_name=ModelNames.CNN, labels_count=3):
+def predict_nn(extra_name_suffix, output_dir, exp_name="serialize", data_folding_name="fixed",
+               bag_size=1, bags_per_minibatch=4, model_name=ModelNames.CNN, labels_count=3):
     """ Perform inference for dataset using a pre-trained collection
         This is a pipeline-based impelementation, taken from
         the ARElight repository, see the following code for reference:
             https://github.com/nicolay-r/ARElight/blob/v0.22.0/arelight/pipelines/inference_nn.py
     """
     assert(isinstance(output_dir, str))
-
-    exp_name = "serialize"
 
     full_model_name = "-".join([data_folding_name, model_name.value])
     model_io = NeuralNetworkModelIO(full_model_name=full_model_name,
@@ -154,8 +151,8 @@ def predict_nn(extra_name_suffix,
     ppl = BasePipeline(pipeline=[
         TensorflowNetworkInferencePipelineItem(
             data_type=DataType.Test,
-            bag_size=1,
-            bags_per_minibatch=4,
+            bag_size=bag_size,
+            bags_per_minibatch=bags_per_minibatch,
             model_name=model_name,
             bags_collection_type=SingleBagsCollection,
             model_input_type=ModelInputType.SingleInstance,
