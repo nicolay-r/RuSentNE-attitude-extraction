@@ -87,16 +87,10 @@ class TensorflowNetworkInferencePipelineItem(BasePipelineItem):
         assert(isinstance(pipeline_ctx, PipelineContext))
 
         # Setup predicted result writer.
-        tgt = pipeline_ctx.provide_or_none("predict_fp")
         full_model_name = pipeline_ctx.provide_or_none("full_model_name")
-
-        if tgt is None:
-            exp_root = join(input_data._get_experiment_sources_dir(),
-                            input_data.get_experiment_folder_name())
-            tgt = join(exp_root, "predict-{}.tsv.gz".format(full_model_name))
-
-        # Update for further pipeline items.
-        pipeline_ctx.update("predict_fp", tgt)
+        exp_root = join(input_data._get_experiment_sources_dir(),
+                        input_data.get_experiment_folder_name())
+        tgt = join(exp_root, "predict-{}.tsv.gz".format(full_model_name))
 
         # Fetch other required in furter information from input_data.
         samples_filepath = input_data.create_samples_writer_target(self.__data_type)
