@@ -45,6 +45,6 @@ if __name__ == '__main__':
             vocab_filepath=BERT_VOCAB_PATH)
         ])
 
-    ppl.run(input_data={"predict_dir": "_out/serialize-bert_3l",
-                        "samples_filepath": "_out/serialize-bert_3l/predict-bert.tsv.gz"},
+    ppl.run(input_data={"predict_dir": "_out/serialize-bert_1l",
+                        "samples_filepath": "_out/serialize-bert_1l/sample-test-0.tsv.gz"},
             params_dict={"full_model_name": "bert"})
