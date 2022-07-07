@@ -4,13 +4,10 @@ from arekit.common.labels.base import Label
 from arekit.common.labels.scaler.base import BaseLabelScaler
 from arekit.common.opinions.base import Opinion
 from tqdm import tqdm
-from arekit.common.data.row_ids.multiple import MultipleIDProvider
-from arekit.common.data.storages.base import BaseRowsStorage
-from arekit.common.data.views.samples import BaseSampleStorageView
 from arekit.common.text_opinions.base import TextOpinion
 
 
-def assign_labels(test_predict_filepath, text_opinions, row_id_to_text_opin_id_func, label_scaler):
+def assign_labels(predict_view, text_opinions, row_id_to_text_opin_id_func, label_scaler):
     """ Назначение меток с результата разметки на TextOpinion соответствующего множества.
     """
     assert(callable(row_id_to_text_opin_id_func))
@@ -20,8 +17,6 @@ def assign_labels(test_predict_filepath, text_opinions, row_id_to_text_opin_id_f
         assert (isinstance(text_opinion, TextOpinion))
         text_opinons_by_id[text_opinion.TextOpinionID] = text_opinion
 
-    predict_view = BaseSampleStorageView(storage=BaseRowsStorage.from_tsv(filepath=test_predict_filepath),
-                                         row_ids_provider=MultipleIDProvider())
     test_linked_iter = predict_view.iter_rows_linked_by_text_opinions()
     for linkage in tqdm(test_linked_iter):
         for row in linkage:
