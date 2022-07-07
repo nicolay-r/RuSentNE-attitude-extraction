@@ -35,13 +35,19 @@ class PosNegNeuRelationsLabelScaler(BaseLabelScaler):
 
     def __init__(self):
 
+        self.__int_to_label_dict = OrderedDict([
+            (NoLabel(), 0),
+            (labels.PositiveTo(), 1),
+            (labels.NegativeTo(), -1),
+        ])
+
         self.__uint_to_label_dict = OrderedDict([
             (NoLabel(), 0),
             (labels.PositiveTo(), 1),
             (labels.NegativeTo(), 2),
         ])
 
-        super(PosNegNeuRelationsLabelScaler, self).__init__(int_dict=self.__uint_to_label_dict,
+        super(PosNegNeuRelationsLabelScaler, self).__init__(int_dict=self.__int_to_label_dict,
                                                             uint_dict=self.__uint_to_label_dict)
 
 
