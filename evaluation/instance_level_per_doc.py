@@ -1,3 +1,4 @@
+from tqdm import tqdm
 from collections import OrderedDict
 from itertools import chain
 from os.path import exists
@@ -10,10 +11,9 @@ from arekit.common.evaluation.evaluators.modes import EvaluationModes
 from arekit.common.evaluation.utils import OpinionCollectionsToCompareUtils
 from arekit.common.utils import progress_bar_iter
 from arekit.contrib.utils.evaluation.evaluators.two_class import TwoClassEvaluator
-from tqdm import tqdm
 
 from evaluation.instance_level import extract_text_opinions_by_row_id
-from evaluation.utils import assign_labels, row_to_text_opinion
+from evaluation.utils import assign_labels
 from labels.scaler import PosNegNeuRelationsLabelScaler
 
 
@@ -32,6 +32,10 @@ def __group_text_opinions_by_doc_id(view):
 def text_opinion_per_document_two_class_result_evaluator(
         test_predict_filepath, etalon_samples_filepath, test_samples_filepath,
         label_scaler=PosNegNeuRelationsLabelScaler()):
+    """ Выполнение оценки на уровне разметки экземпляров;
+        оценка вычисляется по каждому документу в отдельности, а
+        затем подсчитывается среднее значение.
+    """
     assert(isinstance(test_predict_filepath, str))
     assert(isinstance(etalon_samples_filepath, str))
     assert(isinstance(test_samples_filepath, str))

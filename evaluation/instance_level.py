@@ -19,9 +19,8 @@ def extract_text_opinions_by_row_id(view, label_scaler, no_label):
         returns: dict
             (row_id, text_opinion)
     """
-    etalon_linked_iter = view.iter_rows_linked_by_text_opinions()
     text_opinions_by_row_id = OrderedDict()
-    for linkage in tqdm(etalon_linked_iter):
+    for linkage in tqdm(view.iter_rows_linked_by_text_opinions()):
         for row in linkage:
             text_opinions_by_row_id[row["id"]] = row_to_text_opinion(
                 row=row, label_scaler=label_scaler, default_label=no_label)
@@ -29,7 +28,7 @@ def extract_text_opinions_by_row_id(view, label_scaler, no_label):
     return text_opinions_by_row_id
 
 
-def text_opinion_monolith_collection_two_class_result_evaluator(
+def text_opinion_per_collection_two_class_result_evaluator(
         test_predict_filepath, etalon_samples_filepath, test_samples_filepath,
         label_scaler=PosNegNeuRelationsLabelScaler()):
     """ Single-document like (whole collection) evaluator.
@@ -63,18 +62,18 @@ def text_opinion_monolith_collection_two_class_result_evaluator(
                                          row_ids_provider=MultipleIDProvider())
 
     # Reading collection through storage views.
-    etalon_opins_by_row_id = extract_text_opinions_by_row_id(
+    etalon_text_opinions_by_row_id = extract_text_opinions_by_row_id(
         view=etalon_view, label_scaler=label_scaler, no_label=no_label)
-    test_opins_by_row_id = extract_text_opinions_by_row_id(
+    test_text_opinions_by_row_id = extract_text_opinions_by_row_id(
         view=test_view, label_scaler=label_scaler, no_label=no_label)
     assign_labels(predict_view=predict_view,
-                  text_opinions=test_opins_by_row_id.values(),
-                  row_id_to_text_opin_id_func=lambda row_id: test_opins_by_row_id[row_id].TextOpinionID,
+                  text_opinions=test_text_opinions_by_row_id.values(),
+                  row_id_to_text_opin_id_func=lambda row_id: test_text_opinions_by_row_id[row_id].TextOpinionID,
                   label_scaler=label_scaler)
 
     # Remove the one with NoLabel instance.
-    test_opins_by_row_id = {row_id: text_opinion for row_id, text_opinion in test_opins_by_row_id.items()
-                            if text_opinion.Sentiment != no_label}
+    test_text_opinions_by_row_id = {row_id: text_opinion for row_id, text_opinion in test_text_opinions_by_row_id.items()
+                                    if text_opinion.Sentiment != no_label}
 
     # Composing evaluator.
     evaluator = TwoClassEvaluator(
@@ -84,8 +83,8 @@ def text_opinion_monolith_collection_two_class_result_evaluator(
         get_item_label_func=lambda text_opinion: text_opinion.Sentiment)
 
     # evaluate every document.
-    cmp_pair = SingleDocumentDataPairsToCompare(etalon_data=list(etalon_opins_by_row_id.values()),
-                                                test_data=list(test_opins_by_row_id.values()))
+    cmp_pair = SingleDocumentDataPairsToCompare(etalon_data=list(etalon_text_opinions_by_row_id.values()),
+                                                test_data=list(test_text_opinions_by_row_id.values()))
     result = evaluator.evaluate(cmp_pairs=[cmp_pair])
 
     return result

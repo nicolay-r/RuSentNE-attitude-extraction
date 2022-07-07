@@ -1,7 +1,7 @@
 from os.path import join
 
 from evaluation.document_level import opinions_per_document_two_class_result_evaluation
-from evaluation.instance_level import text_opinion_monolith_collection_two_class_result_evaluator
+from evaluation.instance_level import text_opinion_per_collection_two_class_result_evaluator
 from evaluation.instance_level_per_doc import text_opinion_per_document_two_class_result_evaluator
 
 if __name__ == '__main__':
@@ -16,7 +16,7 @@ if __name__ == '__main__':
     etalon_samples_filepath = join(output_dir, serialize_dir, samples_etalon)
     test_samples_filepath = join(output_dir, serialize_dir, samples_test)
 
-    to_result = text_opinion_monolith_collection_two_class_result_evaluator(
+    to_result = text_opinion_per_collection_two_class_result_evaluator(
         test_predict_filepath=test_predict_filepath,
         etalon_samples_filepath=etalon_samples_filepath,
         test_samples_filepath=test_samples_filepath)
