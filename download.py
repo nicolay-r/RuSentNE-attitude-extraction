@@ -2,12 +2,11 @@ import os
 import tarfile
 from arekit.common import utils
 
+from models.bert.states import BERT_PRETRAINED_MODEL_TAR, BERT_FINETUNED_MODEL_TAR
+
 
 def download_data():
     root_dir = "_model"
-
-    BERT_PRETRAINED_MODEL_TAR = "ra-20-srubert-large-neut-nli-pretrained-3l.tar.gz"
-    BERT_FINETUNED_MODEL_TAR = "ra-20-srubert-large-neut-nli-pretrained-3l-finetuned.tar.gz"
 
     data = {
         BERT_PRETRAINED_MODEL_TAR: "https://www.dropbox.com/s/cr6nejxjiqbyd5o/ra-20-srubert-large-neut-nli-pretrained-3l.tar.gz?dl=1",
