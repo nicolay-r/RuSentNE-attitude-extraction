@@ -53,7 +53,7 @@ class BertInferencePipelineItem(BasePipelineItem):
             for row_ind, row in samples:
                 data["text_a"].append(row['text_a'])
                 data["text_b"].append(row['text_b'])
-                data["row_ids"].append(row_ind)
+                data["row_ids"].append(row["id"])
 
             batch_size = 10
 
