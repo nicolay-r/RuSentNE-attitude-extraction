@@ -195,7 +195,7 @@ def opinions_per_document_two_class_result_evaluation(
     etalon_opinions_by_row_id, etalon_text_opinion_ids_by_row_id, etalon_opinions_by_doc_id = \
         __gather_opinion_and_group_ids_from_view(view=etalon_view, label_scaler=label_scaler, default_label=no_label)
 
-    test_opinions_by_row_id, test_text_opinion_ids_by_row_id, _ = \
+    test_opinions_by_row_id, test_text_opinion_ids_by_row_id, orig_test_opinion_by_doc_id = \
         __gather_opinion_and_group_ids_from_view(view=test_view, label_scaler=label_scaler, default_label=no_label)
 
     assign_labels(predict_view=predict_view,
@@ -213,7 +213,7 @@ def opinions_per_document_two_class_result_evaluation(
         filter_opinion_func=lambda opinion: opinion.Sentiment != no_label,      # не берем те, что c NoLabel
         labels_agg_func=labels_agg_func)                                        # создаем на основе метода голосования.
 
-    doc_ids = sorted(list(set(chain(etalon_opinions_by_doc_id.keys(), test_opinions_by_doc_id.keys()))))
+    doc_ids = sorted(list(set(chain(etalon_opinions_by_doc_id.keys(), orig_test_opinion_by_doc_id.keys()))))
 
     cmp_pairs_iter = OpinionCollectionsToCompareUtils.iter_comparable_collections(
         doc_ids=[int(doc_id) for doc_id in doc_ids],
