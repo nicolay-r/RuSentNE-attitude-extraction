@@ -17,6 +17,10 @@ class CustomEntitiesFormatter(StringEntitiesFormatter):
          содержит подмножество типов).
     """
 
+    def __init__(self, subject_fmt='[субъект]', object_fmt="[объект]"):
+        self.__subject_fmt = subject_fmt
+        self.__object_fmt = object_fmt
+
     def to_string(self, original_value, entity_type):
         assert(isinstance(original_value, Entity))
         assert(isinstance(entity_type, OpinionEntityType))
@@ -24,8 +28,8 @@ class CustomEntitiesFormatter(StringEntitiesFormatter):
         if entity_type == OpinionEntityType.Other:
             return EntityHelper.format(original_value)
         elif entity_type == OpinionEntityType.Object or entity_type == OpinionEntityType.SynonymObject:
-            return "[объект]"
+            return self.__object_fmt
         elif entity_type == OpinionEntityType.Subject or entity_type == OpinionEntityType.SynonymSubject:
-            return "[субъект]"
+            return self.__subject_fmt
 
         return None
