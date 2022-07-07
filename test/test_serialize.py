@@ -35,13 +35,12 @@ class TestSerialize(unittest.TestCase):
                 output_dir=output_dir,
                 fixed_split_filepath="../data/split_fixed.txt",
                 name_provider=ExperimentNameProvider(name="serialize", suffix="bert"),
-                entity_fmt=CustomEntitiesFormatter(),
                 label_formatter=SentimentLabelFormatter(),
                 sample_row_provider=NliMultipleSampleProvider(
                     label_scaler=PosNegNeuRelationsLabelScaler(),
                     text_b_labels_fmt=PosNegNeuRelationsLabelFormatter(),
                     text_terms_mapper=BertDefaultStringTextTermsMapper(
-                        entity_formatter=SharpPrefixedEntitiesSimpleFormatter()
+                        entity_formatter=CustomEntitiesFormatter(subject_fmt="#S", object_fmt="#O")
                     )))
         ])
 

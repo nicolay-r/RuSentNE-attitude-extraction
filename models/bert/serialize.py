@@ -25,9 +25,7 @@ from utils import read_train_test
 
 class BertSerializationContext(ExperimentSerializationContext):
 
-    def __init__(self, label_scaler, terms_per_context, str_entity_formatter,
-                 annotator, name_provider, data_folding):
-        assert(isinstance(str_entity_formatter, StringEntitiesFormatter))
+    def __init__(self, label_scaler, terms_per_context, annotator, name_provider, data_folding):
         assert(isinstance(terms_per_context, int))
 
         super(BertSerializationContext, self).__init__(annot=annotator,
@@ -36,11 +34,6 @@ class BertSerializationContext(ExperimentSerializationContext):
                                                        data_folding=data_folding)
 
         self.__terms_per_context = terms_per_context
-        self.__str_entity_formatter = str_entity_formatter
-
-    @property
-    def StringEntityFormatter(self):
-        return self.__str_entity_formatter
 
     @property
     def TermsPerContext(self):
@@ -49,11 +42,10 @@ class BertSerializationContext(ExperimentSerializationContext):
 
 class BertTextsSerializationPipelineItem(BasePipelineItem):
 
-    def __init__(self, fixed_split_filepath, terms_per_context, name_provider, label_formatter,
-                 entity_fmt, sample_row_provider, output_dir, limit=None):
+    def __init__(self, fixed_split_filepath, terms_per_context, name_provider,
+                 label_formatter, sample_row_provider, output_dir, limit=None):
         assert(isinstance(limit, int) or limit is None)
         assert(isinstance(fixed_split_filepath, str))
-        assert(isinstance(entity_fmt, StringEntitiesFormatter))
         assert(isinstance(terms_per_context, int))
         assert(isinstance(sample_row_provider, BaseSampleRowProvider))
         assert(isinstance(name_provider, ExperimentNameProvider))
@@ -63,7 +55,6 @@ class BertTextsSerializationPipelineItem(BasePipelineItem):
             label_scaler=SingleLabelScaler(NoLabel()),
             annotator=None,
             terms_per_context=terms_per_context,
-            str_entity_formatter=entity_fmt,
             name_provider=name_provider,
             data_folding=NoFolding(doc_ids_to_fold=[], supported_data_types=[]))
 

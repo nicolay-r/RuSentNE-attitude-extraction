@@ -2,7 +2,6 @@ from arekit.common.experiment.name_provider import ExperimentNameProvider
 from arekit.common.pipeline.base import BasePipeline
 from arekit.contrib.bert.samplers.nli_m import NliMultipleSampleProvider
 from arekit.contrib.bert.terms.mapper import BertDefaultStringTextTermsMapper
-from arekit.contrib.utils.entities.formatters.str_simple_sharp_prefixed_fmt import SharpPrefixedEntitiesSimpleFormatter
 
 from entity.formatter import CustomEntitiesFormatter
 from labels.formatter import SentimentLabelFormatter, PosNegNeuRelationsLabelFormatter
@@ -17,13 +16,12 @@ if __name__ == '__main__':
             output_dir="_out",
             fixed_split_filepath="data/split_fixed.txt",
             name_provider=ExperimentNameProvider(name="serialize", suffix="bert"),
-            entity_fmt=CustomEntitiesFormatter(subject_fmt="#S", object_fmt="#O"),
             label_formatter=SentimentLabelFormatter(),
             sample_row_provider=NliMultipleSampleProvider(
                 label_scaler=PosNegNeuRelationsLabelScaler(),
                 text_b_labels_fmt=PosNegNeuRelationsLabelFormatter(),
                 text_terms_mapper=BertDefaultStringTextTermsMapper(
-                    entity_formatter=SharpPrefixedEntitiesSimpleFormatter()
+                    entity_formatter=CustomEntitiesFormatter(subject_fmt="#S", object_fmt="#O")
                 )))
     ])
 
