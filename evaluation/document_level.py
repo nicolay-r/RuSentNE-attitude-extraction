@@ -181,10 +181,13 @@ def opinions_per_document_two_class_result_evaluation(
 
     no_label = label_scaler.uint_to_label(0)
 
+    # Setup views.
     test_view = BaseSampleStorageView(storage=BaseRowsStorage.from_tsv(filepath=test_samples_filepath),
                                       row_ids_provider=MultipleIDProvider())
     etalon_view = BaseSampleStorageView(storage=BaseRowsStorage.from_tsv(filepath=etalon_samples_filepath),
                                         row_ids_provider=MultipleIDProvider())
+    predict_view = BaseSampleStorageView(storage=BaseRowsStorage.from_tsv(filepath=test_predict_filepath),
+                                         row_ids_provider=MultipleIDProvider())
 
     test_text_opinions_by_id, test_text_opinions_by_row_id = __extract_text_opinions_from_test(
         test_view=test_view, label_scaler=label_scaler, default_label=no_label)
@@ -195,7 +198,7 @@ def opinions_per_document_two_class_result_evaluation(
     test_opinions_by_row_id, test_text_opinion_ids_by_row_id, _ = \
         __gather_opinion_and_group_ids_from_view(view=test_view, label_scaler=label_scaler, default_label=no_label)
 
-    assign_labels(test_predict_filepath=test_predict_filepath,
+    assign_labels(predict_view=predict_view,
                   text_opinions=test_text_opinions_by_id.values(),
                   row_id_to_text_opin_id_func=lambda row_id: test_text_opinions_by_row_id[row_id].TextOpinionID,
                   label_scaler=label_scaler)

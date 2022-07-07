@@ -2,6 +2,7 @@ from os.path import join
 
 from evaluation.document_level import opinions_per_document_two_class_result_evaluation
 from evaluation.instance_level import text_opinion_monolith_collection_two_class_result_evaluator
+from evaluation.instance_level_per_doc import text_opinion_per_document_two_class_result_evaluator
 
 if __name__ == '__main__':
 
@@ -20,13 +21,20 @@ if __name__ == '__main__':
         etalon_samples_filepath=etalon_samples_filepath,
         test_samples_filepath=test_samples_filepath)
 
+    td_result = text_opinion_per_document_two_class_result_evaluator(
+        test_predict_filepath=test_predict_filepath,
+        etalon_samples_filepath=etalon_samples_filepath,
+        test_samples_filepath=test_samples_filepath)
+
     o_result = opinions_per_document_two_class_result_evaluation(
         test_predict_filepath=test_predict_filepath,
         etalon_samples_filepath=etalon_samples_filepath,
         test_samples_filepath=test_samples_filepath)
 
     print("Evaluate for", etalon_samples_filepath)
-    print("Instance-based evaluation result:")
+    print("Instance-based evaluation result (per collection):")
     print(to_result.TotalResult)
+    print("Instance-based evaluation result (per document):")
+    print(td_result.TotalResult)
     print("Document-level-based evaluation result:")
     print(o_result.TotalResult)
