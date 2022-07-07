@@ -1,3 +1,4 @@
+from itertools import chain
 from os.path import exists
 from arekit.common.labels.base import Label
 from tqdm import tqdm
@@ -209,8 +210,10 @@ def opinions_per_document_two_class_result_evaluation(
         filter_opinion_func=lambda opinion: opinion.Sentiment != no_label,      # не берем те, что c NoLabel
         labels_agg_func=labels_agg_func)                                        # создаем на основе метода голосования.
 
+    doc_ids = sorted(list(set(chain(etalon_opinions_by_doc_id.keys(), test_opinions_by_doc_id.keys()))))
+
     cmp_pairs_iter = OpinionCollectionsToCompareUtils.iter_comparable_collections(
-        doc_ids=test_opinions_by_doc_id.keys(),
+        doc_ids=[int(doc_id) for doc_id in doc_ids],
         read_etalon_collection_func=lambda doc_id: OpinionCollection(
             # В некоторых случаях может быть ситуация, что в эталонной разметке для документа отсутствуют данные.
             opinions=etalon_opinions_by_doc_id[doc_id] if doc_id in etalon_opinions_by_doc_id else [],
@@ -218,7 +221,7 @@ def opinions_per_document_two_class_result_evaluation(
             error_on_duplicates=False,
             error_on_synonym_end_missed=True),
         read_test_collection_func=lambda doc_id: OpinionCollection(
-            opinions=test_opinions_by_doc_id[doc_id],
+            opinions=test_opinions_by_doc_id[doc_id] if doc_id in test_opinions_by_doc_id else [],
             synonyms=synonyms,
             error_on_duplicates=False,
             error_on_synonym_end_missed=False))
