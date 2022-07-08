@@ -155,7 +155,8 @@ class BertTextsSerializationPipelineItem(BasePipelineItem):
 
         self.__exp_io = InferIOUtils(exp_ctx=self.__exp_ctx, output_dir=output_dir)
 
-        text_parser = BaseTextParser(pipeline=[BratTextEntitiesParser()])
+        text_parser = BaseTextParser(pipeline=[BratTextEntitiesParser(),
+                                               DefaultTextTokenizer()])
 
         doc_ops = CustomDocOperations(exp_ctx=self.__exp_ctx,
                                       label_formatter=label_formatter,
