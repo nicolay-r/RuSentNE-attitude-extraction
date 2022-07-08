@@ -16,7 +16,8 @@ class BertInferencePipelineItem(BasePipelineItem):
     """
 
     def __init__(self, bert_config_file, model_checkpoint_path, vocab_filepath,
-                 predict_writer, labels_scaler, max_seq_length, do_lowercase):
+                 predict_writer, labels_scaler, max_seq_length, do_lowercase,
+                 batch_size=10):
         assert(isinstance(predict_writer, BasePredictWriter))
         assert(isinstance(labels_scaler, BaseLabelScaler))
         assert(isinstance(do_lowercase, bool))
@@ -38,6 +39,7 @@ class BertInferencePipelineItem(BasePipelineItem):
         self.__writer = predict_writer
         self.__labels_scaler = labels_scaler
         self.__predict_provider = BasePredictProvider()
+        self.__batch_size = batch_size
 
     def apply_core(self, input_data, pipeline_ctx):
         assert(isinstance(input_data, dict))
@@ -55,13 +57,11 @@ class BertInferencePipelineItem(BasePipelineItem):
                 data["text_b"].append(row['text_b'])
                 data["row_ids"].append(row["id"])
 
-            batch_size = 10
-
             for i in range(0, len(data["text_a"]), 10):
 
-                texts_a = data["text_a"][i:i + batch_size]
-                texts_b = data["text_b"][i:i + batch_size]
-                row_ids = data["row_ids"][i:i + batch_size]
+                texts_a = data["text_a"][i:i + self.__batch_size]
+                texts_b = data["text_b"][i:i + self.__batch_size]
+                row_ids = data["row_ids"][i:i + self.__batch_size]
 
                 batch_features = self.__proc(texts_a=texts_a, texts_b=texts_b)
 
