@@ -17,5 +17,4 @@ class CollectionOpinionConverter(object):
                            text_opinion_id=int(brat_relation.ID),
                            source_id=brat_relation.SourceID,
                            target_id=brat_relation.TargetID,
-                           owner=None,
                            label=label_formatter.str_to_label(brat_relation.Type))
