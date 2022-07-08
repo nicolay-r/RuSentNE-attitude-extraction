@@ -17,7 +17,7 @@ from arekit.contrib.utils.np_utils.writer import NpzDataWriter
 from arekit.processing.languages.ru.pos_service import PartOfSpeechTypesService
 
 from experiment.io import CustomExperimentTrainIO
-from folding.fixed import create_train_test_folding
+from folding.fixed import create_fixed_folding
 from utils import read_train_test
 
 
@@ -41,7 +41,7 @@ def train_nn(output_dir, model_log_dir, split_source,
     assert(isinstance(finetune_existed, bool))
 
     train_filenames, test_filenames = read_train_test(split_source)
-    filenames_by_ids, data_folding, etalon_folding = create_train_test_folding(
+    filenames_by_ids, data_folding, etalon_folding = create_fixed_folding(
         train_filenames=train_filenames,
         test_filenames=test_filenames)
 

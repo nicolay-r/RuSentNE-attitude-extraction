@@ -4,7 +4,7 @@ from arekit.common.folding.fixed import FixedFolding
 from folding.utils import create_filenames_by_ids
 
 
-def create_train_test_folding(train_filenames, test_filenames):
+def create_fixed_folding(train_filenames, test_filenames):
     """ Create fixed datafolding based on the predefined list of filenames,
         written in file.
     """
@@ -20,8 +20,11 @@ def create_train_test_folding(train_filenames, test_filenames):
     train_doc_ids = [ids_by_filenames[filename] for filename in train_filenames]
     test_doc_ids = [ids_by_filenames[filename] for filename in test_filenames]
 
-    train_test_folding = FixedFolding.from_parts({DataType.Train: train_doc_ids, DataType.Test: test_doc_ids})
-    etalon_folding = FixedFolding.from_parts({DataType.Etalon: test_doc_ids})
+    fixed_folding = FixedFolding.from_parts({
+        DataType.Train: train_doc_ids,
+        DataType.Test: test_doc_ids,
+        DataType.Etalon: test_doc_ids
+    })
 
-    return filenames_by_ids, train_test_folding, etalon_folding
+    return filenames_by_ids, fixed_folding
 

@@ -5,7 +5,6 @@ from arekit.common.experiment.name_provider import ExperimentNameProvider
 from arekit.common.pipeline.base import BasePipeline
 from arekit.contrib.bert.samplers.nli_m import NliMultipleSampleProvider
 from arekit.contrib.bert.terms.mapper import BertDefaultStringTextTermsMapper
-from arekit.contrib.utils.entities.formatters.str_simple_sharp_prefixed_fmt import SharpPrefixedEntitiesSimpleFormatter
 
 from entity.formatter import CustomEntitiesFormatter
 from labels.formatter import PosNegNeuRelationsLabelFormatter, SentimentLabelFormatter

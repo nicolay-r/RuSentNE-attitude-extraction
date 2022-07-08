@@ -22,7 +22,7 @@ from entity.formatter import CustomEntitiesFormatter
 from experiment.ctx import CustomNetworkSerializationContext
 from experiment.doc_ops import CustomDocOperations
 from experiment.io import CustomExperimentSerializationIO
-from folding.fixed import create_train_test_folding
+from folding.fixed import create_fixed_folding
 from labels.formatter import SentimentLabelFormatter
 from labels.scaler import PosNegNeuRelationsLabelScaler
 from pipelines.etalon import create_etalon_pipeline
@@ -31,7 +31,8 @@ from pipelines.train import create_train_pipeline
 from utils import read_train_test
 
 
-def serialize_nn(output_dir, fixed_split_filepath, limit=None, suffix="nn"):
+def serialize_nn(output_dir, fixed_split_filepath,
+                 entities_fmt=CustomEntitiesFormatter(), limit=None, suffix="nn"):
     """ Run data preparation process for neural networks, i.e.
         convolutional neural networks and recurrent-based neural networks.
         Implementation based on AREkit toolkit API.
@@ -46,9 +47,8 @@ def serialize_nn(output_dir, fixed_split_filepath, limit=None, suffix="nn"):
         train_filenames = train_filenames[:limit]
         test_filenames = test_filenames[:limit]
 
-    filenames_by_ids, data_folding, etalon_data_folding = create_train_test_folding(
-        train_filenames=train_filenames,
-        test_filenames=test_filenames)
+    filenames_by_ids, data_folding = create_fixed_folding(train_filenames=train_filenames,
+                                                          test_filenames=test_filenames)
 
     print("Documents count:", len(filenames_by_ids))
 
@@ -74,7 +74,6 @@ def serialize_nn(output_dir, fixed_split_filepath, limit=None, suffix="nn"):
         embedding=load_embedding_news_mystem_skipgram_1000_20_2015(),
         annotator=None,
         terms_per_context=terms_per_context,
-        str_entity_formatter=CustomEntitiesFormatter(),
         pos_tagger=pos_tagger,
         name_provider=name_provider,
         frames_collection=frames_collection,
@@ -100,8 +99,7 @@ def serialize_nn(output_dir, fixed_split_filepath, limit=None, suffix="nn"):
     test_neut_annot, test_synonyms = create_neutral_annotator(terms_per_context)
     etalon_neut_annot, etalon_synonyms = create_neutral_annotator(terms_per_context)
 
-    train_test_handler = NetworksInputSerializerExperimentIteration(
-        balance=True,
+    handler = NetworksInputSerializerExperimentIteration(
         vectorizers={
             TermTypes.WORD: bpe_vectorizer,
             TermTypes.ENTITY: bpe_vectorizer,
@@ -119,40 +117,18 @@ def serialize_nn(output_dir, fixed_split_filepath, limit=None, suffix="nn"):
                                                 doc_ops=doc_ops,
                                                 neut_annotator=test_neut_annot,
                                                 synonyms=test_synonyms,
-                                                terms_per_context=terms_per_context)
-        },
-        save_labels_func=lambda data_type: data_type == DataType.Train,
-        exp_ctx=exp_ctx,
-        doc_ops=doc_ops,
-        save_embedding=True)
-
-    engine = ExperimentEngine()
-    engine.run(states_iter=[0], handlers=[train_test_handler])
-
-    # Generate ETALON data
-    # Проблема в том, что нет поддержки пересекающихся множеств ID,
-    # из-за чего необходимо эталонные данные генерировать в отдельном handler.
-
-    exp_ctx.set_data_folding(etalon_data_folding)
-    etalon_handler = NetworksInputSerializerExperimentIteration(
-        balance=False,
-        vectorizers={                           # TODO. Формально это не нужно для Etalon.
-            TermTypes.WORD: bpe_vectorizer,
-            TermTypes.ENTITY: bpe_vectorizer,
-            TermTypes.FRAME: bpe_vectorizer,
-            TermTypes.TOKEN: norm_vectorizer
-        },
-        exp_io=CustomExperimentSerializationIO(output_dir=output_dir, exp_ctx=exp_ctx),
-        data_type_pipelines={
+                                                terms_per_context=terms_per_context),
             DataType.Etalon: create_etalon_pipeline(text_parser=text_parser,
                                                     doc_ops=doc_ops,
                                                     synonyms=etalon_synonyms,
                                                     terms_per_context=terms_per_context)
         },
-        save_labels_func=lambda data_type: data_type == DataType.Etalon,
+        str_entity_fmt=entities_fmt,
+        balance_func=lambda data_type: data_type == DataType.Train,
+        save_labels_func=lambda data_type: data_type == DataType.Train or data_type == DataType.Etalon,
         exp_ctx=exp_ctx,
         doc_ops=doc_ops,
-        save_embedding=False)
+        save_embedding=True)
 
-    engine.run(states_iter=[0], handlers=[etalon_handler])
-
+    engine = ExperimentEngine()
+    engine.run(states_iter=[0], handlers=[handler])

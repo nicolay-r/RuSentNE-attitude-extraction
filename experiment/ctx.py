@@ -1,4 +1,3 @@
-from arekit.common.entities.str_fmt import StringEntitiesFormatter
 from arekit.contrib.experiment_rusentrel.connotations.provider import RuSentiFramesConnotationProvider
 from arekit.contrib.networks.core.input.ctx_serialization import NetworkSerializationContext
 from arekit.contrib.networks.embedding import Embedding
@@ -10,13 +9,11 @@ from labels.scaler import ThreeLabelScaler
 
 class CustomNetworkSerializationContext(NetworkSerializationContext):
 
-    def __init__(self, labels_scaler, pos_tagger, embedding,
-                 terms_per_context, str_entity_formatter, annotator,
+    def __init__(self, labels_scaler, pos_tagger, embedding, terms_per_context, annotator,
                  frames_collection, frame_variant_collection, name_provider, data_folding):
         assert(isinstance(embedding, Embedding))
         assert(isinstance(pos_tagger, POSTagger))
         assert(isinstance(frames_collection, RuSentiFramesCollection))
-        assert(isinstance(str_entity_formatter, StringEntitiesFormatter))
         assert(isinstance(terms_per_context, int))
 
         super(CustomNetworkSerializationContext, self).__init__(
@@ -25,7 +22,6 @@ class CustomNetworkSerializationContext(NetworkSerializationContext):
 
         self.__pos_tagger = pos_tagger
         self.__terms_per_context = terms_per_context
-        self.__str_entity_formatter = str_entity_formatter
         self.__word_embedding = embedding
         self.__frames_collection = frames_collection
         self.__frame_variant_collection = frame_variant_collection
@@ -35,10 +31,6 @@ class CustomNetworkSerializationContext(NetworkSerializationContext):
     @property
     def PosTagger(self):
         return self.__pos_tagger
-
-    @property
-    def StringEntityFormatter(self):
-        return self.__str_entity_formatter
 
     @property
     def FrameVariantCollection(self):

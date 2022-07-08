@@ -1,5 +1,4 @@
 from arekit.common.data.input.providers.rows.samples import BaseSampleRowProvider
-from arekit.common.entities.str_fmt import StringEntitiesFormatter
 from arekit.common.experiment.api.ctx_serialization import ExperimentSerializationContext
 from arekit.common.experiment.data_type import DataType
 from arekit.common.experiment.engine import ExperimentEngine
@@ -14,8 +13,7 @@ from arekit.contrib.source.brat.entities.parser import BratTextEntitiesParser
 
 from annot import create_neutral_annotator
 from experiment.doc_ops import CustomDocOperations
-from experiment.io import CustomExperimentSerializationIO
-from folding.fixed import create_train_test_folding
+from folding.fixed import create_fixed_folding
 from models.nn.predict import InferIOUtils
 from pipelines.etalon import create_etalon_pipeline
 from pipelines.test import create_test_pipeline
@@ -63,9 +61,8 @@ class BertTextsSerializationPipelineItem(BasePipelineItem):
             train_filenames = train_filenames[:limit]
             test_filenames = test_filenames[:limit]
 
-        filenames_by_ids, data_folding, self.__etalon_data_folding = create_train_test_folding(
-            train_filenames=train_filenames,
-            test_filenames=test_filenames)
+        filenames_by_ids, data_folding = create_fixed_folding(train_filenames=train_filenames,
+                                                              test_filenames=test_filenames)
 
         self.__exp_ctx.set_data_folding(data_folding)
 
@@ -83,9 +80,9 @@ class BertTextsSerializationPipelineItem(BasePipelineItem):
         test_neut_annot, test_synonyms = create_neutral_annotator(terms_per_context)
         etalon_neut_annot, etalon_synonyms = create_neutral_annotator(terms_per_context)
 
-        self.__train_test_handler = BertExperimentInputSerializerIterationHandler(
+        self.__handler = BertExperimentInputSerializerIterationHandler(
             doc_ops=doc_ops,
-            balance_train_samples=True,
+            balance_func=lambda data_type: data_type == DataType.Train,
             exp_io=self.__exp_io,
             exp_ctx=self.__exp_ctx,
             data_type_pipelines={
@@ -98,30 +95,16 @@ class BertTextsSerializationPipelineItem(BasePipelineItem):
                                                     doc_ops=doc_ops,
                                                     neut_annotator=test_neut_annot,
                                                     synonyms=test_synonyms,
-                                                    terms_per_context=terms_per_context)
-            },
-            save_labels_func=lambda data_type: data_type == DataType.Train,
-            sample_rows_provider=sample_row_provider)
-
-        self.__etalon_handler = BertExperimentInputSerializerIterationHandler(
-            doc_ops=doc_ops,
-            balance_train_samples=False,
-            exp_io=CustomExperimentSerializationIO(output_dir=output_dir, exp_ctx=self.__exp_ctx),
-            data_type_pipelines={
+                                                    terms_per_context=terms_per_context),
                 DataType.Etalon: create_etalon_pipeline(text_parser=text_parser,
                                                         doc_ops=doc_ops,
                                                         synonyms=etalon_synonyms,
                                                         terms_per_context=terms_per_context)
             },
-            sample_rows_provider=sample_row_provider,
-            save_labels_func=lambda data_type: data_type == DataType.Etalon,
-            exp_ctx=self.__exp_ctx)
+            save_labels_func=lambda data_type: data_type != DataType.Test,
+            sample_rows_provider=sample_row_provider)
 
     def apply_core(self, input_data, pipeline_ctx):
-
         engine = ExperimentEngine()
-        engine.run(states_iter=[0], handlers=[self.__train_test_handler])
-        self.__exp_ctx.set_data_folding(self.__etalon_data_folding)
-        engine.run(states_iter=[0], handlers=[self.__etalon_handler])
-
+        engine.run(states_iter=[0], handlers=[self.__handler])
         return self.__exp_io
