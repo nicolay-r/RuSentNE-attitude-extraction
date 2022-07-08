@@ -1,25 +1,28 @@
+from tqdm import tqdm
 from itertools import chain
 from os.path import exists
-from arekit.common.labels.base import Label
-from tqdm import tqdm
 from collections import OrderedDict
 
-from arekit.processing.lemmatization.mystem import MystemWrapper
 from arekit.common.evaluation.comparators.opinions import OpinionBasedComparator
 from arekit.common.evaluation.evaluators.modes import EvaluationModes
-from arekit.common.evaluation.utils import OpinionCollectionsToCompareUtils
 from arekit.common.opinions.collection import OpinionCollection
 from arekit.common.utils import progress_bar_iter
-from arekit.contrib.utils.evaluation.evaluators.two_class import TwoClassEvaluator
-from arekit.contrib.utils.synonyms.stemmer_based import StemmerBasedSynonymCollection
 from arekit.common.data.row_ids.multiple import MultipleIDProvider
 from arekit.common.data.storages.base import BaseRowsStorage
 from arekit.common.data.views.samples import BaseSampleStorageView
 from arekit.common.labels.scaler.base import BaseLabelScaler
 from arekit.common.opinions.base import Opinion
+from arekit.common.labels.base import Label
+
+from arekit.contrib.utils.evaluation.iterators import DataPairsIterators
+from arekit.contrib.utils.evaluation.evaluators.two_class import TwoClassEvaluator
+from arekit.contrib.utils.synonyms.stemmer_based import StemmerBasedSynonymCollection
+
+from arekit.processing.lemmatization.mystem import MystemWrapper
 
 from evaluation.instance_level import assign_labels
 from evaluation.utils import row_to_text_opinion, row_to_opinion
+
 from labels.scaler import PosNegNeuRelationsLabelScaler
 
 
@@ -215,7 +218,7 @@ def opinions_per_document_two_class_result_evaluation(
 
     doc_ids = sorted(list(set(chain(etalon_opinions_by_doc_id.keys(), orig_test_opinion_by_doc_id.keys()))))
 
-    cmp_pairs_iter = OpinionCollectionsToCompareUtils.iter_comparable_collections(
+    cmp_pairs_iter = DataPairsIterators.iter_func_based_collections(
         doc_ids=[int(doc_id) for doc_id in doc_ids],
         read_etalon_collection_func=lambda doc_id: OpinionCollection(
             # В некоторых случаях может быть ситуация, что в эталонной разметке для документа отсутствуют данные.

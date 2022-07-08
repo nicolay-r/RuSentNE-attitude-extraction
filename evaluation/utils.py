@@ -42,7 +42,6 @@ def row_to_text_opinion(row, label_scaler, default_label):
         text_opinion_id=None,
         source_id=int(row["s_ind"]),
         target_id=int(row["t_ind"]),
-        owner=None,
         label=label_scaler.uint_to_label(uint_label))
 
     tid = TextOpinionBasedComparator.text_opinion_to_id(text_opinion)

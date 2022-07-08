@@ -8,8 +8,8 @@ from arekit.common.data.storages.base import BaseRowsStorage
 from arekit.common.data.views.samples import BaseSampleStorageView
 from arekit.common.evaluation.comparators.text_opinions import TextOpinionBasedComparator
 from arekit.common.evaluation.evaluators.modes import EvaluationModes
-from arekit.common.evaluation.utils import OpinionCollectionsToCompareUtils
 from arekit.common.utils import progress_bar_iter
+from arekit.contrib.utils.evaluation.iterators import DataPairsIterators
 from arekit.contrib.utils.evaluation.evaluators.two_class import TwoClassEvaluator
 
 from evaluation.instance_level import extract_text_opinions_by_row_id
@@ -76,7 +76,7 @@ def text_opinion_per_document_two_class_result_evaluator(
 
     doc_ids = sorted(list(set(chain(test_row_ids_by_doc_id.keys(), etalon_row_ids_by_doc_id.keys()))))
 
-    cmp_pairs_iter = OpinionCollectionsToCompareUtils.iter_comparable_collections(
+    cmp_pairs_iter = DataPairsIterators.iter_func_based_collections(
         doc_ids=[int(doc_id) for doc_id in doc_ids],
         read_etalon_collection_func=lambda doc_id:
             [etalon_text_opinions_by_row_id[row_id] for row_id in etalon_row_ids_by_doc_id[doc_id]]
