@@ -97,7 +97,7 @@ def serialize_nn(output_dir, fixed_split_filepath,
 
     train_neut_annot, train_synonyms = create_neutral_annotator(terms_per_context)
     test_neut_annot, test_synonyms = create_neutral_annotator(terms_per_context)
-    etalon_neut_annot, etalon_synonyms = create_neutral_annotator(terms_per_context)
+    _, etalon_synonyms = create_neutral_annotator(terms_per_context)
 
     handler = NetworksInputSerializerExperimentIteration(
         vectorizers={
@@ -110,12 +110,12 @@ def serialize_nn(output_dir, fixed_split_filepath,
         data_type_pipelines={
             DataType.Train: create_train_pipeline(text_parser=text_parser,
                                                   doc_ops=doc_ops,
-                                                  neut_annotator=train_neut_annot,
+                                                  annotator=train_neut_annot,
                                                   synonyms=train_synonyms,
                                                   terms_per_context=terms_per_context),
             DataType.Test: create_test_pipeline(text_parser=text_parser,
                                                 doc_ops=doc_ops,
-                                                test_annotator=test_neut_annot,
+                                                annotator=test_neut_annot,
                                                 synonyms=test_synonyms,
                                                 terms_per_context=terms_per_context),
             DataType.Etalon: create_etalon_pipeline(text_parser=text_parser,

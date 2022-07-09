@@ -8,6 +8,6 @@ def create_etalon_pipeline(text_parser, doc_ops, synonyms, terms_per_context):
     """
     return create_train_pipeline(text_parser=text_parser,
                                  doc_ops=doc_ops,
-                                 neut_annotator=None,
+                                 annotator=None,
                                  synonyms=synonyms,
                                  terms_per_context=terms_per_context)

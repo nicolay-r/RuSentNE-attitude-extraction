@@ -18,17 +18,17 @@ from arekit.common.text_opinions.base import TextOpinion
 from collection.news import CustomNews
 
 
-def create_train_pipeline(text_parser, doc_ops, neut_annotator, synonyms, terms_per_context):
+def create_train_pipeline(text_parser, doc_ops, annotator, synonyms, terms_per_context):
     """ Train pipeline is based on the predefined annotations and
         automatic annotations of other pairs with a NoLabel.
     """
-    assert(isinstance(neut_annotator, BaseOpinionAnnotator) or neut_annotator is None)
+    assert(isinstance(annotator, BaseOpinionAnnotator) or annotator is None)
 
     return text_opinions_to_opinion_linkages_pipeline(
         terms_per_context=terms_per_context,
         get_doc_func=lambda doc_id: doc_ops.get_doc(doc_id),
         text_parser=text_parser,
-        neut_annotator=neut_annotator,
+        neut_annotator=annotator,
         value_to_group_id_func=lambda value:
             SynonymsCollectionValuesGroupingProviders.provide_existed_or_register_missed_value(
                 synonyms=synonyms, value=value))
@@ -120,7 +120,7 @@ def iter_train_text_opinion_linkages(news, parsed_news, annotator, parsed_news_s
     if annotator is None:
         return
 
-    for opinion in annotator.annotate_collection(data_type=DataType.Train, parsed_news=parsed_news):
+    for opinion in annotator.annotate_collection(parsed_news=parsed_news):
         for neut_text_opinion in topp.iter_from_opinion(opinion):
             assert(isinstance(neut_text_opinion, TextOpinion))
 
