@@ -41,9 +41,8 @@ def train_nn(output_dir, model_log_dir, split_source,
     assert(isinstance(finetune_existed, bool))
 
     train_filenames, test_filenames = read_train_test(split_source)
-    filenames_by_ids, data_folding, etalon_folding = create_fixed_folding(
-        train_filenames=train_filenames,
-        test_filenames=test_filenames)
+    filenames_by_ids, data_folding = create_fixed_folding(train_filenames=train_filenames,
+                                                          test_filenames=test_filenames)
 
     full_model_name = "-".join([data_folding.Name, model_name.value])
     model_target_dir = join(model_log_dir, full_model_name)
