@@ -113,13 +113,13 @@ class CroppedBertSampleRowProvider(NliMultipleSampleProvider):
             expected_label=expected_label)
 
         # обновляем содержимое.
-        entities = list(filter(lambda term: isinstance(term, Entity), cropped_sentence_terms))
+        entities_in_cropped = list(filter(lambda term: isinstance(term, Entity), cropped_sentence_terms))
 
-        entity_inds = [str(i - _from) for i, t in enumerate(cropped_sentence_terms) if isinstance(t, Entity)]
+        cropped_entity_ids = [str(i) for i, term in enumerate(cropped_sentence_terms) if isinstance(term, Entity)]
 
-        row[const.ENTITY_VALUES] = ",".join([e.Value.replace(',', '') for e in entities])
-        row[const.ENTITY_TYPES] = ",".join([e.Type.replace(',', '') for e in entities])
-        row[const.ENTITIES] = ",".join(entity_inds)
+        row[const.ENTITY_VALUES] = ",".join([e.Value.replace(',', '') for e in entities_in_cropped])
+        row[const.ENTITY_TYPES] = ",".join([e.Type.replace(',', '') for e in entities_in_cropped])
+        row[const.ENTITIES] = ",".join(cropped_entity_ids)
 
         row[const.S_IND] = s_ind
         row[const.T_IND] = t_ind
