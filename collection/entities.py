@@ -1,5 +1,6 @@
 from arekit.common.entities.collection import EntityCollection
-from arekit.common.synonyms import SynonymsCollection
+from arekit.common.synonyms.base import SynonymsCollection
+from arekit.common.synonyms.grouping import SynonymsCollectionValuesGroupingProviders
 from arekit.contrib.source.brat.annot import BratAnnotationParser
 from arekit.contrib.source.brat.entities.entity import BratEntity
 
@@ -34,16 +35,6 @@ class CollectionEntityCollection(EntityCollection):
         assert(isinstance(entity, BratEntity))
         return entity.Type not in self.__dicard_entities
 
-    @staticmethod
-    def get_synonym_group_index_or_add(synonyms, value):
-        """ Allows a synonyms collection extensioning
-        """
-        assert(isinstance(synonyms, SynonymsCollection))
-
-        if not synonyms.contains_synonym_value(value):
-            synonyms.add_synonym_value(value)
-        return synonyms.get_synonym_group_index(value)
-
     @classmethod
     def read_collection(cls, filename, synonyms, version=CollectionVersions.NO):
         assert(isinstance(filename, str))
@@ -53,5 +44,7 @@ class CollectionEntityCollection(EntityCollection):
             inner_path=CollectionIOUtils.get_annotation_innerpath(filename),
             process_func=lambda input_file: cls(
                 contents=BratAnnotationParser.parse_annotations(input_file=input_file, encoding='utf-8-sig'),
-                value_to_group_id_func=lambda value: cls.get_synonym_group_index_or_add(synonyms, value)),
+                value_to_group_id_func=lambda value:
+                    SynonymsCollectionValuesGroupingProviders.provide_existed_or_register_missed_value(
+                        synonyms, value)),
             version=version)

@@ -12,9 +12,9 @@ from arekit.common.opinions.annot.base import BaseOpinionAnnotator
 from arekit.common.pipeline.base import BasePipeline
 from arekit.common.pipeline.item_map import MapPipelineItem
 from arekit.common.pipeline.items.flatten import FlattenIterPipelineItem
+from arekit.common.synonyms.grouping import SynonymsCollectionValuesGroupingProviders
 from arekit.common.text_opinions.base import TextOpinion
 
-from collection.entities import CollectionEntityCollection
 from collection.news import CustomNews
 
 
@@ -29,8 +29,9 @@ def create_train_pipeline(text_parser, doc_ops, neut_annotator, synonyms, terms_
         get_doc_func=lambda doc_id: doc_ops.get_doc(doc_id),
         text_parser=text_parser,
         neut_annotator=neut_annotator,
-        value_to_group_id_func=lambda value: CollectionEntityCollection.get_synonym_group_index_or_add(
-            synonyms=synonyms, value=value))
+        value_to_group_id_func=lambda value:
+            SynonymsCollectionValuesGroupingProviders.provide_existed_or_register_missed_value(
+                synonyms=synonyms, value=value))
 
 
 def __convert_opinion_id(news, origin_id, esp):

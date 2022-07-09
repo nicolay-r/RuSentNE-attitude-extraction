@@ -13,7 +13,6 @@ from arekit.common.text.parser import BaseTextParser
 from arekit.contrib.bert.handlers.serializer import BertExperimentInputSerializerIterationHandler
 from arekit.contrib.bert.samplers.nli_m import NliMultipleSampleProvider
 from arekit.contrib.source.brat.entities.parser import BratTextEntitiesParser
-from arekit.processing.text.pipeline_terms_splitter import TermsSplitterParser
 from arekit.processing.text.pipeline_tokenizer import DefaultTextTokenizer
 
 from annot import create_neutral_annotator
@@ -181,7 +180,7 @@ class BertTextsSerializationPipelineItem(BasePipelineItem):
                                                       terms_per_context=terms_per_context),
                 DataType.Test: create_test_pipeline(text_parser=text_parser,
                                                     doc_ops=doc_ops,
-                                                    neut_annotator=test_neut_annot,
+                                                    test_annotator=test_neut_annot,
                                                     synonyms=test_synonyms,
                                                     terms_per_context=terms_per_context),
                 DataType.Etalon: create_etalon_pipeline(text_parser=text_parser,

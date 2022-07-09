@@ -1,10 +1,9 @@
 import unittest
 from os.path import join, dirname, realpath
-
-from arekit.contrib.utils.evaluation.results.three_class import ThreeClassEvalResult
+from arekit.contrib.utils.evaluation.results.two_class_prf import TwoClassEvalPrecRecallF1Result
 
 from evaluation.document_level import opinions_per_document_two_class_result_evaluation
-from evaluation.instance_level import text_opinion_monolith_collection_two_class_result_evaluator
+from evaluation.instance_level import text_opinion_per_collection_two_class_result_evaluator
 from labels.scaler import PosNegNeuRelationsLabelScaler
 
 
@@ -13,9 +12,9 @@ class TestEval(unittest.TestCase):
     @staticmethod
     def __print_result(result):
         print(result.TotalResult)
-        print(result.get_result_by_metric(ThreeClassEvalResult.C_F1))
-        print(result.get_result_by_metric(ThreeClassEvalResult.C_F1_POS))
-        print(result.get_result_by_metric(ThreeClassEvalResult.C_F1_NEG))
+        print(result.get_result_by_metric(TwoClassEvalPrecRecallF1Result.C_F1))
+        print(result.get_result_by_metric(TwoClassEvalPrecRecallF1Result.C_F1_POS))
+        print(result.get_result_by_metric(TwoClassEvalPrecRecallF1Result.C_F1_NEG))
 
     @staticmethod
     def __create_data():
@@ -38,7 +37,7 @@ class TestEval(unittest.TestCase):
 
         predict_filename, test_filename, etalon_filename = self.__create_data()
 
-        result = text_opinion_monolith_collection_two_class_result_evaluator(
+        result = text_opinion_per_collection_two_class_result_evaluator(
             test_predict_filepath=predict_filename,
             etalon_samples_filepath=etalon_filename,
             test_samples_filepath=test_filename,
