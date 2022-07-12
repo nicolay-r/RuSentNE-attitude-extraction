@@ -72,8 +72,15 @@ def text_opinion_per_collection_two_class_result_evaluator(
                   label_scaler=label_scaler)
 
     # Remove the one with NoLabel instance.
-    test_text_opinions_by_row_id = {row_id: text_opinion for row_id, text_opinion in test_text_opinions_by_row_id.items()
-                                    if text_opinion.Sentiment != no_label}
+    test_text_opinions_by_row_id = {
+        row_id: text_opinion for row_id, text_opinion in test_text_opinions_by_row_id.items()
+        if text_opinion.Sentiment != no_label
+    }
+
+    etalon_text_opinions_by_row_id = {
+        row_id: text_opinion for row_id, text_opinion in etalon_text_opinions_by_row_id.items()
+        if text_opinion.Sentiment != no_label
+    }
 
     # Composing evaluator.
     evaluator = TwoClassEvaluator(

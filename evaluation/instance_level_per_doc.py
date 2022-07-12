@@ -79,7 +79,8 @@ def text_opinion_per_document_two_class_result_evaluator(
     cmp_pairs_iter = DataPairsIterators.iter_func_based_collections(
         doc_ids=[int(doc_id) for doc_id in doc_ids],
         read_etalon_collection_func=lambda doc_id:
-            [etalon_text_opinions_by_row_id[row_id] for row_id in etalon_row_ids_by_doc_id[doc_id]]
+            [etalon_text_opinions_by_row_id[row_id] for row_id in etalon_row_ids_by_doc_id[doc_id]
+             if etalon_text_opinions_by_row_id[row_id].Sentiment != no_label]
             if doc_id in etalon_row_ids_by_doc_id else [],
         read_test_collection_func=lambda doc_id:
             # Удаляем среди перечня те отношения, у которых оценка NoLabel.
