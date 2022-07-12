@@ -17,7 +17,6 @@ from arekit.processing.pos.mystem_wrap import POSMystemWrapper
 from arekit.processing.text.pipeline_frames_lemmatized import LemmasBasedFrameVariantsParser
 from arekit.processing.text.pipeline_tokenizer import DefaultTextTokenizer
 
-from annot import create_neutral_annotator
 from entity.formatter import CustomEntitiesFormatter
 from experiment.ctx import CustomNetworkSerializationContext
 from experiment.doc_ops import CustomDocOperations
@@ -25,9 +24,7 @@ from experiment.io import CustomExperimentSerializationIO
 from folding.fixed import create_fixed_folding
 from labels.formatter import SentimentLabelFormatter
 from labels.scaler import PosNegNeuRelationsLabelScaler
-from pipelines.etalon import create_etalon_pipeline
-from pipelines.test import create_test_pipeline
-from pipelines.train import create_train_pipeline
+from pipelines.collection import prepare_data_pipelines
 from utils import read_train_test
 
 
@@ -95,10 +92,6 @@ def serialize_nn(output_dir, fixed_split_filepath,
     norm_vectorizer = RandomNormalVectorizer(vector_size=exp_ctx.WordEmbedding.VectorSize,
                                              token_offset=12345)
 
-    train_neut_annot, train_synonyms = create_neutral_annotator(terms_per_context)
-    test_neut_annot, test_synonyms = create_neutral_annotator(terms_per_context)
-    _, etalon_synonyms = create_neutral_annotator(terms_per_context)
-
     handler = NetworksInputSerializerExperimentIteration(
         vectorizers={
             TermTypes.WORD: bpe_vectorizer,
@@ -107,22 +100,8 @@ def serialize_nn(output_dir, fixed_split_filepath,
             TermTypes.TOKEN: norm_vectorizer
         },
         exp_io=CustomExperimentSerializationIO(output_dir=output_dir, exp_ctx=exp_ctx),
-        data_type_pipelines={
-            DataType.Train: create_train_pipeline(text_parser=text_parser,
-                                                  doc_ops=doc_ops,
-                                                  annotator=train_neut_annot,
-                                                  synonyms=train_synonyms,
-                                                  terms_per_context=terms_per_context),
-            DataType.Test: create_test_pipeline(text_parser=text_parser,
-                                                doc_ops=doc_ops,
-                                                annotator=test_neut_annot,
-                                                synonyms=test_synonyms,
-                                                terms_per_context=terms_per_context),
-            DataType.Etalon: create_etalon_pipeline(text_parser=text_parser,
-                                                    doc_ops=doc_ops,
-                                                    synonyms=etalon_synonyms,
-                                                    terms_per_context=terms_per_context)
-        },
+        data_type_pipelines=prepare_data_pipelines(
+            text_parser=text_parser, doc_ops=doc_ops, terms_per_context=terms_per_context),
         str_entity_fmt=entities_fmt,
         balance_func=lambda data_type: data_type == DataType.Train,
         save_labels_func=lambda data_type: data_type == DataType.Train or data_type == DataType.Etalon,
