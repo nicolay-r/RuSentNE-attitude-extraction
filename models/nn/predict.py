@@ -90,7 +90,8 @@ class TensorflowNetworkInferencePipelineItem(BasePipelineItem):
         full_model_name = pipeline_ctx.provide_or_none("full_model_name")
         exp_root = join(input_data._get_experiment_sources_dir(),
                         input_data.get_experiment_folder_name())
-        tgt = join(exp_root, "predict-{}.tsv.gz".format(full_model_name))
+        tgt = join(exp_root, "predict-{fmn}-{dtype}.tsv.gz".format(
+            fmn=full_model_name, dtype=self.__data_type.value))
 
         # Fetch other required in furter information from input_data.
         samples_filepath = input_data.create_samples_writer_target(self.__data_type)
@@ -130,11 +131,12 @@ class TensorflowNetworkInferencePipelineItem(BasePipelineItem):
 
         self.__writer.set_target(tgt)
 
-        model.predict(do_compile=True)
+        model.predict(data_type=self.__data_type, do_compile=True)
 
 
 def predict_nn(extra_name_suffix, output_dir, exp_name="serialize", data_folding_name="fixed",
-               bag_size=1, bags_per_minibatch=4, model_name=ModelNames.CNN, labels_count=3):
+               bag_size=1, bags_per_minibatch=4, model_name=ModelNames.CNN, labels_count=3,
+               data_type=DataType.Test):
     """ Perform inference for dataset using a pre-trained collection
         This is a pipeline-based impelementation, taken from
         the ARElight repository, see the following code for reference:
@@ -150,7 +152,7 @@ def predict_nn(extra_name_suffix, output_dir, exp_name="serialize", data_folding
 
     ppl = BasePipeline(pipeline=[
         TensorflowNetworkInferencePipelineItem(
-            data_type=DataType.Test,
+            data_type=data_type,
             bag_size=bag_size,
             bags_per_minibatch=bags_per_minibatch,
             model_name=model_name,
