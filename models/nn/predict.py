@@ -149,6 +149,7 @@ def predict_nn(extra_name_suffix, output_dir, exp_name="serialize", data_folding
     """
     assert(isinstance(output_dir, str))
 
+    data_folding = NoFolding(doc_ids_to_fold=[], supported_data_types=[data_type])
     full_model_name = "-".join([data_folding_name, model_name.value])
     model_io = NeuralNetworkModelIO(full_model_name=full_model_name,
                                     target_dir=output_dir,
@@ -166,7 +167,7 @@ def predict_nn(extra_name_suffix, output_dir, exp_name="serialize", data_folding
             predict_writer=TsvPredictWriter(),
             callbacks=[],
             labels_scaler=PosNegNeuRelationsLabelScaler(),
-            data_folding=NoFolding(doc_ids_to_fold=[], supported_data_types=[DataType.Test]),
+            data_folding=data_folding,
             nn_io=model_io)
     ])
 

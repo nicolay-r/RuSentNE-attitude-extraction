@@ -17,7 +17,7 @@ class BertInferencePipelineItem(BasePipelineItem):
 
     def __init__(self, bert_config_file, model_checkpoint_path, vocab_filepath,
                  predict_writer, labels_scaler, max_seq_length, do_lowercase,
-                 batch_size=10):
+                 data_type, data_folding, batch_size=10):
         assert(isinstance(predict_writer, BasePredictWriter))
         assert(isinstance(labels_scaler, BaseLabelScaler))
         assert(isinstance(do_lowercase, bool))
@@ -40,12 +40,14 @@ class BertInferencePipelineItem(BasePipelineItem):
         self.__labels_scaler = labels_scaler
         self.__predict_provider = BasePredictProvider()
         self.__batch_size = batch_size
+        self.__data_type = data_type
+        self.__data_folding = data_folding
 
     def apply_core(self, input_data, pipeline_ctx):
         assert(isinstance(input_data, dict))
-        assert("samples_filepath" in input_data)        # То, что нужно предсказать.
-        assert("predict_dir" in input_data)             # То, куда нужно записать результат.
         assert(isinstance(pipeline_ctx, PipelineContext))
+        assert("samples_dir" in input_data)
+        assert("predict_dir" in input_data)             # То, куда нужно записать результат.
 
         def __iter_predict_result(tsv_filepath):
             samples = BaseRowsStorage.from_tsv(tsv_filepath)
@@ -70,14 +72,19 @@ class BertInferencePipelineItem(BasePipelineItem):
 
         # Setup predicted result writer.
         full_model_name = pipeline_ctx.provide_or_none("full_model_name")
-        tgt = join(input_data["predict_dir"], "predict-{}.tsv.gz".format(full_model_name))
+
+        predict_target = join(input_data["predict_dir"], "predict-{fmn}-{dtype}.tsv.gz".format(
+            fmn=full_model_name, dtype=str(self.__data_type).lower().split('.')[-1]))
+
+        samples_target = join(input_data["samples_dir"], "sample-{dtype}-{index}.tsv.gz".format(
+            dtype=str(self.__data_type).lower().split('.')[-1], index=0))
 
         # Setup target filepath.
-        self.__writer.set_target(tgt)
+        self.__writer.set_target(predict_target)
 
         # Gathering the content
         title, contents_it = self.__predict_provider.provide(
-            sample_id_with_uint_labels_iter=__iter_predict_result(tsv_filepath=input_data["samples_filepath"]),
+            sample_id_with_uint_labels_iter=__iter_predict_result(tsv_filepath=samples_target),
             labels_scaler=self.__labels_scaler)
 
         with self.__writer:
