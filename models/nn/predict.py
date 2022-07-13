@@ -6,6 +6,7 @@ from arekit.common.data.views.samples import BaseSampleStorageView
 from arekit.common.experiment.api.ctx_training import ExperimentTrainingContext
 from arekit.common.experiment.data_type import DataType
 from arekit.common.experiment.name_provider import ExperimentNameProvider
+from arekit.common.folding.base import BaseDataFolding
 from arekit.common.folding.nofold import NoFolding
 from arekit.common.pipeline.base import BasePipeline
 from arekit.common.pipeline.context import PipelineContext
@@ -46,11 +47,13 @@ class InferIOUtils(DefaultNetworkIOUtils):
 class TensorflowNetworkInferencePipelineItem(BasePipelineItem):
 
     def __init__(self, model_name, bags_collection_type, model_input_type, predict_writer,
-                 data_type, bag_size, bags_per_minibatch, nn_io, labels_scaler, callbacks):
+                 data_type, bag_size, bags_per_minibatch, nn_io, labels_scaler, callbacks,
+                 data_folding):
         assert(isinstance(callbacks, list))
         assert(isinstance(bag_size, int))
         assert(isinstance(predict_writer, BasePredictWriter))
         assert(isinstance(data_type, DataType))
+        assert(isinstance(data_folding, BaseDataFolding))
 
         # Create network an configuration.
         network_func, config_func = create_network_and_network_config_funcs(
@@ -81,6 +84,7 @@ class TensorflowNetworkInferencePipelineItem(BasePipelineItem):
         self.__writer = predict_writer
         self.__bags_collection_type = bags_collection_type
         self.__data_type = data_type
+        self.__data_folding = data_folding
 
     def apply_core(self, input_data, pipeline_ctx):
         assert(isinstance(input_data, InferIOUtils))
@@ -91,12 +95,13 @@ class TensorflowNetworkInferencePipelineItem(BasePipelineItem):
         exp_root = join(input_data._get_experiment_sources_dir(),
                         input_data.get_experiment_folder_name())
         tgt = join(exp_root, "predict-{fmn}-{dtype}.tsv.gz".format(
-            fmn=full_model_name, dtype=self.__data_type.value))
+            fmn=full_model_name, dtype=str(self.__data_type).lower().split('.')[-1]))
 
         # Fetch other required in furter information from input_data.
-        samples_filepath = input_data.create_samples_writer_target(self.__data_type)
-        embedding = input_data.load_embedding()
-        vocab = input_data.load_vocab()
+        samples_filepath = input_data.create_samples_writer_target(
+            data_type=self.__data_type, data_folding=self.__data_folding)
+        embedding = input_data.load_embedding(data_folding=self.__data_folding)
+        vocab = input_data.load_vocab(data_folding=self.__data_folding)
 
         # Setup config parameters.
         self.__config.set_term_embedding(embedding)
@@ -161,14 +166,14 @@ def predict_nn(extra_name_suffix, output_dir, exp_name="serialize", data_folding
             predict_writer=TsvPredictWriter(),
             callbacks=[],
             labels_scaler=PosNegNeuRelationsLabelScaler(),
+            data_folding=NoFolding(doc_ids_to_fold=[], supported_data_types=[DataType.Test]),
             nn_io=model_io)
     ])
 
     # Hack with the training context.
     exp_ctx = ExperimentTrainingContext(
         labels_count=labels_count,
-        name_provider=ExperimentNameProvider(name=exp_name, suffix=extra_name_suffix),
-        data_folding=NoFolding(doc_ids_to_fold=[], supported_data_types=[DataType.Test]))
+        name_provider=ExperimentNameProvider(name=exp_name, suffix=extra_name_suffix))
 
     ppl.run(InferIOUtils(output_dir=output_dir, exp_ctx=exp_ctx),
             {

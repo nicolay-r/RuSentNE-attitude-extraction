@@ -9,16 +9,15 @@ from labels.scaler import ThreeLabelScaler
 
 class CustomNetworkSerializationContext(NetworkSerializationContext):
 
-    def __init__(self, labels_scaler, pos_tagger, embedding, terms_per_context, annotator,
-                 frames_collection, frame_variant_collection, name_provider, data_folding):
+    def __init__(self, labels_scaler, pos_tagger, embedding, terms_per_context,
+                 frames_collection, frame_variant_collection, name_provider):
         assert(isinstance(embedding, Embedding))
         assert(isinstance(pos_tagger, POSTagger))
         assert(isinstance(frames_collection, RuSentiFramesCollection))
         assert(isinstance(terms_per_context, int))
 
         super(CustomNetworkSerializationContext, self).__init__(
-            labels_scaler=labels_scaler, annot=annotator,
-            name_provider=name_provider, data_folding=data_folding)
+            labels_scaler=labels_scaler, name_provider=name_provider)
 
         self.__pos_tagger = pos_tagger
         self.__terms_per_context = terms_per_context

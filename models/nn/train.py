@@ -54,8 +54,7 @@ def train_nn(output_dir, model_log_dir, split_source,
 
     exp_ctx = ExperimentTrainingContext(
         labels_count=labels_count,
-        name_provider=ExperimentNameProvider(name=exp_name, suffix=extra_name_suffix),
-        data_folding=data_folding)
+        name_provider=ExperimentNameProvider(name=exp_name, suffix=extra_name_suffix))
 
     exp_ctx.set_model_io(model_io)
 

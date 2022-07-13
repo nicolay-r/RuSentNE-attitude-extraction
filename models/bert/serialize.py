@@ -5,7 +5,6 @@ from arekit.common.experiment.api.ctx_serialization import ExperimentSerializati
 from arekit.common.experiment.data_type import DataType
 from arekit.common.experiment.engine import ExperimentEngine
 from arekit.common.experiment.name_provider import ExperimentNameProvider
-from arekit.common.folding.nofold import NoFolding
 from arekit.common.labels.base import NoLabel
 from arekit.common.labels.scaler.single import SingleLabelScaler
 from arekit.common.pipeline.items.base import BasePipelineItem
@@ -24,13 +23,11 @@ from utils import read_train_test
 
 class BertSerializationContext(ExperimentSerializationContext):
 
-    def __init__(self, label_scaler, terms_per_context, annotator, name_provider, data_folding):
+    def __init__(self, label_scaler, terms_per_context, name_provider):
         assert(isinstance(terms_per_context, int))
 
-        super(BertSerializationContext, self).__init__(annot=annotator,
-                                                       name_provider=name_provider,
-                                                       label_scaler=label_scaler,
-                                                       data_folding=data_folding)
+        super(BertSerializationContext, self).__init__(name_provider=name_provider,
+                                                       label_scaler=label_scaler)
 
         self.__terms_per_context = terms_per_context
 
@@ -132,12 +129,9 @@ class BertTextsSerializationPipelineItem(BasePipelineItem):
         assert(isinstance(name_provider, ExperimentNameProvider))
         assert(isinstance(output_dir, str))
 
-        self.__exp_ctx = BertSerializationContext(
-            label_scaler=SingleLabelScaler(NoLabel()),
-            annotator=None,
-            terms_per_context=terms_per_context,
-            name_provider=name_provider,
-            data_folding=NoFolding(doc_ids_to_fold=[], supported_data_types=[]))
+        self.__exp_ctx = BertSerializationContext(label_scaler=SingleLabelScaler(NoLabel()),
+                                                  terms_per_context=terms_per_context,
+                                                  name_provider=name_provider)
 
         train_filenames, test_filenames = read_train_test(fixed_split_filepath)
         if limit is not None:
@@ -147,22 +141,19 @@ class BertTextsSerializationPipelineItem(BasePipelineItem):
         filenames_by_ids, data_folding = create_fixed_folding(train_filenames=train_filenames,
                                                               test_filenames=test_filenames)
 
-        self.__exp_ctx.set_data_folding(data_folding)
-
         self.__exp_io = InferIOUtils(exp_ctx=self.__exp_ctx, output_dir=output_dir)
 
         text_parser = BaseTextParser(pipeline=[BratTextEntitiesParser(),
                                                DefaultTextTokenizer()])
 
-        doc_ops = CustomDocOperations(exp_ctx=self.__exp_ctx,
-                                      label_formatter=label_formatter,
+        doc_ops = CustomDocOperations(label_formatter=label_formatter,
                                       filename_by_id=filenames_by_ids)
 
         self.__handler = BertExperimentInputSerializerIterationHandler(
             doc_ops=doc_ops,
             balance_func=lambda data_type: data_type == DataType.Train,
             exp_io=self.__exp_io,
-            exp_ctx=self.__exp_ctx,
+            data_folding=data_folding,
             data_type_pipelines=prepare_data_pipelines(
                 text_parser=text_parser, doc_ops=doc_ops, terms_per_context=terms_per_context),
             save_labels_func=lambda data_type: data_type != DataType.Test,

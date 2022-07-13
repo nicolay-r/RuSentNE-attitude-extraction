@@ -69,13 +69,11 @@ def serialize_nn(output_dir, fixed_split_filepath,
     exp_ctx = CustomNetworkSerializationContext(
         labels_scaler=PosNegNeuRelationsLabelScaler(),
         embedding=load_embedding_news_mystem_skipgram_1000_20_2015(),
-        annotator=None,
         terms_per_context=terms_per_context,
         pos_tagger=pos_tagger,
         name_provider=name_provider,
         frames_collection=frames_collection,
-        frame_variant_collection=frame_variant_collection,
-        data_folding=data_folding)
+        frame_variant_collection=frame_variant_collection)
 
     text_parser = BaseTextParser([
         BratTextEntitiesParser(),
@@ -84,8 +82,7 @@ def serialize_nn(output_dir, fixed_split_filepath,
                                        stemmer=stemmer)]
     )
 
-    doc_ops = CustomDocOperations(exp_ctx=exp_ctx,
-                                  label_formatter=label_formatter,
+    doc_ops = CustomDocOperations(label_formatter=label_formatter,
                                   filename_by_id=filenames_by_ids)
 
     bpe_vectorizer = BPEVectorizer(embedding=exp_ctx.WordEmbedding, max_part_size=3)
@@ -99,6 +96,7 @@ def serialize_nn(output_dir, fixed_split_filepath,
             TermTypes.FRAME: bpe_vectorizer,
             TermTypes.TOKEN: norm_vectorizer
         },
+        data_folding=data_folding,
         exp_io=CustomExperimentSerializationIO(output_dir=output_dir, exp_ctx=exp_ctx),
         data_type_pipelines=prepare_data_pipelines(
             text_parser=text_parser, doc_ops=doc_ops, terms_per_context=terms_per_context),

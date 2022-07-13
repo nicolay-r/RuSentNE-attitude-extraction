@@ -1,5 +1,4 @@
 from arekit.common.data.input.sample import InputSampleBase
-from arekit.common.experiment.data_type import DataType
 from arekit.common.linkage.text_opinions import TextOpinionsLinkage
 from arekit.common.news.parsed.base import ParsedNews
 from arekit.common.news.parsed.providers.base import BaseParsedNewsServiceProvider
