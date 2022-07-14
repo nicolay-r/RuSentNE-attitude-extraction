@@ -1,6 +1,7 @@
 from os.path import join
 
 from arekit.common.experiment.api.ctx_training import ExperimentTrainingContext
+from arekit.common.experiment.data_type import DataType
 from arekit.common.experiment.name_provider import ExperimentNameProvider
 from arekit.common.pipeline.base import BasePipeline
 from arekit.contrib.networks.core.callback.hidden import HiddenStatesWriterCallback
@@ -32,9 +33,6 @@ def train_nn(output_dir, model_log_dir, split_filepath, folding_type="fixed",
 
         finetune_existed: bool
             flag that shows wheter there is need to keep saved state and proceed with its finetunning.
-
-        NOTE/TODO:
-        We adopt handler, but in futher handlers might be switched to pipeline items
     """
     assert(isinstance(output_dir, str))
     assert(isinstance(finetune_existed, bool))
@@ -62,7 +60,7 @@ def train_nn(output_dir, model_log_dir, split_filepath, folding_type="fixed",
         model_name=model_name,
         model_input_type=ModelInputType.SingleInstance)
 
-    nework_callbacks = [
+    network_callbacks = [
         TrainingLimiterCallback(train_acc_limit=train_acc_limit),
         TrainingStatProviderCallback(),
         HiddenStatesWriterCallback(log_dir=model_target_dir, writer=data_writer),
@@ -89,7 +87,7 @@ def train_nn(output_dir, model_log_dir, split_filepath, folding_type="fixed",
         create_network_func=network_func,
         config=config,
         bags_collection_type=SingleBagsCollection,
-        network_callbacks=nework_callbacks,
+        network_callbacks=network_callbacks,
         training_epochs=epochs_count)
 
     # Start training process.
@@ -98,4 +96,5 @@ def train_nn(output_dir, model_log_dir, split_filepath, folding_type="fixed",
         _, data_folding = FoldingFactory.create_fixed_folding(split_filepath)
 
     ppl = BasePipeline([pipeline_item])
-    ppl.run(None, params_dict={"data_folding": data_folding})
+    ppl.run(None, params_dict={"data_folding": data_folding,
+                               "data_type": DataType.Train})
