@@ -52,14 +52,23 @@ class BertInferencePipelineItem(BasePipelineItem):
         def __iter_predict_result(tsv_filepath):
             samples = BaseRowsStorage.from_tsv(tsv_filepath)
 
+            used_row_ids = set()
+
             data = {"text_a": [], "text_b": [], "row_ids": []}
 
             for row_ind, row in samples:
+
+                # Considering unique rows only.
+                if row["id"] in used_row_ids:
+                    continue
+
                 data["text_a"].append(row['text_a'])
                 data["text_b"].append(row['text_b'])
                 data["row_ids"].append(row["id"])
 
-            for i in range(0, len(data["text_a"]), 10):
+                used_row_ids.add(row["id"])
+
+            for i in range(0, len(data["text_a"]), self.__batch_size):
 
                 texts_a = data["text_a"][i:i + self.__batch_size]
                 texts_b = data["text_b"][i:i + self.__batch_size]
