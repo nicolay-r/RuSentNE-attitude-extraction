@@ -39,11 +39,7 @@ def train_nn(output_dir, model_log_dir, split_filepath, folding_type="fixed",
     assert(isinstance(output_dir, str))
     assert(isinstance(finetune_existed, bool))
 
-    data_folding = None
-    if folding_type == "fixed":
-        _, data_folding = FoldingFactory.create_fixed_folding(split_filepath)
-
-    full_model_name = "-".join([data_folding.Name, model_name.value])
+    full_model_name = "-".join([folding_type, model_name.value])
     model_target_dir = join(model_log_dir, full_model_name)
 
     model_io = NeuralNetworkModelIO(full_model_name=full_model_name,
@@ -94,9 +90,12 @@ def train_nn(output_dir, model_log_dir, split_filepath, folding_type="fixed",
         config=config,
         bags_collection_type=SingleBagsCollection,
         network_callbacks=nework_callbacks,
-        training_epochs=epochs_count,
-        data_folding=data_folding)
+        training_epochs=epochs_count)
 
     # Start training process.
+    data_folding = None
+    if folding_type == "fixed":
+        _, data_folding = FoldingFactory.create_fixed_folding(split_filepath)
+
     ppl = BasePipeline([pipeline_item])
-    ppl.run(None)
+    ppl.run(None, params_dict={"data_folding": data_folding})

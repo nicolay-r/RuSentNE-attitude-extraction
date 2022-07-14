@@ -1,6 +1,5 @@
 from arekit.contrib.experiment_rusentrel.connotations.provider import RuSentiFramesConnotationProvider
 from arekit.contrib.networks.core.input.ctx_serialization import NetworkSerializationContext
-from arekit.contrib.networks.embedding import Embedding
 from arekit.contrib.source.rusentiframes.collection import RuSentiFramesCollection
 from arekit.processing.pos.base import POSTagger
 
@@ -9,9 +8,8 @@ from labels.scaler import ThreeLabelScaler
 
 class CustomNetworkSerializationContext(NetworkSerializationContext):
 
-    def __init__(self, labels_scaler, pos_tagger, embedding, terms_per_context,
+    def __init__(self, labels_scaler, pos_tagger, terms_per_context,
                  frames_collection, frame_variant_collection, name_provider):
-        assert(isinstance(embedding, Embedding))
         assert(isinstance(pos_tagger, POSTagger))
         assert(isinstance(frames_collection, RuSentiFramesCollection))
         assert(isinstance(terms_per_context, int))
@@ -21,7 +19,6 @@ class CustomNetworkSerializationContext(NetworkSerializationContext):
 
         self.__pos_tagger = pos_tagger
         self.__terms_per_context = terms_per_context
-        self.__word_embedding = embedding
         self.__frames_collection = frames_collection
         self.__frame_variant_collection = frame_variant_collection
         self.__frame_roles_label_scaler = ThreeLabelScaler()
@@ -34,10 +31,6 @@ class CustomNetworkSerializationContext(NetworkSerializationContext):
     @property
     def FrameVariantCollection(self):
         return self.__frame_variant_collection
-
-    @property
-    def WordEmbedding(self):
-        return self.__word_embedding
 
     @property
     def TermsPerContext(self):

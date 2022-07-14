@@ -37,16 +37,6 @@ def serialize_nn(output_dir, split_filepath, folding_type="fixed",
     assert(isinstance(output_dir, str))
     assert(isinstance(limit, int) or limit is None)
 
-    data_folding = None
-    filenames_by_ids = None
-
-    if folding_type == "fixed":
-        filenames_by_ids, data_folding = FoldingFactory.create_fixed_folding(
-            fixed_split_filepath=split_filepath, limit=limit)
-
-    doc_ops = CustomDocOperations(label_formatter=SentimentLabelFormatter(),
-                                  filename_by_id=filenames_by_ids)
-
     terms_per_context = 50
     stemmer = MystemWrapper()
     pos_tagger = POSMystemWrapper(mystem=stemmer.MystemInstance)
@@ -65,22 +55,15 @@ def serialize_nn(output_dir, split_filepath, folding_type="fixed",
 
     exp_ctx = CustomNetworkSerializationContext(
         labels_scaler=PosNegNeuRelationsLabelScaler(),
-        embedding=load_embedding_news_mystem_skipgram_1000_20_2015(),
         terms_per_context=terms_per_context,
         pos_tagger=pos_tagger,
         name_provider=name_provider,
         frames_collection=frames_collection,
         frame_variant_collection=frame_variant_collection)
 
-    text_parser = BaseTextParser([
-        BratTextEntitiesParser(),
-        DefaultTextTokenizer(keep_tokens=True),
-        LemmasBasedFrameVariantsParser(frame_variants=exp_ctx.FrameVariantCollection,
-                                       stemmer=stemmer)]
-    )
-
-    bpe_vectorizer = BPEVectorizer(embedding=exp_ctx.WordEmbedding, max_part_size=3)
-    norm_vectorizer = RandomNormalVectorizer(vector_size=exp_ctx.WordEmbedding.VectorSize,
+    embedding = load_embedding_news_mystem_skipgram_1000_20_2015()
+    bpe_vectorizer = BPEVectorizer(embedding=embedding, max_part_size=3)
+    norm_vectorizer = RandomNormalVectorizer(vector_size=embedding.VectorSize,
                                              token_offset=12345)
 
     pipeline_item = NetworksInputSerializerPipelineItem(
@@ -90,15 +73,37 @@ def serialize_nn(output_dir, split_filepath, folding_type="fixed",
             TermTypes.FRAME: bpe_vectorizer,
             TermTypes.TOKEN: norm_vectorizer
         },
-        data_folding=data_folding,
         exp_io=CustomExperimentSerializationIO(output_dir=output_dir, exp_ctx=exp_ctx),
-        data_type_pipelines=prepare_data_pipelines(
-            text_parser=text_parser, doc_ops=doc_ops, terms_per_context=terms_per_context),
         str_entity_fmt=entities_fmt,
         balance_func=lambda data_type: data_type == DataType.Train,
         save_labels_func=lambda data_type: data_type == DataType.Train or data_type == DataType.Etalon,
         exp_ctx=exp_ctx,
         save_embedding=True)
 
+    data_folding = None
+    filenames_by_ids = None
+
+    if folding_type == "fixed":
+        filenames_by_ids, data_folding = FoldingFactory.create_fixed_folding(
+            fixed_split_filepath=split_filepath, limit=limit)
+
+    doc_ops = CustomDocOperations(label_formatter=SentimentLabelFormatter(),
+                                  filename_by_id=filenames_by_ids)
+
+    text_parser = BaseTextParser([
+        BratTextEntitiesParser(),
+        DefaultTextTokenizer(keep_tokens=True),
+        LemmasBasedFrameVariantsParser(frame_variants=exp_ctx.FrameVariantCollection,
+                                       stemmer=stemmer)]
+    )
+
+    data_type_pipelines = prepare_data_pipelines(text_parser=text_parser,
+                                                 doc_ops=doc_ops,
+                                                 terms_per_context=terms_per_context)
+
     ppl = BasePipeline([pipeline_item])
-    ppl.run(None)
+    ppl.run(input_data=None,
+            params_dict={
+                "data_folding": data_folding,
+                "data_type_pipelines": data_type_pipelines
+    })

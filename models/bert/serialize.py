@@ -6,6 +6,7 @@ from arekit.common.experiment.data_type import DataType
 from arekit.common.experiment.name_provider import ExperimentNameProvider
 from arekit.common.labels.base import NoLabel
 from arekit.common.labels.scaler.single import SingleLabelScaler
+from arekit.common.pipeline.base import BasePipeline
 from arekit.common.text.parser import BaseTextParser
 from arekit.contrib.bert.pipelines.items.serializer import BertExperimentInputSerializerPipelineItem
 from arekit.contrib.bert.samplers.nli_m import NliMultipleSampleProvider
@@ -124,8 +125,8 @@ class CroppedBertSampleRowProvider(NliMultipleSampleProvider):
         row[const.T_IND] = t_ind
 
 
-def bert_serialize_pipeline_item(split_filepath, terms_per_context, name_provider,
-                                 sample_row_provider, output_dir, folding_type="fixed", limit=None):
+def serialize_bert(split_filepath, terms_per_context, name_provider,
+                   sample_row_provider, output_dir, folding_type="fixed", limit=None):
     assert(isinstance(limit, int) or limit is None)
     assert(isinstance(split_filepath, str))
     assert(isinstance(terms_per_context, int))
@@ -136,6 +137,15 @@ def bert_serialize_pipeline_item(split_filepath, terms_per_context, name_provide
     exp_ctx = BertSerializationContext(label_scaler=SingleLabelScaler(NoLabel()),
                                        terms_per_context=terms_per_context,
                                        name_provider=name_provider)
+
+    pipeline = BasePipeline([
+         BertExperimentInputSerializerPipelineItem(
+            balance_func=lambda data_type: data_type == DataType.Train,
+            exp_io=InferIOUtils(exp_ctx=exp_ctx,
+                                output_dir=output_dir),
+            save_labels_func=lambda data_type: data_type != DataType.Test,
+            sample_rows_provider=sample_row_provider)
+    ])
 
     data_folding = None
     filenames_by_ids = None
@@ -150,12 +160,12 @@ def bert_serialize_pipeline_item(split_filepath, terms_per_context, name_provide
     text_parser = BaseTextParser(pipeline=[BratTextEntitiesParser(),
                                            DefaultTextTokenizer()])
 
-    return BertExperimentInputSerializerPipelineItem(
-        balance_func=lambda data_type: data_type == DataType.Train,
-        exp_io=InferIOUtils(exp_ctx=exp_ctx, output_dir=output_dir),
-        data_folding=data_folding,
-        data_type_pipelines=prepare_data_pipelines(text_parser=text_parser,
-                                                   doc_ops=doc_ops,
-                                                   terms_per_context=terms_per_context),
-        save_labels_func=lambda data_type: data_type != DataType.Test,
-        sample_rows_provider=sample_row_provider)
+    data_type_pipelines = prepare_data_pipelines(text_parser=text_parser,
+                                                 doc_ops=doc_ops,
+                                                 terms_per_context=terms_per_context)
+
+    pipeline.run(input_data=None,
+                 params_dict={
+                     "data_folding": data_folding,
+                     "data_type_pipelines": data_type_pipelines
+                 })
