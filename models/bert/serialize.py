@@ -14,11 +14,10 @@ from arekit.contrib.bert.samplers.nli_m import NliMultipleSampleProvider
 from arekit.contrib.source.brat.entities.parser import BratTextEntitiesParser
 from arekit.processing.text.pipeline_tokenizer import DefaultTextTokenizer
 
-from experiment.doc_ops import CustomDocOperations
-from folding.fixed import create_fixed_folding
+from folding.factory import FoldingFactory
+from labels.formatter import SentimentLabelFormatter
 from models.nn.predict import InferIOUtils
 from pipelines.collection import prepare_data_pipelines
-from utils import read_train_test
 
 
 class BertSerializationContext(ExperimentSerializationContext):
@@ -120,10 +119,10 @@ class CroppedBertSampleRowProvider(NliMultipleSampleProvider):
 
 class BertTextsSerializationPipelineItem(BasePipelineItem):
 
-    def __init__(self, fixed_split_filepath, terms_per_context, name_provider,
-                 label_formatter, sample_row_provider, output_dir, limit=None):
+    def __init__(self, split_filepath, terms_per_context, name_provider,
+                 sample_row_provider, output_dir, folding_type="fixed", limit=None):
         assert(isinstance(limit, int) or limit is None)
-        assert(isinstance(fixed_split_filepath, str))
+        assert(isinstance(split_filepath, str))
         assert(isinstance(terms_per_context, int))
         assert(isinstance(sample_row_provider, BaseSampleRowProvider))
         assert(isinstance(name_provider, ExperimentNameProvider))
@@ -132,22 +131,19 @@ class BertTextsSerializationPipelineItem(BasePipelineItem):
         self.__exp_ctx = BertSerializationContext(label_scaler=SingleLabelScaler(NoLabel()),
                                                   terms_per_context=terms_per_context,
                                                   name_provider=name_provider)
+        data_folding = None
+        doc_ops = None
 
-        train_filenames, test_filenames = read_train_test(fixed_split_filepath)
-        if limit is not None:
-            train_filenames = train_filenames[:limit]
-            test_filenames = test_filenames[:limit]
-
-        filenames_by_ids, data_folding = create_fixed_folding(train_filenames=train_filenames,
-                                                              test_filenames=test_filenames)
+        if folding_type == "fixed":
+            data_folding, doc_ops = FoldingFactory.create_fixed_folding(
+                fixed_split_filepath=split_filepath,
+                label_formatter=SentimentLabelFormatter(),
+                limit=limit)
 
         self.__exp_io = InferIOUtils(exp_ctx=self.__exp_ctx, output_dir=output_dir)
 
         text_parser = BaseTextParser(pipeline=[BratTextEntitiesParser(),
                                                DefaultTextTokenizer()])
-
-        doc_ops = CustomDocOperations(label_formatter=label_formatter,
-                                      filename_by_id=filenames_by_ids)
 
         self.__handler = BertExperimentInputSerializerIterationHandler(
             doc_ops=doc_ops,

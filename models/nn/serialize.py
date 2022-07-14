@@ -19,16 +19,14 @@ from arekit.processing.text.pipeline_tokenizer import DefaultTextTokenizer
 
 from entity.formatter import CustomEntitiesFormatter
 from experiment.ctx import CustomNetworkSerializationContext
-from experiment.doc_ops import CustomDocOperations
 from experiment.io import CustomExperimentSerializationIO
-from folding.fixed import create_fixed_folding
+from folding.factory import FoldingFactory
 from labels.formatter import SentimentLabelFormatter
 from labels.scaler import PosNegNeuRelationsLabelScaler
 from pipelines.collection import prepare_data_pipelines
-from utils import read_train_test
 
 
-def serialize_nn(output_dir, fixed_split_filepath,
+def serialize_nn(output_dir, split_filepath, folding_type="fixed",
                  entities_fmt=CustomEntitiesFormatter(), limit=None, suffix="nn"):
     """ Run data preparation process for neural networks, i.e.
         convolutional neural networks and recurrent-based neural networks.
@@ -36,22 +34,19 @@ def serialize_nn(output_dir, fixed_split_filepath,
     """
     assert(isinstance(suffix, str))
     assert(isinstance(output_dir, str))
-    assert(isinstance(fixed_split_filepath, str))
     assert(isinstance(limit, int) or limit is None)
 
-    train_filenames, test_filenames = read_train_test(fixed_split_filepath)
-    if limit is not None:
-        train_filenames = train_filenames[:limit]
-        test_filenames = test_filenames[:limit]
+    doc_ops = None
+    data_folding = None
 
-    filenames_by_ids, data_folding = create_fixed_folding(train_filenames=train_filenames,
-                                                          test_filenames=test_filenames)
-
-    print("Documents count:", len(filenames_by_ids))
+    if folding_type == "fixed":
+        data_folding, doc_ops = FoldingFactory.create_fixed_folding(
+            fixed_split_filepath=split_filepath,
+            label_formatter=SentimentLabelFormatter(),
+            limit=limit)
 
     terms_per_context = 50
     stemmer = MystemWrapper()
-    label_formatter = SentimentLabelFormatter()
     pos_tagger = POSMystemWrapper(mystem=stemmer.MystemInstance)
 
     # Frames initialization
@@ -81,9 +76,6 @@ def serialize_nn(output_dir, fixed_split_filepath,
         LemmasBasedFrameVariantsParser(frame_variants=exp_ctx.FrameVariantCollection,
                                        stemmer=stemmer)]
     )
-
-    doc_ops = CustomDocOperations(label_formatter=label_formatter,
-                                  filename_by_id=filenames_by_ids)
 
     bpe_vectorizer = BPEVectorizer(embedding=exp_ctx.WordEmbedding, max_part_size=3)
     norm_vectorizer = RandomNormalVectorizer(vector_size=exp_ctx.WordEmbedding.VectorSize,
