@@ -1,4 +1,3 @@
-from experiment.doc_ops import CustomDocOperations
 from folding.fixed import create_fixed_folding
 from utils import read_train_test
 
@@ -9,7 +8,7 @@ class FoldingFactory:
     """
 
     @staticmethod
-    def create_fixed_folding(fixed_split_filepath, label_formatter, limit=None):
+    def create_fixed_folding(fixed_split_filepath, limit=None):
         """ Файл к фиксированному разбиению.
             Можно ограничить число документов, чтобы например потестировать. (limit)
         """
@@ -20,7 +19,5 @@ class FoldingFactory:
             test_filenames = test_filenames[:limit]
         filenames_by_ids, data_folding = create_fixed_folding(train_filenames=train_filenames,
                                                               test_filenames=test_filenames)
-        doc_ops = CustomDocOperations(label_formatter=label_formatter,
-                                      filename_by_id=filenames_by_ids)
 
-        return data_folding, doc_ops
+        return filenames_by_ids, data_folding

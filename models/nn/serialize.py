@@ -1,10 +1,10 @@
 from arekit.common.experiment.data_type import DataType
-from arekit.common.experiment.engine import ExperimentEngine
 from arekit.common.experiment.name_provider import ExperimentNameProvider
 from arekit.common.frames.variants.collection import FrameVariantsCollection
+from arekit.common.pipeline.base import BasePipeline
 from arekit.common.text.parser import BaseTextParser
 from arekit.contrib.networks.core.input.term_types import TermTypes
-from arekit.contrib.networks.handlers.serializer import NetworksInputSerializerExperimentIteration
+from arekit.contrib.networks.pipelines.items.serializer import NetworksInputSerializerPipelineItem
 from arekit.contrib.source.brat.entities.parser import BratTextEntitiesParser
 from arekit.contrib.source.rusentiframes.collection import RuSentiFramesCollection
 from arekit.contrib.source.rusentiframes.labels_fmt import RuSentiFramesLabelsFormatter
@@ -19,6 +19,7 @@ from arekit.processing.text.pipeline_tokenizer import DefaultTextTokenizer
 
 from entity.formatter import CustomEntitiesFormatter
 from experiment.ctx import CustomNetworkSerializationContext
+from experiment.doc_ops import CustomDocOperations
 from experiment.io import CustomExperimentSerializationIO
 from folding.factory import FoldingFactory
 from labels.formatter import SentimentLabelFormatter
@@ -36,14 +37,15 @@ def serialize_nn(output_dir, split_filepath, folding_type="fixed",
     assert(isinstance(output_dir, str))
     assert(isinstance(limit, int) or limit is None)
 
-    doc_ops = None
     data_folding = None
+    filenames_by_ids = None
 
     if folding_type == "fixed":
-        data_folding, doc_ops = FoldingFactory.create_fixed_folding(
-            fixed_split_filepath=split_filepath,
-            label_formatter=SentimentLabelFormatter(),
-            limit=limit)
+        filenames_by_ids, data_folding = FoldingFactory.create_fixed_folding(
+            fixed_split_filepath=split_filepath, limit=limit)
+
+    doc_ops = CustomDocOperations(label_formatter=SentimentLabelFormatter(),
+                                  filename_by_id=filenames_by_ids)
 
     terms_per_context = 50
     stemmer = MystemWrapper()
@@ -81,7 +83,7 @@ def serialize_nn(output_dir, split_filepath, folding_type="fixed",
     norm_vectorizer = RandomNormalVectorizer(vector_size=exp_ctx.WordEmbedding.VectorSize,
                                              token_offset=12345)
 
-    handler = NetworksInputSerializerExperimentIteration(
+    pipeline_item = NetworksInputSerializerPipelineItem(
         vectorizers={
             TermTypes.WORD: bpe_vectorizer,
             TermTypes.ENTITY: bpe_vectorizer,
@@ -96,8 +98,7 @@ def serialize_nn(output_dir, split_filepath, folding_type="fixed",
         balance_func=lambda data_type: data_type == DataType.Train,
         save_labels_func=lambda data_type: data_type == DataType.Train or data_type == DataType.Etalon,
         exp_ctx=exp_ctx,
-        doc_ops=doc_ops,
         save_embedding=True)
 
-    engine = ExperimentEngine()
-    engine.run(states_iter=[0], handlers=[handler])
+    ppl = BasePipeline([pipeline_item])
+    ppl.run(None)

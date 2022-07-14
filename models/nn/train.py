@@ -1,8 +1,8 @@
 from os.path import join
 
 from arekit.common.experiment.api.ctx_training import ExperimentTrainingContext
-from arekit.common.experiment.engine import ExperimentEngine
 from arekit.common.experiment.name_provider import ExperimentNameProvider
+from arekit.common.pipeline.base import BasePipeline
 from arekit.contrib.networks.core.callback.hidden import HiddenStatesWriterCallback
 from arekit.contrib.networks.core.callback.hidden_input import InputHiddenStatesWriterCallback
 from arekit.contrib.networks.core.callback.stat import TrainingStatProviderCallback
@@ -12,16 +12,15 @@ from arekit.contrib.networks.core.model_io import NeuralNetworkModelIO
 from arekit.contrib.networks.enum_input_types import ModelInputType
 from arekit.contrib.networks.enum_name_types import ModelNames
 from arekit.contrib.networks.factory import create_network_and_network_config_funcs
-from arekit.contrib.networks.handlers.training import NetworksTrainingIterationHandler
+from arekit.contrib.networks.pipelines.items.training import NetworksTrainingPipelineItem
 from arekit.contrib.utils.np_utils.writer import NpzDataWriter
 from arekit.processing.languages.ru.pos_service import PartOfSpeechTypesService
 
 from experiment.io import CustomExperimentTrainIO
-from folding.fixed import create_fixed_folding
-from utils import read_train_test
+from folding.factory import FoldingFactory
 
 
-def train_nn(output_dir, model_log_dir, split_source,
+def train_nn(output_dir, model_log_dir, split_filepath, folding_type="fixed",
              exp_name="serialize", extra_name_suffix="nn",
              epochs_count=100, labels_count=3, model_name=ModelNames.CNN,
              bags_per_minibatch=4, bag_size=1, terms_per_context=50,
@@ -40,9 +39,9 @@ def train_nn(output_dir, model_log_dir, split_source,
     assert(isinstance(output_dir, str))
     assert(isinstance(finetune_existed, bool))
 
-    train_filenames, test_filenames = read_train_test(split_source)
-    filenames_by_ids, data_folding = create_fixed_folding(train_filenames=train_filenames,
-                                                          test_filenames=test_filenames)
+    data_folding = None
+    if folding_type == "fixed":
+        _, data_folding = FoldingFactory.create_fixed_folding(split_filepath)
 
     full_model_name = "-".join([data_folding.Name, model_name.value])
     model_target_dir = join(model_log_dir, full_model_name)
@@ -87,7 +86,7 @@ def train_nn(output_dir, model_log_dir, split_source,
     config.modify_use_entity_types_in_embedding(False)
     config.set_pos_count(PartOfSpeechTypesService.get_mystem_pos_count())
 
-    training_handler = NetworksTrainingIterationHandler(
+    pipeline_item = NetworksTrainingPipelineItem(
         load_model=True,
         exp_ctx=exp_ctx,
         exp_io=exp_io,
@@ -95,8 +94,9 @@ def train_nn(output_dir, model_log_dir, split_source,
         config=config,
         bags_collection_type=SingleBagsCollection,
         network_callbacks=nework_callbacks,
-        training_epochs=epochs_count)
+        training_epochs=epochs_count,
+        data_folding=data_folding)
 
     # Start training process.
-    engine = ExperimentEngine()
-    engine.run(states_iter=[0], handlers=[training_handler])
+    ppl = BasePipeline([pipeline_item])
+    ppl.run(None)

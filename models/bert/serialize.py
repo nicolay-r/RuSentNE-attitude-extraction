@@ -3,17 +3,18 @@ from arekit.common.data.input.providers.rows.samples import BaseSampleRowProvide
 from arekit.common.entities.base import Entity
 from arekit.common.experiment.api.ctx_serialization import ExperimentSerializationContext
 from arekit.common.experiment.data_type import DataType
-from arekit.common.experiment.engine import ExperimentEngine
 from arekit.common.experiment.name_provider import ExperimentNameProvider
 from arekit.common.labels.base import NoLabel
 from arekit.common.labels.scaler.single import SingleLabelScaler
+from arekit.common.pipeline.base import BasePipeline
 from arekit.common.pipeline.items.base import BasePipelineItem
 from arekit.common.text.parser import BaseTextParser
-from arekit.contrib.bert.handlers.serializer import BertExperimentInputSerializerIterationHandler
+from arekit.contrib.bert.pipelines.items.serializer import BertExperimentInputSerializerPipelineItem
 from arekit.contrib.bert.samplers.nli_m import NliMultipleSampleProvider
 from arekit.contrib.source.brat.entities.parser import BratTextEntitiesParser
 from arekit.processing.text.pipeline_tokenizer import DefaultTextTokenizer
 
+from experiment.doc_ops import CustomDocOperations
 from folding.factory import FoldingFactory
 from labels.formatter import SentimentLabelFormatter
 from models.nn.predict import InferIOUtils
@@ -21,6 +22,14 @@ from pipelines.collection import prepare_data_pipelines
 
 
 class BertSerializationContext(ExperimentSerializationContext):
+
+    @property
+    def FramesConnotationProvider(self):
+        raise NotImplementedError()
+
+    @property
+    def FrameVariantCollection(self):
+        raise NotImplementedError()
 
     def __init__(self, label_scaler, terms_per_context, name_provider):
         assert(isinstance(terms_per_context, int))
@@ -131,31 +140,33 @@ class BertTextsSerializationPipelineItem(BasePipelineItem):
         self.__exp_ctx = BertSerializationContext(label_scaler=SingleLabelScaler(NoLabel()),
                                                   terms_per_context=terms_per_context,
                                                   name_provider=name_provider)
+
         data_folding = None
-        doc_ops = None
+        filenames_by_ids = None
 
         if folding_type == "fixed":
-            data_folding, doc_ops = FoldingFactory.create_fixed_folding(
-                fixed_split_filepath=split_filepath,
-                label_formatter=SentimentLabelFormatter(),
-                limit=limit)
+            filenames_by_ids, data_folding = FoldingFactory.create_fixed_folding(
+                fixed_split_filepath=split_filepath, limit=limit)
+
+        doc_ops = CustomDocOperations(label_formatter=SentimentLabelFormatter(),
+                                      filename_by_id=filenames_by_ids)
 
         self.__exp_io = InferIOUtils(exp_ctx=self.__exp_ctx, output_dir=output_dir)
 
         text_parser = BaseTextParser(pipeline=[BratTextEntitiesParser(),
                                                DefaultTextTokenizer()])
 
-        self.__handler = BertExperimentInputSerializerIterationHandler(
-            doc_ops=doc_ops,
+        self.__pipeline_item = BertExperimentInputSerializerPipelineItem(
             balance_func=lambda data_type: data_type == DataType.Train,
             exp_io=self.__exp_io,
             data_folding=data_folding,
-            data_type_pipelines=prepare_data_pipelines(
-                text_parser=text_parser, doc_ops=doc_ops, terms_per_context=terms_per_context),
+            data_type_pipelines=prepare_data_pipelines(text_parser=text_parser,
+                                                       doc_ops=doc_ops,
+                                                       terms_per_context=terms_per_context),
             save_labels_func=lambda data_type: data_type != DataType.Test,
             sample_rows_provider=sample_row_provider)
 
     def apply_core(self, input_data, pipeline_ctx):
-        engine = ExperimentEngine()
-        engine.run(states_iter=[0], handlers=[self.__handler])
+        ppl = BasePipeline([self.__pipeline_item])
+        ppl.run(None)
         return self.__exp_io

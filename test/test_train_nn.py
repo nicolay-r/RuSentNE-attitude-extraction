@@ -14,7 +14,7 @@ class TestNetworkTraining(unittest.TestCase):
 
         train_nn(output_dir=output_dir,
                  model_log_dir=join(current_dir, "_model"),
-                 split_source=join(current_dir, "..", "data/split_fixed.txt"))
+                 split_filepath=join(current_dir, "..", "data/split_fixed.txt"))
 
         predict_nn(extra_name_suffix="nn",
                    output_dir=output_dir)

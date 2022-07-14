@@ -19,7 +19,7 @@ class TestSerialize(unittest.TestCase):
         current_dir = dirname(realpath(__file__))
         output_dir = join(current_dir, "_out")
 
-        serialize_nn(limit=1, output_dir=output_dir, fixed_split_filepath="../data/split_fixed.txt")
+        serialize_nn(limit=1, output_dir=output_dir, folding_type="fixed", split_filepath="../data/split_fixed.txt")
 
     def test_bert(self):
 
@@ -31,9 +31,9 @@ class TestSerialize(unittest.TestCase):
                 limit=1,
                 terms_per_context=50,
                 output_dir=output_dir,
-                fixed_split_filepath="../data/split_fixed.txt",
+                split_filepath="../data/split_fixed.txt",
                 name_provider=ExperimentNameProvider(name="serialize", suffix="bert"),
-                label_formatter=SentimentLabelFormatter(),
+                folding_type="fixed",
                 sample_row_provider=CroppedBertSampleRowProvider(
                     crop_window_size=50,
                     label_scaler=PosNegNeuRelationsLabelScaler(),
