@@ -14,7 +14,7 @@ from collection.opinions.converter import CollectionOpinionConverter
 class CollectionNewsReader(object):
 
     @staticmethod
-    def read_opinions(filename, doc_id, entities, version, label_formatter, keep_any_type):
+    def read_text_opinions(filename, doc_id, entities, version, label_formatter, keep_any_type):
         assert(isinstance(filename, str))
         assert(isinstance(label_formatter, StringLabelsFormatter))
         assert(isinstance(entities, EntityCollection))
@@ -50,7 +50,7 @@ class CollectionNewsReader(object):
         entities = CollectionEntityCollection.read_collection(
             filename=filename, synonyms=synonyms, version=CollectionVersions.NO)
 
-        opinions = CollectionNewsReader.read_opinions(
+        opinions = CollectionNewsReader.read_text_opinions(
             doc_id=doc_id,
             filename=filename,
             entities=entities,
