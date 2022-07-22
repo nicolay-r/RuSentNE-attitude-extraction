@@ -10,8 +10,8 @@ from arekit.common.evaluation.comparators.text_opinions import TextOpinionBasedC
 from arekit.common.evaluation.evaluators.modes import EvaluationModes
 from arekit.common.utils import progress_bar_iter
 from arekit.contrib.utils.evaluation.iterators import DataPairsIterators
-from arekit.contrib.utils.evaluation.evaluators.two_class import TwoClassEvaluator
 
+from evaluation.factory import create_filter_labels_func, create_evaluator
 from evaluation.instance_level import extract_text_opinions_by_row_id
 from evaluation.utils import assign_labels
 from labels.scaler import PosNegNeuRelationsLabelScaler
@@ -31,10 +31,12 @@ def __group_text_opinions_by_doc_id(view):
 
 def text_opinion_per_document_two_class_result_evaluator(
         test_predict_filepath, etalon_samples_filepath, test_samples_filepath,
-        label_scaler=PosNegNeuRelationsLabelScaler()):
+        evaluator_type="two_class", label_scaler=PosNegNeuRelationsLabelScaler()):
     """ Выполнение оценки на уровне разметки экземпляров;
         оценка вычисляется по каждому документу в отдельности, а
         затем подсчитывается среднее значение.
+
+        # TODO. #363 нужно переделать API на передачу просто меток, игнорируемых меток.
     """
     assert(isinstance(test_predict_filepath, str))
     assert(isinstance(etalon_samples_filepath, str))
@@ -76,24 +78,30 @@ def text_opinion_per_document_two_class_result_evaluator(
 
     doc_ids = sorted(list(set(chain(test_row_ids_by_doc_id.keys(), etalon_row_ids_by_doc_id.keys()))))
 
+    # Setup filter
+    filter_text_opinion_func = create_filter_labels_func(
+        evaluator_type=evaluator_type,
+        get_label_func=lambda text_opinion: text_opinion.Sentiment,
+        no_label=no_label)
+
     cmp_pairs_iter = DataPairsIterators.iter_func_based_collections(
         doc_ids=[int(doc_id) for doc_id in doc_ids],
         read_etalon_collection_func=lambda doc_id:
             [etalon_text_opinions_by_row_id[row_id] for row_id in etalon_row_ids_by_doc_id[doc_id]
-             if etalon_text_opinions_by_row_id[row_id].Sentiment != no_label]
+             if filter_text_opinion_func(etalon_text_opinions_by_row_id[row_id])]
             if doc_id in etalon_row_ids_by_doc_id else [],
         read_test_collection_func=lambda doc_id:
             # Удаляем среди перечня те отношения, у которых оценка NoLabel.
             [test_text_opinions_by_row_id[row_id] for row_id in test_row_ids_by_doc_id[doc_id]
-             if test_text_opinions_by_row_id[row_id].Sentiment != no_label]
+             if filter_text_opinion_func(test_text_opinions_by_row_id[row_id])]
             if doc_id in test_row_ids_by_doc_id else [])
 
     # Composing evaluator.
-    evaluator = TwoClassEvaluator(
-        comparator=TextOpinionBasedComparator(eval_mode=EvaluationModes.Extraction),
-        label1=label_scaler.uint_to_label(1),
-        label2=label_scaler.uint_to_label(2),
-        get_item_label_func=lambda opinion: opinion.Sentiment)
+    evaluator = create_evaluator(evaluator_type=evaluator_type,
+                                 comparator=TextOpinionBasedComparator(eval_mode=EvaluationModes.Extraction),
+                                 uint_labels=[1, 2, 0],
+                                 get_item_label_func=lambda opinion: opinion.Sentiment,
+                                 label_scaler=label_scaler)
 
     # evaluate every document.
     logged_cmp_pairs_it = progress_bar_iter(cmp_pairs_iter, desc="Evaluate", unit='pairs')

@@ -20,6 +20,7 @@ from arekit.contrib.utils.synonyms.stemmer_based import StemmerBasedSynonymColle
 
 from arekit.processing.lemmatization.mystem import MystemWrapper
 
+from evaluation.factory import create_evaluator, create_filter_labels_func
 from evaluation.instance_level import assign_labels
 from evaluation.utils import row_to_text_opinion, row_to_opinion
 
@@ -156,6 +157,7 @@ def __compose_test_opinions_by_doc_id(etalon_opinions_by_row_id,
 def opinions_per_document_two_class_result_evaluation(
         test_predict_filepath, etalon_samples_filepath, test_samples_filepath,
         synonyms=None,
+        evaluator_type="two_class",
         labels_agg_func=__vote_label_func,
         label_scaler=PosNegNeuRelationsLabelScaler()):
     """ Подокументное вычисление результатов разметки отношений типа Opninon (пар на уровне документа)
@@ -165,6 +167,7 @@ def opinions_per_document_two_class_result_evaluation(
     assert(isinstance(test_predict_filepath, str))
     assert(isinstance(etalon_samples_filepath, str))
     assert(isinstance(test_samples_filepath, str))
+    assert(isinstance(evaluator_type, str))
     assert(callable(labels_agg_func))
 
     if not exists(test_predict_filepath):
@@ -206,7 +209,10 @@ def opinions_per_document_two_class_result_evaluation(
                   row_id_to_text_opin_id_func=lambda row_id: test_text_opinions_by_row_id[row_id].TextOpinionID,
                   label_scaler=label_scaler)
 
-    filter_opinion = lambda opinion: opinion.Sentiment != no_label
+    filter_opinion_func = create_filter_labels_func(
+        evaluator_type=evaluator_type,
+        get_label_func=lambda opinion: opinion.Sentiment,
+        no_label=no_label)
 
     test_opinions_by_doc_id = __compose_test_opinions_by_doc_id(
         etalon_opinions_by_row_id=etalon_opinions_by_row_id,
@@ -215,7 +221,7 @@ def opinions_per_document_two_class_result_evaluation(
         test_text_opinion_ids_by_row_id=test_text_opinion_ids_by_row_id,
         test_text_opinions_by_id=test_text_opinions_by_id,
         label_scaler=label_scaler,
-        filter_opinion_func=filter_opinion,                                     # не берем те, что c NoLabel
+        filter_opinion_func=filter_opinion_func,                                     # не берем те, что c NoLabel
         labels_agg_func=labels_agg_func)                                        # создаем на основе метода голосования.
 
     doc_ids = sorted(list(set(chain(etalon_opinions_by_doc_id.keys(), orig_test_opinion_by_doc_id.keys()))))
@@ -225,7 +231,7 @@ def opinions_per_document_two_class_result_evaluation(
         read_etalon_collection_func=lambda doc_id: OpinionCollection(
             # В некоторых случаях может быть ситуация, что в эталонной разметке для документа отсутствуют данные.
             opinions=[opinion for opinion in etalon_opinions_by_doc_id[doc_id]
-                      if filter_opinion(opinion)] if doc_id in etalon_opinions_by_doc_id else [],
+                      if filter_opinion_func(opinion)] if doc_id in etalon_opinions_by_doc_id else [],
             synonyms=synonyms,
             error_on_duplicates=False,
             error_on_synonym_end_missed=True),
@@ -236,11 +242,11 @@ def opinions_per_document_two_class_result_evaluation(
             error_on_synonym_end_missed=False))
 
     # getting evaluator.
-    evaluator = TwoClassEvaluator(
-        comparator=OpinionBasedComparator(eval_mode=EvaluationModes.Extraction),
-        label1=label_scaler.uint_to_label(1),
-        label2=label_scaler.uint_to_label(2),
-        get_item_label_func=lambda opinion: opinion.Sentiment)
+    evaluator = create_evaluator(evaluator_type=evaluator_type,
+                                 comparator=OpinionBasedComparator(eval_mode=EvaluationModes.Extraction),
+                                 uint_labels=[1, 2, 0],
+                                 get_item_label_func=lambda opinion: opinion.Sentiment,
+                                 label_scaler=label_scaler)
 
     # evaluate every document.
     logged_cmp_pairs_it = progress_bar_iter(cmp_pairs_iter, desc="Evaluate", unit='pairs')
