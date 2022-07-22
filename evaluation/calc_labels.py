@@ -9,8 +9,8 @@ from tqdm import tqdm
 from labels.scaler import PosNegNeuRelationsLabelScaler
 
 
-def calculate_totat_samples_count_per_label(test_predict_filepath,
-                                            label_scaler=PosNegNeuRelationsLabelScaler()):
+def calculate_predicted_count_per_label(test_predict_filepath,
+                                        label_scaler=PosNegNeuRelationsLabelScaler()):
     assert(isinstance(test_predict_filepath, str))
 
     if not exists(test_predict_filepath):
@@ -28,5 +28,35 @@ def calculate_totat_samples_count_per_label(test_predict_filepath,
             if label not in labels_stat:
                 labels_stat[label] = 0
             labels_stat[label] += 1
+
+    return labels_stat
+
+
+def calculate_samples_count_per_label(samples_filepath, no_label_uint):
+    assert(isinstance(samples_filepath, str))
+
+    if not exists(samples_filepath):
+        raise FileNotFoundError(samples_filepath)
+
+    predict_view = BaseSampleStorageView(storage=BaseRowsStorage.from_tsv(filepath=samples_filepath),
+                                         row_ids_provider=MultipleIDProvider())
+
+    test_linked_iter = predict_view.iter_rows_linked_by_text_opinions()
+    labels_stat = {}
+    used_row_ids = set()
+
+    for linkage in tqdm(test_linked_iter):
+        for row in linkage:
+
+            if row["id"] in used_row_ids:
+                continue
+
+            uint_label = int(row["label"]) if "label" in row else no_label_uint
+
+            if uint_label not in labels_stat:
+                labels_stat[uint_label] = 0
+            labels_stat[uint_label] += 1
+
+            used_row_ids.add(row["id"])
 
     return labels_stat

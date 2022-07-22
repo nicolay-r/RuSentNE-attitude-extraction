@@ -1,6 +1,6 @@
 from os.path import join
 
-from evaluation.calc_labels import calculate_totat_samples_count_per_label
+from evaluation.calc_labels import calculate_predicted_count_per_label
 from evaluation.document_level import opinions_per_document_two_class_result_evaluation
 from evaluation.instance_level import text_opinion_per_collection_two_class_result_evaluator
 from evaluation.instance_level_per_doc import text_opinion_per_document_two_class_result_evaluator
@@ -32,7 +32,7 @@ if __name__ == '__main__':
         etalon_samples_filepath=etalon_samples_filepath,
         test_samples_filepath=test_samples_filepath)
 
-    labels_stat = calculate_totat_samples_count_per_label(test_predict_filepath)
+    labels_stat = calculate_predicted_count_per_label(test_predict_filepath)
 
     print("Evaluate for", etalon_samples_filepath)
     print("Instance-based evaluation result (per collection):")
