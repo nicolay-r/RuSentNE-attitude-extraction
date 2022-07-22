@@ -8,7 +8,7 @@ from evaluation.instance_level_per_doc import text_opinion_per_document_two_clas
 if __name__ == '__main__':
 
     output_dir = "_out"
-    source_filename = "predict-cnn.tsv.gz"
+    source_filename = "predict-cnn-test.tsv.gz"
     samples_test = "sample-test-0.tsv.gz"
     samples_etalon = "sample-etalon-0.tsv.gz"
     serialize_dir = "serialize-nn_3l"
