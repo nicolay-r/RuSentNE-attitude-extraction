@@ -22,7 +22,7 @@ def extract_single_diff_table(eval_result, etalon_samples_filepath):
     eval_errors_df = pd.concat(dataframes, axis=0)
 
     last_column_index = len(eval_errors_df.columns)
-    for sample_col in ["text_a", "t_ind", "s_ind", "sent_ind"]:
+    for sample_col in ["entity_types", "text_a", "t_ind", "s_ind", "sent_ind"]:
         eval_errors_df.insert(last_column_index, sample_col, [""] * len(eval_errors_df), allow_duplicates=True)
 
     # Дополняем содержимым из samples строки с неверно размеченными оценками.
@@ -34,7 +34,7 @@ def extract_single_diff_table(eval_result, etalon_samples_filepath):
                                  (samples_df["t_ind"] == target_ind)]
         sample_row = sample_rows.iloc[0]
 
-        for sample_col in ["s_ind", "t_ind", "text_a", "sent_ind"]:
+        for sample_col in ["entity_types", "s_ind", "t_ind", "text_a", "sent_ind"]:
             eval_errors_df.loc[row_id, sample_col] = sample_row[sample_col]
 
         # Пост-обработка текста
