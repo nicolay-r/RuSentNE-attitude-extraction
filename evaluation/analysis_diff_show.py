@@ -20,6 +20,7 @@ def extract_single_diff_table(eval_result, etalon_samples_filepath):
                              (df["comparison"] == False)])
 
     eval_errors_df = pd.concat(dataframes, axis=0)
+    eval_errors_df.reset_index(inplace=True)
 
     last_column_index = len(eval_errors_df.columns)
     for sample_col in ["entity_types", "text_a", "t_ind", "s_ind", "sent_ind"]:
@@ -27,15 +28,15 @@ def extract_single_diff_table(eval_result, etalon_samples_filepath):
 
     # Дополняем содержимым из samples строки с неверно размеченными оценками.
     samples_df = BaseRowsStorage.from_tsv(filepath=etalon_samples_filepath).DataFrame
-    for row_id, row in eval_errors_df.iterrows():
-        doc_id, source_ind, target_ind = [int(v) for v in row["id_orig"].split("_")]
+    for row_id, eval_row in eval_errors_df.iterrows():
+        doc_id, source_ind, target_ind = [int(v) for v in eval_row["id_orig"].split("_")]
         sample_rows = samples_df[(samples_df["doc_id"] == doc_id) &
                                  (samples_df["s_ind"] == source_ind) &
                                  (samples_df["t_ind"] == target_ind)]
         sample_row = sample_rows.iloc[0]
 
         for sample_col in ["entity_types", "s_ind", "t_ind", "text_a", "sent_ind"]:
-            eval_errors_df.loc[row_id, sample_col] = sample_row[sample_col]
+            eval_errors_df.at[row_id, sample_col] = sample_row[sample_col]
 
         # Пост-обработка текста
         text_terms = sample_row["text_a"].lower().split(' ')
@@ -50,6 +51,6 @@ def extract_single_diff_table(eval_result, etalon_samples_filepath):
         # усечение по границам для более удобного просмотра области.
         l = max(0, source_ind-10)
         r = min(target_ind+10, len(text_terms)-1)
-        eval_errors_df.loc[row_id, "text_a"] = " ".join(text_terms[l:r])
+        eval_errors_df.at[row_id, "text_a"] = " ".join(text_terms[l:r])
 
     return eval_errors_df
