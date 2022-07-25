@@ -47,8 +47,9 @@ def extract_single_diff_table(eval_result, etalon_samples_filepath):
         # поднять регистр для пары.
         text_terms[source_ind] = text_terms[source_ind].upper()
         text_terms[target_ind] = text_terms[target_ind].upper()
-        r = min(target_ind+10, len(text_terms)-1)
+        # усечение по границам для более удобного просмотра области.
         l = max(0, source_ind-10)
-        eval_errors_df.loc[row_id, "text_a"] = " ".join(["...", text_terms[l:r], "..."])
+        r = min(target_ind+10, len(text_terms)-1)
+        eval_errors_df.loc[row_id, "text_a"] = "..." + " ".join(text_terms[l:r]) + "..."
 
     return eval_errors_df
