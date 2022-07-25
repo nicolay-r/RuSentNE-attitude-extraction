@@ -50,6 +50,6 @@ def extract_single_diff_table(eval_result, etalon_samples_filepath):
         # усечение по границам для более удобного просмотра области.
         l = max(0, source_ind-10)
         r = min(target_ind+10, len(text_terms)-1)
-        eval_errors_df.loc[row_id, "text_a"] = "..." + " ".join(text_terms[l:r]) + "..."
+        eval_errors_df.loc[row_id, "text_a"] = " ".join(text_terms[l:r])
 
     return eval_errors_df
