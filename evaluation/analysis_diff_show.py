@@ -57,7 +57,7 @@ def extract_errors(eval_result, test_samples_filepath, etalon_samples_filepath):
         df = doc_cmp_table.DataframeTable
         df.insert(2, "doc_id", [doc_id] * len(df), allow_duplicates=True)
         dataframes.append(df[(df["comparison"] == False) &
-                             ~(df["how_orig"].isnull() & df["how_results"] == "NoLabel")])
+                             ~((df["how_orig"].isnull()) & (df["how_results"] == "NoLabel"))])
 
     eval_errors_df = pd.concat(dataframes, axis=0)
     eval_errors_df.reset_index(inplace=True)
