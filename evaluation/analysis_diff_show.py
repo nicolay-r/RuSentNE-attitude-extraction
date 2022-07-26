@@ -2,6 +2,7 @@ import pandas as pd
 from arekit.common.data.storages.base import BaseRowsStorage
 from arekit.common.evaluation.evaluators.cmp_table import DocumentCompareTable
 from arekit.common.evaluation.result import BaseEvalResult
+from tqdm import tqdm
 
 
 def __post_text_processing(sample_row, source_ind, target_ind, window_crop=10):
@@ -38,7 +39,14 @@ def __post_text_processing(sample_row, source_ind, target_ind, window_crop=10):
     return " ".join(text_terms[crop_left:crop_right])
 
 
-def extract_single_diff_table(eval_result, etalon_samples_filepath):
+def extract_df(df, doc_id, ctx_id, source_ind, target_ind):
+    return df[(df["doc_id"] == doc_id) & \
+              (df["sent_ind"] == ctx_id) & \
+              (df["s_ind"] == source_ind) & \
+              (df["t_ind"] == target_ind)]
+
+
+def extract_errors(eval_result, test_samples_filepath, etalon_samples_filepath):
     """ Отображение разницы.
     """
     assert(isinstance(eval_result, BaseEvalResult))
@@ -48,10 +56,8 @@ def extract_single_diff_table(eval_result, etalon_samples_filepath):
         assert(isinstance(doc_cmp_table, DocumentCompareTable))
         df = doc_cmp_table.DataframeTable
         df.insert(2, "doc_id", [doc_id] * len(df), allow_duplicates=True)
-        dataframes.append(df[(df["how_results"] != "NoLabel") &
-                             (df["how_orig"].notnull()) &
-                             (df["how_results"].notnull()) &
-                             (df["comparison"] == False)])
+        dataframes.append(df[(df["comparison"] == False) &
+                             ~(df["how_orig"].isnull() & df["how_results"] == "NoLabel")])
 
     eval_errors_df = pd.concat(dataframes, axis=0)
     eval_errors_df.reset_index(inplace=True)
@@ -62,15 +68,21 @@ def extract_single_diff_table(eval_result, etalon_samples_filepath):
         eval_errors_df.insert(last_column_index, sample_col, [""] * len(eval_errors_df), allow_duplicates=True)
 
     # Дополняем содержимым из samples строки с неверно размеченными оценками.
-    samples_df = BaseRowsStorage.from_tsv(filepath=etalon_samples_filepath).DataFrame
-    for row_id, eval_row in eval_errors_df.iterrows():
+    etalon_samples_df = BaseRowsStorage.from_tsv(filepath=etalon_samples_filepath).DataFrame
+    test_samples_df = BaseRowsStorage.from_tsv(filepath=test_samples_filepath).DataFrame
+
+    for row_id, eval_row in tqdm(eval_errors_df.iterrows(), total=len(eval_errors_df)):
 
         doc_id, ctx_id, source_ind, target_ind = [int(v) for v in eval_row["id_orig"].split("_")]
-        sample_rows = samples_df[(samples_df["doc_id"] == doc_id) &
-                                 (samples_df["sent_ind"] == ctx_id) &
-                                 (samples_df["s_ind"] == source_ind) &
-                                 (samples_df["t_ind"] == target_ind)]
 
+        sample_rows = extract_df(df=etalon_samples_df, doc_id=doc_id, ctx_id=ctx_id,
+                                 source_ind=source_ind, target_ind=target_ind)
+
+        if len(sample_rows) == 0:
+            sample_rows = extract_df(df=test_samples_df, doc_id=doc_id, ctx_id=ctx_id,
+                                     source_ind=source_ind, target_ind=target_ind)
+
+        # Извлекаем первый ряд.
         sample_row = sample_rows.iloc[0]
 
         for sample_col in columns_to_copy:
