@@ -10,22 +10,22 @@ from arekit.common.evaluation.evaluators.modes import EvaluationModes
 from arekit.common.evaluation.pairs.single import SingleDocumentDataPairsToCompare
 
 from evaluation.factory import create_filter_labels_func, create_evaluator
-from evaluation.utils import assign_labels, row_to_text_opinion
+from evaluation.utils import assign_labels, row_to_context_opinion
 from labels.scaler import PosNegNeuRelationsLabelScaler
 
 
-def extract_text_opinions_by_row_id(view, label_scaler, no_label):
+def extract_context_opinions_by_row_id(view, label_scaler, no_label):
     """ Reading data from tsv-gz via storage view
         returns: dict
             (row_id, text_opinion)
     """
-    text_opinions_by_row_id = OrderedDict()
+    context_opinions_by_row_id = OrderedDict()
     for linkage in tqdm(view.iter_rows_linked_by_text_opinions()):
         for row in linkage:
-            text_opinions_by_row_id[row["id"]] = row_to_text_opinion(
+            context_opinions_by_row_id[row["id"]] = row_to_context_opinion(
                 row=row, label_scaler=label_scaler, default_label=no_label)
 
-    return text_opinions_by_row_id
+    return context_opinions_by_row_id
 
 
 def text_opinion_per_collection_two_class_result_evaluator(
@@ -64,30 +64,31 @@ def text_opinion_per_collection_two_class_result_evaluator(
                                          row_ids_provider=MultipleIDProvider())
 
     # Setup filter
-    filter_text_opinion_func = create_filter_labels_func(
+    filter_context_opinion_func = create_filter_labels_func(
         evaluator_type=evaluator_type,
-        get_label_func=lambda text_opinion: text_opinion.Sentiment,
+        get_label_func=lambda context_opinion: context_opinion.Sentiment,
         no_label=no_label)
 
     # Reading collection through storage views.
-    etalon_text_opinions_by_row_id = extract_text_opinions_by_row_id(
+    etalon_context_opinions_by_row_id = extract_context_opinions_by_row_id(
         view=etalon_view, label_scaler=label_scaler, no_label=no_label)
-    test_text_opinions_by_row_id = extract_text_opinions_by_row_id(
+    test_context_opinions_by_row_id = extract_context_opinions_by_row_id(
         view=test_view, label_scaler=label_scaler, no_label=no_label)
     assign_labels(predict_view=predict_view,
-                  text_opinions=test_text_opinions_by_row_id.values(),
-                  row_id_to_text_opin_id_func=lambda row_id: test_text_opinions_by_row_id[row_id].TextOpinionID,
+                  text_opinions=test_context_opinions_by_row_id.values(),
+                  row_id_to_context_opin_id_func=lambda row_id:
+                      test_context_opinions_by_row_id[row_id].Tag,
                   label_scaler=label_scaler)
 
     # Remove the one with NoLabel instance.
-    test_text_opinions_by_row_id = {
-        row_id: text_opinion for row_id, text_opinion in test_text_opinions_by_row_id.items()
-        if filter_text_opinion_func(text_opinion)
+    test_context_opinions_by_row_id = {
+        row_id: text_opinion for row_id, text_opinion in test_context_opinions_by_row_id.items()
+        if filter_context_opinion_func(text_opinion)
     }
 
-    etalon_text_opinions_by_row_id = {
-        row_id: text_opinion for row_id, text_opinion in etalon_text_opinions_by_row_id.items()
-        if filter_text_opinion_func(text_opinion)
+    etalon_context_opinions_by_row_id = {
+        row_id: text_opinion for row_id, text_opinion in etalon_context_opinions_by_row_id.items()
+        if filter_context_opinion_func(text_opinion)
     }
 
     # Composing evaluator.
@@ -98,8 +99,8 @@ def text_opinion_per_collection_two_class_result_evaluator(
                                  label_scaler=label_scaler)
 
     # evaluate every document.
-    cmp_pair = SingleDocumentDataPairsToCompare(etalon_data=list(etalon_text_opinions_by_row_id.values()),
-                                                test_data=list(test_text_opinions_by_row_id.values()))
+    cmp_pair = SingleDocumentDataPairsToCompare(etalon_data=list(etalon_context_opinions_by_row_id.values()),
+                                                test_data=list(test_context_opinions_by_row_id.values()))
     result = evaluator.evaluate(cmp_pairs=[cmp_pair])
 
     return result

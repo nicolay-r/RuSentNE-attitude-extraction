@@ -12,7 +12,7 @@ from arekit.common.utils import progress_bar_iter
 from arekit.contrib.utils.evaluation.iterators import DataPairsIterators
 
 from evaluation.factory import create_filter_labels_func, create_evaluator
-from evaluation.instance_level import extract_text_opinions_by_row_id
+from evaluation.instance_level import extract_context_opinions_by_row_id
 from evaluation.utils import assign_labels
 from labels.scaler import PosNegNeuRelationsLabelScaler
 
@@ -62,9 +62,9 @@ def text_opinion_per_document_two_class_result_evaluator(
                                          row_ids_provider=MultipleIDProvider())
 
     # Reading collection through storage views.
-    etalon_text_opinions_by_row_id = extract_text_opinions_by_row_id(
+    etalon_context_opinions_by_row_id = extract_context_opinions_by_row_id(
         view=etalon_view, label_scaler=label_scaler, no_label=no_label)
-    test_text_opinions_by_row_id = extract_text_opinions_by_row_id(
+    test_context_opinions_by_row_id = extract_context_opinions_by_row_id(
         view=test_view, label_scaler=label_scaler, no_label=no_label)
 
     # Gathering them by doc_id.
@@ -72,8 +72,8 @@ def text_opinion_per_document_two_class_result_evaluator(
     test_row_ids_by_doc_id = __group_text_opinions_by_doc_id(view=test_view)
 
     assign_labels(predict_view=predict_view,
-                  text_opinions=test_text_opinions_by_row_id.values(),
-                  row_id_to_text_opin_id_func=lambda row_id: test_text_opinions_by_row_id[row_id].TextOpinionID,
+                  text_opinions=test_context_opinions_by_row_id.values(),
+                  row_id_to_context_opin_id_func=lambda row_id: test_context_opinions_by_row_id[row_id].Tag,
                   label_scaler=label_scaler)
 
     doc_ids = sorted(list(set(chain(test_row_ids_by_doc_id.keys(), etalon_row_ids_by_doc_id.keys()))))
@@ -87,13 +87,13 @@ def text_opinion_per_document_two_class_result_evaluator(
     cmp_pairs_iter = DataPairsIterators.iter_func_based_collections(
         doc_ids=[int(doc_id) for doc_id in doc_ids],
         read_etalon_collection_func=lambda doc_id:
-            [etalon_text_opinions_by_row_id[row_id] for row_id in etalon_row_ids_by_doc_id[doc_id]
-             if filter_text_opinion_func(etalon_text_opinions_by_row_id[row_id])]
+            [etalon_context_opinions_by_row_id[row_id] for row_id in etalon_row_ids_by_doc_id[doc_id]
+             if filter_text_opinion_func(etalon_context_opinions_by_row_id[row_id])]
             if doc_id in etalon_row_ids_by_doc_id else [],
         read_test_collection_func=lambda doc_id:
             # Удаляем среди перечня те отношения, у которых оценка NoLabel.
-            [test_text_opinions_by_row_id[row_id] for row_id in test_row_ids_by_doc_id[doc_id]
-             if filter_text_opinion_func(test_text_opinions_by_row_id[row_id])]
+            [test_context_opinions_by_row_id[row_id] for row_id in test_row_ids_by_doc_id[doc_id]
+             if filter_text_opinion_func(test_context_opinions_by_row_id[row_id])]
             if doc_id in test_row_ids_by_doc_id else [])
 
     # Composing evaluator.

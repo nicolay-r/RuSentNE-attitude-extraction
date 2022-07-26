@@ -14,9 +14,9 @@ from arekit.contrib.source.brat.entities.parser import BratTextEntitiesParser
 from arekit.processing.text.pipeline_tokenizer import DefaultTextTokenizer
 
 from experiment.doc_ops import CustomDocOperations
+from experiment.io import InferIOUtils
 from folding.factory import FoldingFactory
 from labels.formatter import SentimentLabelFormatter
-from models.nn.predict import InferIOUtils
 from pipelines.collection import prepare_data_pipelines
 
 

@@ -15,35 +15,34 @@ from arekit.common.opinions.base import Opinion
 from arekit.common.labels.base import Label
 
 from arekit.contrib.utils.evaluation.iterators import DataPairsIterators
-from arekit.contrib.utils.evaluation.evaluators.two_class import TwoClassEvaluator
 from arekit.contrib.utils.synonyms.stemmer_based import StemmerBasedSynonymCollection
 
 from arekit.processing.lemmatization.mystem import MystemWrapper
 
 from evaluation.factory import create_evaluator, create_filter_labels_func
 from evaluation.instance_level import assign_labels
-from evaluation.utils import row_to_text_opinion, row_to_opinion
+from evaluation.utils import row_to_context_opinion, row_to_opinion
 
 from labels.scaler import PosNegNeuRelationsLabelScaler
 
 
-def __extract_text_opinions_from_test(test_view, label_scaler, default_label):
-    """
-        return: dict { tid: TextOpinion },
+def __extract_context_opinions_from_test(test_view, label_scaler, default_label):
+    """ return: dict { tid: TextOpinion },
         where:  tid -- is a TextOpininID
     """
     assert(isinstance(test_view, BaseSampleStorageView))
     assert(isinstance(label_scaler, BaseLabelScaler))
 
-    text_opinion_by_id = OrderedDict()
-    text_opinion_by_row_id = OrderedDict()
+    context_opinion_by_id = OrderedDict()
+    context_opinion_by_row_id = OrderedDict()
     for linkage in tqdm(test_view.iter_rows_linked_by_text_opinions()):
         for row in linkage:
-            text_opinion = row_to_text_opinion(row, label_scaler, default_label=default_label)
-            text_opinion_by_id[text_opinion.TextOpinionID] = text_opinion
-            text_opinion_by_row_id[row["id"]] = text_opinion
+            context_opinion = row_to_context_opinion(
+                row=row, label_scaler=label_scaler, default_label=default_label)
+            context_opinion_by_id[context_opinion.TextOpinionID] = context_opinion
+            context_opinion_by_row_id[row["id"]] = context_opinion
 
-    return text_opinion_by_id, text_opinion_by_row_id
+    return context_opinion_by_id, context_opinion_by_row_id
 
 
 def __gather_opinion_and_group_ids_from_view(view, label_scaler, default_label):
@@ -53,7 +52,7 @@ def __gather_opinion_and_group_ids_from_view(view, label_scaler, default_label):
     assert(isinstance(default_label, Label))
 
     opinion_by_row_id = OrderedDict()
-    text_opinion_ids_by_row_id = OrderedDict()
+    context_opinion_ids_by_row_id = OrderedDict()
     opinions_by_doc_id = OrderedDict()
     for linkage in tqdm(view.iter_rows_linked_by_text_opinions()):
 
@@ -63,15 +62,15 @@ def __gather_opinion_and_group_ids_from_view(view, label_scaler, default_label):
         opinion = row_to_opinion(first_row, label_scaler, default_label=default_label)
 
         opinion_by_row_id[first_row_id] = opinion
-        text_opinion_ids_by_row_id[first_row_id] = [
-            row_to_text_opinion(row, label_scaler, default_label).TextOpinionID for row in linkage
+        context_opinion_ids_by_row_id[first_row_id] = [
+            row_to_context_opinion(row, label_scaler, default_label).TextOpinionID for row in linkage
         ]
 
         if doc_id not in opinions_by_doc_id:
             opinions_by_doc_id[doc_id] = []
         opinions_by_doc_id[doc_id].append(opinion)
 
-    return opinion_by_row_id, text_opinion_ids_by_row_id, opinions_by_doc_id
+    return opinion_by_row_id, context_opinion_ids_by_row_id, opinions_by_doc_id
 
 
 def __vote_label_func(labels):
@@ -89,10 +88,10 @@ def __vote_label_func(labels):
 
 
 def __compose_test_opinions_by_doc_id(etalon_opinions_by_row_id,
-                                      etalon_text_opinion_ids_by_row_id,
+                                      etalon_context_opinion_ids_by_row_id,
                                       test_opinions_by_row_id,
-                                      test_text_opinion_ids_by_row_id,
-                                      test_text_opinions_by_id,
+                                      test_context_opinion_ids_by_row_id,
+                                      test_context_opinions_by_id,
                                       label_scaler,
                                       filter_opinion_func,
                                       labels_agg_func):
@@ -107,7 +106,7 @@ def __compose_test_opinions_by_doc_id(etalon_opinions_by_row_id,
             return
 
         # используем метод голосования.
-        labels = [label_scaler.label_to_int(test_text_opinions_by_id[tid].Sentiment) for tid in existed_tids]
+        labels = [label_scaler.label_to_int(test_context_opinions_by_id[tid].Sentiment) for tid in existed_tids]
         actual_label = labels_agg_func(labels)
 
         # создаем Opinion и фиксируем его.
@@ -119,7 +118,7 @@ def __compose_test_opinions_by_doc_id(etalon_opinions_by_row_id,
             return
 
         # регистрируем для doc_id.
-        doc_id = test_text_opinions_by_id[existed_tids[0]].DocID
+        doc_id = test_context_opinions_by_id[existed_tids[0]].DocID
         if doc_id not in test_opinions_by_doc_id:
             test_opinions_by_doc_id[doc_id] = []
         test_opinions_by_doc_id[doc_id].append(opinion)
@@ -128,9 +127,9 @@ def __compose_test_opinions_by_doc_id(etalon_opinions_by_row_id,
 
     used_tids = set()
     for row_id, etalon_opinion in etalon_opinions_by_row_id.items():
-        tid_list = etalon_text_opinion_ids_by_row_id[row_id]
+        tid_list = etalon_context_opinion_ids_by_row_id[row_id]
 
-        existed_tids = [tid for tid in tid_list if tid in test_text_opinions_by_id]
+        existed_tids = [tid for tid in tid_list if tid in test_context_opinions_by_id]
 
         # отмечаем как просмотренные.
         for tid in existed_tids:
@@ -142,7 +141,7 @@ def __compose_test_opinions_by_doc_id(etalon_opinions_by_row_id,
 
     # учитываем оставшиеся.
     for row_id, test_opinion in test_opinions_by_row_id.items():
-        tid_list = test_text_opinion_ids_by_row_id[row_id]
+        tid_list = test_context_opinion_ids_by_row_id[row_id]
 
         # выбираем только те, которые не были использованы ранее.
         existed_tids = list(filter(lambda tid: tid not in used_tids, tid_list))
@@ -195,18 +194,18 @@ def opinions_per_document_two_class_result_evaluation(
     predict_view = BaseSampleStorageView(storage=BaseRowsStorage.from_tsv(filepath=test_predict_filepath),
                                          row_ids_provider=MultipleIDProvider())
 
-    test_text_opinions_by_id, test_text_opinions_by_row_id = __extract_text_opinions_from_test(
+    test_context_opinions_by_id, test_context_opinions_by_row_id = __extract_context_opinions_from_test(
         test_view=test_view, label_scaler=label_scaler, default_label=no_label)
 
-    etalon_opinions_by_row_id, etalon_text_opinion_ids_by_row_id, etalon_opinions_by_doc_id = \
+    etalon_opinions_by_row_id, etalon_context_opinion_ids_by_row_id, etalon_opinions_by_doc_id = \
         __gather_opinion_and_group_ids_from_view(view=etalon_view, label_scaler=label_scaler, default_label=no_label)
 
-    test_opinions_by_row_id, test_text_opinion_ids_by_row_id, orig_test_opinion_by_doc_id = \
+    test_opinions_by_row_id, test_context_opinion_ids_by_row_id, orig_test_opinion_by_doc_id = \
         __gather_opinion_and_group_ids_from_view(view=test_view, label_scaler=label_scaler, default_label=no_label)
 
     assign_labels(predict_view=predict_view,
-                  text_opinions=test_text_opinions_by_id.values(),
-                  row_id_to_text_opin_id_func=lambda row_id: test_text_opinions_by_row_id[row_id].TextOpinionID,
+                  text_opinions=test_context_opinions_by_id.values(),
+                  row_id_to_context_opin_id_func=lambda row_id: test_context_opinions_by_row_id[row_id].TextOpinionID,
                   label_scaler=label_scaler)
 
     filter_opinion_func = create_filter_labels_func(
@@ -216,10 +215,10 @@ def opinions_per_document_two_class_result_evaluation(
 
     test_opinions_by_doc_id = __compose_test_opinions_by_doc_id(
         etalon_opinions_by_row_id=etalon_opinions_by_row_id,
-        etalon_text_opinion_ids_by_row_id=etalon_text_opinion_ids_by_row_id,
+        etalon_context_opinion_ids_by_row_id=etalon_context_opinion_ids_by_row_id,
         test_opinions_by_row_id=test_opinions_by_row_id,
-        test_text_opinion_ids_by_row_id=test_text_opinion_ids_by_row_id,
-        test_text_opinions_by_id=test_text_opinions_by_id,
+        test_context_opinion_ids_by_row_id=test_context_opinion_ids_by_row_id,
+        test_context_opinions_by_id=test_context_opinions_by_id,
         label_scaler=label_scaler,
         filter_opinion_func=filter_opinion_func,                                     # не берем те, что c NoLabel
         labels_agg_func=labels_agg_func)                                        # создаем на основе метода голосования.

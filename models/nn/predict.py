@@ -3,7 +3,7 @@ from os.path import join
 from arekit.common.data.row_ids.multiple import MultipleIDProvider
 from arekit.common.data.storages.base import BaseRowsStorage
 from arekit.common.data.views.samples import BaseSampleStorageView
-from arekit.common.experiment.api.ctx_training import ExperimentTrainingContext
+from arekit.common.experiment.api.ctx_base import ExperimentContext
 from arekit.common.experiment.data_type import DataType
 from arekit.common.experiment.name_provider import ExperimentNameProvider
 from arekit.common.folding.base import BaseDataFolding
@@ -27,21 +27,10 @@ from arekit.contrib.networks.enum_input_types import ModelInputType
 from arekit.contrib.networks.enum_name_types import ModelNames
 from arekit.contrib.networks.factory import create_network_and_network_config_funcs
 from arekit.contrib.networks.shapes import NetworkInputShapes
-from arekit.contrib.utils.model_io.tf_networks import DefaultNetworkIOUtils
 from arekit.processing.languages.ru.pos_service import PartOfSpeechTypesService
 
+from experiment.io import InferIOUtils
 from labels.scaler import PosNegNeuRelationsLabelScaler
-
-
-class InferIOUtils(DefaultNetworkIOUtils):
-
-    def __init__(self, output_dir, exp_ctx):
-        assert(isinstance(output_dir, str))
-        super(InferIOUtils, self).__init__(exp_ctx=exp_ctx)
-        self.__output_dir = output_dir
-
-    def _get_experiment_sources_dir(self):
-        return self.__output_dir
 
 
 class TensorflowNetworkInferencePipelineItem(BasePipelineItem):
@@ -172,7 +161,7 @@ def predict_nn(extra_name_suffix, output_dir, exp_name="serialize", data_folding
     ])
 
     # Hack with the training context.
-    exp_ctx = ExperimentTrainingContext(
+    exp_ctx = ExperimentContext(
         labels_count=labels_count,
         name_provider=ExperimentNameProvider(name=exp_name, suffix=extra_name_suffix))
 

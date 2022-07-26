@@ -1,32 +1,32 @@
 import numpy as np
 from arekit.common.evaluation.comparators.text_opinions import TextOpinionBasedComparator
+from arekit.common.evaluation.context_opinion import ContextOpinion
 from arekit.common.labels.base import Label
 from arekit.common.labels.scaler.base import BaseLabelScaler
 from arekit.common.opinions.base import Opinion
 from tqdm import tqdm
-from arekit.common.text_opinions.base import TextOpinion
 
 
-def assign_labels(predict_view, text_opinions, row_id_to_text_opin_id_func, label_scaler):
+def assign_labels(predict_view, text_opinions, row_id_to_context_opin_id_func, label_scaler):
     """ Назначение меток с результата разметки на TextOpinion соответствующего множества.
     """
-    assert(callable(row_id_to_text_opin_id_func))
+    assert(callable(row_id_to_context_opin_id_func))
 
     text_opinons_by_id = {}
-    for text_opinion in text_opinions:
-        assert (isinstance(text_opinion, TextOpinion))
-        text_opinons_by_id[text_opinion.TextOpinionID] = text_opinion
+    for context_opinion in text_opinions:
+        assert (isinstance(context_opinion, ContextOpinion))
+        text_opinons_by_id[context_opinion.Tag] = context_opinion
 
     test_linked_iter = predict_view.iter_rows_linked_by_text_opinions()
     for linkage in tqdm(test_linked_iter):
         for row in linkage:
-            text_opinion_id = row_id_to_text_opin_id_func(row["id"])
-            text_opinion = text_opinons_by_id[text_opinion_id]
+            text_opinion_id = row_id_to_context_opin_id_func(row["id"])
+            context_opinion = text_opinons_by_id[text_opinion_id]
             uint_labels = [int(row[str(c)]) for c in range(label_scaler.classes_count())]
-            text_opinion.set_label(label_scaler.uint_to_label(int(np.argmax(uint_labels))))
+            context_opinion.set_label(label_scaler.uint_to_label(int(np.argmax(uint_labels))))
 
 
-def row_to_text_opinion(row, label_scaler, default_label):
+def row_to_context_opinion(row, label_scaler, default_label):
     """ Чтение text_opinion из ряда данных sample.
         мы также создаем уникальный идентификатор TextOpinion
         на основе индекса предложения документа и индексов сущностей в нем.
@@ -37,17 +37,15 @@ def row_to_text_opinion(row, label_scaler, default_label):
     uint_label = int(row["label"]) if "label" in row \
         else label_scaler.label_to_uint(default_label)
 
-    text_opinion = TextOpinion(
-        doc_id=int(row["doc_id"]),
-        text_opinion_id=None,
-        source_id=int(row["s_ind"]),
-        target_id=int(row["t_ind"]),
-        label=label_scaler.uint_to_label(uint_label))
+    context_opinion = ContextOpinion(doc_id=int(row["doc_id"]),
+                                     source_id=int(row["s_ind"]),
+                                     target_id=int(row["t_ind"]),
+                                     label=label_scaler.uint_to_label(uint_label),
+                                     context_id=row["sent_ind"])    # for now, it is just a single sentence
 
-    tid = TextOpinionBasedComparator.text_opinion_to_id(text_opinion)
-    text_opinion.set_text_opinion_id(tid)
+    context_opinion.set_tag(TextOpinionBasedComparator.context_opinion_to_id(context_opinion))
 
-    return text_opinion
+    return context_opinion
 
 
 def row_to_opinion(row, label_scaler, default_label):

@@ -65,8 +65,9 @@ def extract_single_diff_table(eval_result, etalon_samples_filepath):
     samples_df = BaseRowsStorage.from_tsv(filepath=etalon_samples_filepath).DataFrame
     for row_id, eval_row in eval_errors_df.iterrows():
 
-        doc_id, source_ind, target_ind = [int(v) for v in eval_row["id_orig"].split("_")]
+        doc_id, ctx_id, source_ind, target_ind = [int(v) for v in eval_row["id_orig"].split("_")]
         sample_rows = samples_df[(samples_df["doc_id"] == doc_id) &
+                                 (samples_df["sent_ind"] == ctx_id) &
                                  (samples_df["s_ind"] == source_ind) &
                                  (samples_df["t_ind"] == target_ind)]
 
