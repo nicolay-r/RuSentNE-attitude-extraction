@@ -2,7 +2,7 @@ import pandas as pd
 from arekit.common.data.storages.base import BaseRowsStorage
 from arekit.common.evaluation.evaluators.cmp_table import DocumentCompareTable
 from arekit.common.evaluation.result import BaseEvalResult
-from tqdm import tqdm
+from arekit.common.utils import progress_bar_defined
 
 
 def __post_text_processing(sample_row, source_ind, target_ind, window_crop=10):
@@ -71,7 +71,12 @@ def extract_errors(eval_result, test_samples_filepath, etalon_samples_filepath):
     etalon_samples_df = BaseRowsStorage.from_tsv(filepath=etalon_samples_filepath).DataFrame
     test_samples_df = BaseRowsStorage.from_tsv(filepath=test_samples_filepath).DataFrame
 
-    for row_id, eval_row in tqdm(eval_errors_df.iterrows(), total=len(eval_errors_df)):
+    eval_rows_it = progress_bar_defined(iterable=eval_errors_df.iterrows(),
+                                        total=len(eval_errors_df),
+                                        desc="Analyze",
+                                        unit="row")
+
+    for row_id, eval_row in eval_rows_it:
 
         doc_id, ctx_id, source_ind, target_ind = [int(v) for v in eval_row["id_orig"].split("_")]
 

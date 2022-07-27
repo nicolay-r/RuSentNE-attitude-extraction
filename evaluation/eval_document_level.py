@@ -1,27 +1,23 @@
 from tqdm import tqdm
-from itertools import chain
 from os.path import exists
 from collections import OrderedDict
 
 from arekit.common.evaluation.comparators.opinions import OpinionBasedComparator
 from arekit.common.evaluation.evaluators.modes import EvaluationModes
 from arekit.common.opinions.collection import OpinionCollection
-from arekit.common.utils import progress_bar_iter
+from arekit.common.utils import progress_bar_defined
 from arekit.common.data.row_ids.multiple import MultipleIDProvider
 from arekit.common.data.storages.base import BaseRowsStorage
 from arekit.common.data.views.samples import BaseSampleStorageView
 from arekit.common.labels.scaler.base import BaseLabelScaler
 from arekit.common.opinions.base import Opinion
 from arekit.common.labels.base import Label
-
 from arekit.contrib.utils.evaluation.iterators import DataPairsIterators
 from arekit.contrib.utils.synonyms.stemmer_based import StemmerBasedSynonymCollection
-
 from arekit.processing.lemmatization.mystem import MystemWrapper
 
-from evaluation.factory import create_evaluator, create_filter_labels_func
-from evaluation.instance_level import assign_labels
-from evaluation.utils import row_to_context_opinion, row_to_opinion
+from evaluation.utils import row_to_context_opinion, row_to_opinion, create_filter_labels_func, assign_labels, \
+    select_doc_ids, create_evaluator
 
 from labels.scaler import PosNegNeuRelationsLabelScaler
 
@@ -39,7 +35,7 @@ def __extract_context_opinions_from_test(test_view, label_scaler, default_label)
         for row in linkage:
             context_opinion = row_to_context_opinion(
                 row=row, label_scaler=label_scaler, default_label=default_label)
-            context_opinion_by_id[context_opinion.TextOpinionID] = context_opinion
+            context_opinion_by_id[context_opinion.Tag] = context_opinion
             context_opinion_by_row_id[row["id"]] = context_opinion
 
     return context_opinion_by_id, context_opinion_by_row_id
@@ -63,7 +59,7 @@ def __gather_opinion_and_group_ids_from_view(view, label_scaler, default_label):
 
         opinion_by_row_id[first_row_id] = opinion
         context_opinion_ids_by_row_id[first_row_id] = [
-            row_to_context_opinion(row, label_scaler, default_label).TextOpinionID for row in linkage
+            row_to_context_opinion(row, label_scaler, default_label).Tag for row in linkage
         ]
 
         if doc_id not in opinions_by_doc_id:
@@ -118,7 +114,7 @@ def __compose_test_opinions_by_doc_id(etalon_opinions_by_row_id,
             return
 
         # регистрируем для doc_id.
-        doc_id = test_context_opinions_by_id[existed_tids[0]].DocID
+        doc_id = test_context_opinions_by_id[existed_tids[0]].DocId
         if doc_id not in test_opinions_by_doc_id:
             test_opinions_by_doc_id[doc_id] = []
         test_opinions_by_doc_id[doc_id].append(opinion)
@@ -155,8 +151,7 @@ def __compose_test_opinions_by_doc_id(etalon_opinions_by_row_id,
 
 def opinions_per_document_two_class_result_evaluation(
         test_predict_filepath, etalon_samples_filepath, test_samples_filepath,
-        synonyms=None,
-        evaluator_type="two_class",
+        synonyms=None, doc_ids_mode="joined", evaluator_type="two_class",
         labels_agg_func=__vote_label_func,
         label_scaler=PosNegNeuRelationsLabelScaler()):
     """ Подокументное вычисление результатов разметки отношений типа Opninon (пар на уровне документа)
@@ -205,13 +200,12 @@ def opinions_per_document_two_class_result_evaluation(
 
     assign_labels(predict_view=predict_view,
                   text_opinions=test_context_opinions_by_id.values(),
-                  row_id_to_context_opin_id_func=lambda row_id: test_context_opinions_by_row_id[row_id].TextOpinionID,
+                  row_id_to_context_opin_id_func=lambda row_id: test_context_opinions_by_row_id[row_id].Tag,
                   label_scaler=label_scaler)
 
-    filter_opinion_func = create_filter_labels_func(
-        evaluator_type=evaluator_type,
-        get_label_func=lambda opinion: opinion.Sentiment,
-        no_label=no_label)
+    filter_opinion_func = create_filter_labels_func(evaluator_type=evaluator_type,
+                                                    get_label_func=lambda opinion: opinion.Sentiment,
+                                                    no_label=no_label)
 
     test_opinions_by_doc_id = __compose_test_opinions_by_doc_id(
         etalon_opinions_by_row_id=etalon_opinions_by_row_id,
@@ -220,10 +214,12 @@ def opinions_per_document_two_class_result_evaluation(
         test_context_opinion_ids_by_row_id=test_context_opinion_ids_by_row_id,
         test_context_opinions_by_id=test_context_opinions_by_id,
         label_scaler=label_scaler,
-        filter_opinion_func=filter_opinion_func,                                     # не берем те, что c NoLabel
+        filter_opinion_func=filter_opinion_func,
         labels_agg_func=labels_agg_func)                                        # создаем на основе метода голосования.
 
-    doc_ids = sorted(list(set(chain(etalon_opinions_by_doc_id.keys(), orig_test_opinion_by_doc_id.keys()))))
+    doc_ids = select_doc_ids(doc_ids_mode=doc_ids_mode,
+                             test_doc_ids=orig_test_opinion_by_doc_id.keys(),
+                             etalon_doc_ids=etalon_opinions_by_doc_id.keys())
 
     cmp_pairs_iter = DataPairsIterators.iter_func_based_collections(
         doc_ids=[int(doc_id) for doc_id in doc_ids],
@@ -248,7 +244,7 @@ def opinions_per_document_two_class_result_evaluation(
                                  label_scaler=label_scaler)
 
     # evaluate every document.
-    logged_cmp_pairs_it = progress_bar_iter(cmp_pairs_iter, desc="Evaluate", unit='pairs')
+    logged_cmp_pairs_it = progress_bar_defined(cmp_pairs_iter, total=len(doc_ids), desc="Evaluate", unit='docs')
     result = evaluator.evaluate(cmp_pairs=logged_cmp_pairs_it)
 
     return result

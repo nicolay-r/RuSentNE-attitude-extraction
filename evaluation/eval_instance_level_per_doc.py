@@ -8,12 +8,11 @@ from arekit.common.data.storages.base import BaseRowsStorage
 from arekit.common.data.views.samples import BaseSampleStorageView
 from arekit.common.evaluation.comparators.text_opinions import TextOpinionBasedComparator
 from arekit.common.evaluation.evaluators.modes import EvaluationModes
-from arekit.common.utils import progress_bar_iter
+from arekit.common.utils import progress_bar_defined
 from arekit.contrib.utils.evaluation.iterators import DataPairsIterators
 
-from evaluation.factory import create_filter_labels_func, create_evaluator
-from evaluation.instance_level import extract_context_opinions_by_row_id
-from evaluation.utils import assign_labels
+from evaluation.eval_instance_level import extract_context_opinions_by_row_id
+from evaluation.utils import assign_labels, select_doc_ids, create_filter_labels_func, create_evaluator
 from labels.scaler import PosNegNeuRelationsLabelScaler
 
 
@@ -31,16 +30,18 @@ def __group_text_opinions_by_doc_id(view):
 
 def text_opinion_per_document_two_class_result_evaluator(
         test_predict_filepath, etalon_samples_filepath, test_samples_filepath,
-        evaluator_type="two_class", label_scaler=PosNegNeuRelationsLabelScaler()):
+        doc_ids_mode="joined", evaluator_type="two_class",
+        label_scaler=PosNegNeuRelationsLabelScaler()):
     """ Выполнение оценки на уровне разметки экземпляров;
         оценка вычисляется по каждому документу в отдельности, а
         затем подсчитывается среднее значение.
 
-        # TODO. #363 нужно переделать API на передачу просто меток, игнорируемых меток.
+        TODO. #363 нужно переделать API на передачу просто меток, игнорируемых меток.
     """
     assert(isinstance(test_predict_filepath, str))
     assert(isinstance(etalon_samples_filepath, str))
     assert(isinstance(test_samples_filepath, str))
+    assert(isinstance(doc_ids_mode, str))
 
     if not exists(test_predict_filepath):
         raise FileNotFoundError(test_predict_filepath)
@@ -51,6 +52,7 @@ def text_opinion_per_document_two_class_result_evaluator(
     if not exists(test_samples_filepath):
         raise FileNotFoundError(test_samples_filepath)
 
+    # TODO. #363 нужно переделать API на передачу просто меток, игнорируемых меток.
     no_label = label_scaler.uint_to_label(0)
 
     # Setup views.
@@ -76,7 +78,9 @@ def text_opinion_per_document_two_class_result_evaluator(
                   row_id_to_context_opin_id_func=lambda row_id: test_context_opinions_by_row_id[row_id].Tag,
                   label_scaler=label_scaler)
 
-    doc_ids = sorted(list(set(chain(test_row_ids_by_doc_id.keys(), etalon_row_ids_by_doc_id.keys()))))
+    doc_ids = select_doc_ids(doc_ids_mode=doc_ids_mode,
+                             test_doc_ids=test_row_ids_by_doc_id.keys(),
+                             etalon_doc_ids=etalon_row_ids_by_doc_id.keys())
 
     # Setup filter
     filter_text_opinion_func = create_filter_labels_func(
@@ -99,12 +103,13 @@ def text_opinion_per_document_two_class_result_evaluator(
     # Composing evaluator.
     evaluator = create_evaluator(evaluator_type=evaluator_type,
                                  comparator=TextOpinionBasedComparator(eval_mode=EvaluationModes.Extraction),
+                                 # TODO. #363 нужно переделать API на передачу просто меток, игнорируемых меток.
                                  uint_labels=[1, 2, 0],
                                  get_item_label_func=lambda opinion: opinion.Sentiment,
                                  label_scaler=label_scaler)
 
     # evaluate every document.
-    logged_cmp_pairs_it = progress_bar_iter(cmp_pairs_iter, desc="Evaluate", unit='pairs')
+    logged_cmp_pairs_it = progress_bar_defined(cmp_pairs_iter, total=len(doc_ids), desc="Evaluate", unit='docs')
     result = evaluator.evaluate(cmp_pairs=logged_cmp_pairs_it)
 
     return result

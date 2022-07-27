@@ -9,8 +9,7 @@ from arekit.common.evaluation.comparators.text_opinions import TextOpinionBasedC
 from arekit.common.evaluation.evaluators.modes import EvaluationModes
 from arekit.common.evaluation.pairs.single import SingleDocumentDataPairsToCompare
 
-from evaluation.factory import create_filter_labels_func, create_evaluator
-from evaluation.utils import assign_labels, row_to_context_opinion
+from evaluation.utils import assign_labels, row_to_context_opinion, create_evaluator, create_filter_labels_func
 from labels.scaler import PosNegNeuRelationsLabelScaler
 
 
@@ -53,6 +52,7 @@ def text_opinion_per_collection_two_class_result_evaluator(
     if not exists(test_samples_filepath):
         raise FileNotFoundError(test_samples_filepath)
 
+    # TODO. #363 нужно переделать API на передачу просто меток, игнорируемых меток.
     no_label = label_scaler.uint_to_label(0)
 
     # Setup views.
@@ -94,6 +94,7 @@ def text_opinion_per_collection_two_class_result_evaluator(
     # Composing evaluator.
     evaluator = create_evaluator(evaluator_type=evaluator_type,
                                  comparator=TextOpinionBasedComparator(eval_mode=EvaluationModes.Extraction),
+                                 # TODO. #363 нужно переделать API на передачу просто меток, игнорируемых меток.
                                  uint_labels=[1, 2, 0],
                                  get_item_label_func=lambda text_opinion: text_opinion.Sentiment,
                                  label_scaler=label_scaler)
