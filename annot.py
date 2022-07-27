@@ -19,14 +19,12 @@ def is_entity_ignored(entity, e_type):
     assert(isinstance(entity, Entity))
     assert(isinstance(e_type, OpinionEntityType))
 
-    subjects = [EntityHelper.PERSON, EntityHelper.ORGANIZATION, EntityHelper.COUNTRY, EntityHelper.PROFESSION]
-    objects_ignored = [EntityHelper.AGE, EntityHelper.NUMBER, EntityHelper.PERCENT, EntityHelper.ORDINAL,
-                       EntityHelper.TIME, EntityHelper.MONEY, EntityHelper.DATE]
+    supported = [EntityHelper.PERSON, EntityHelper.ORGANIZATION, EntityHelper.COUNTRY, EntityHelper.PROFESSION]
 
     if e_type == OpinionEntityType.Subject:
-        return entity.Type not in subjects
+        return entity.Type not in supported
     if e_type == OpinionEntityType.Object:
-        return entity.Type in objects_ignored
+        return entity.Type not in supported
     else:
         return True
 
