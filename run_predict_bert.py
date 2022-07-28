@@ -10,7 +10,7 @@ from models.bert.states import BERT_CONFIG_PATH, BERT_FINETUNED_CKPT_PATH, BERT_
 
 def predict_bert(max_seq_length=128, bert_config=BERT_CONFIG_PATH, do_lowercase=BERT_DO_LOWERCASE,
                  ckpt_path=BERT_FINETUNED_CKPT_PATH, vocab_filepath=BERT_VOCAB_PATH,
-                 predict_dir="_out/serialize-bert_1l", samples_dir="_out/serialize-bert_1l",
+                 predict_dir="_out/serialize-bert", samples_dir="_out/serialize-bert",
                  full_model_name="bert", data_type=DataType.Test):
 
     data_folding = NoFolding(doc_ids_to_fold=[], supported_data_types=[data_type]),

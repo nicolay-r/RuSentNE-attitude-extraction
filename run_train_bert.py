@@ -15,5 +15,5 @@ if __name__ == '__main__':
                                  save_path=BERT_FINETUNED2_MODEL_PATHDIR)
         ])
 
-    ppl.run(input_data="_out/serialize-bert_1l/sample-train-0.tsv.gz",
+    ppl.run(input_data="_out/serialize-bert/sample-train-0.tsv.gz",
             params_dict={"epochs_count": 4, "batch_size": 6})
