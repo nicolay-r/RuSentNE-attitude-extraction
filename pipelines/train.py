@@ -1,4 +1,5 @@
 from arekit.common.data.input.sample import InputSampleBase
+from arekit.common.entities.types import OpinionEntityType
 from arekit.common.linkage.text_opinions import TextOpinionsLinkage
 from arekit.common.news.parsed.base import ParsedNews
 from arekit.common.news.parsed.providers.base import BaseParsedNewsServiceProvider
@@ -15,11 +16,14 @@ from arekit.common.synonyms.grouping import SynonymsCollectionValuesGroupingProv
 from arekit.common.text_opinions.base import TextOpinion
 
 from collection.news import CustomNews
+from entity.filter import is_entity_ignored
 
 
 def create_train_pipeline(text_parser, doc_ops, annotator, synonyms, terms_per_context):
     """ Train pipeline is based on the predefined annotations and
         automatic annotations of other pairs with a NoLabel.
+
+        # TODO. Provide here the list of annotators.
     """
     assert(isinstance(annotator, BaseOpinionAnnotator) or annotator is None)
 
@@ -69,6 +73,14 @@ def __filter_internal_opinion(internal_opinion, esp, terms_per_context):
         # AREkit does not provide a support for multi-sentence opinions at present.
         return False
 
+    e_source = esp._doc_entities[internal_opinion.SourceId]
+    if is_entity_ignored(e_source, OpinionEntityType.Subject):
+        return False
+
+    e_target = esp._doc_entities[internal_opinion.TargetId]
+    if not is_entity_ignored(e_target, OpinionEntityType.Object):
+        return False
+
     return InputSampleBase.check_ability_to_create_sample(
         entity_service=esp,
         text_opinion=internal_opinion,
@@ -76,6 +88,8 @@ def __filter_internal_opinion(internal_opinion, esp, terms_per_context):
 
 
 def iter_train_text_opinion_linkages(news, parsed_news, annotator, parsed_news_service, terms_per_context):
+    """ #TODO. Provide a couple of annotators.
+    """
     assert(isinstance(news, CustomNews))
     assert(isinstance(annotator, BaseOpinionAnnotator) or annotator is None)
     assert(isinstance(parsed_news, ParsedNews))
