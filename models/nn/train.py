@@ -1,6 +1,6 @@
 from os.path import join
 
-from arekit.common.experiment.api.ctx_training import ExperimentTrainingContext
+from arekit.common.experiment.api.ctx_base import ExperimentContext
 from arekit.common.experiment.data_type import DataType
 from arekit.common.experiment.name_provider import ExperimentNameProvider
 from arekit.common.pipeline.base import BasePipeline
@@ -45,8 +45,7 @@ def train_nn(output_dir, model_log_dir, split_filepath, folding_type="fixed",
                                     source_dir=output_dir if finetune_existed else None,
                                     model_name_tag=u'')
 
-    exp_ctx = ExperimentTrainingContext(
-        labels_count=labels_count,
+    exp_ctx = ExperimentContext(
         name_provider=ExperimentNameProvider(name=exp_name, suffix=extra_name_suffix))
 
     exp_ctx.set_model_io(model_io)
@@ -82,7 +81,8 @@ def train_nn(output_dir, model_log_dir, split_filepath, folding_type="fixed",
 
     pipeline_item = NetworksTrainingPipelineItem(
         load_model=True,
-        exp_ctx=exp_ctx,
+        model_io=model_io,
+        labels_count=labels_count,
         exp_io=exp_io,
         create_network_func=network_func,
         config=config,

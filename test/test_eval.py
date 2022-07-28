@@ -2,8 +2,8 @@ import unittest
 from os.path import join, dirname, realpath
 from arekit.contrib.utils.evaluation.results.two_class_prf import TwoClassEvalPrecRecallF1Result
 
-from evaluation.document_level import opinions_per_document_two_class_result_evaluation
-from evaluation.instance_level import text_opinion_per_collection_two_class_result_evaluator
+from evaluation.eval_document_level import opinions_per_document_two_class_result_evaluation
+from evaluation.eval_instance_level import text_opinion_per_collection_two_class_result_evaluator
 from labels.scaler import PosNegNeuRelationsLabelScaler
 
 

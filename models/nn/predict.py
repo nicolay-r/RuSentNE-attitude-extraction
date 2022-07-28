@@ -162,7 +162,6 @@ def predict_nn(extra_name_suffix, output_dir, exp_name="serialize", data_folding
 
     # Hack with the training context.
     exp_ctx = ExperimentContext(
-        labels_count=labels_count,
         name_provider=ExperimentNameProvider(name=exp_name, suffix=extra_name_suffix))
 
     ppl.run(InferIOUtils(output_dir=output_dir, exp_ctx=exp_ctx),
