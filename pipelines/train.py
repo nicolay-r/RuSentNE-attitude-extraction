@@ -73,10 +73,14 @@ def __filter_internal_opinion(internal_opinion, esp, terms_per_context):
         # AREkit does not provide a support for multi-sentence opinions at present.
         return False
 
+    # TODO. Move this away into the related annotator.
+    # TODO. Annotator, based on the predefined annotations in the original collection.
     e_source = esp._doc_entities[internal_opinion.SourceId]
     if is_entity_ignored(e_source, OpinionEntityType.Subject):
         return False
 
+    # TODO. Move this away into the related annotator.
+    # TODO. Annotator, based on the predefined annotations in the original collection.
     e_target = esp._doc_entities[internal_opinion.TargetId]
     if not is_entity_ignored(e_target, OpinionEntityType.Object):
         return False
@@ -104,6 +108,9 @@ def iter_train_text_opinion_linkages(news, parsed_news, annotator, parsed_news_s
 
     predefined = set()
 
+    # TODO. Provide a couple of annotators.
+    # TODO. This is the first annotator.
+    # TODO. It would be nice to see the loop over annotators.
     # Predefined sentiment annotation.
     for text_opinion in news.TextOpinions:
         assert(isinstance(text_opinion, TextOpinion))
@@ -125,6 +132,8 @@ def iter_train_text_opinion_linkages(news, parsed_news, annotator, parsed_news_s
         linkage.set_tag(parsed_news_service)
         yield linkage
 
+    # TODO. This is the second annotator.
+    # TODO. It would be nice to see the loop over annotators.
     # Neutral annotation.
     # Выполнено через следующий механизм: сначала выполняется разметка на уровне
     # отношений документа (annotator), а потом из них выполняется преобразование в контекстыные отношения
