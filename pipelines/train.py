@@ -82,7 +82,7 @@ def __filter_internal_opinion(internal_opinion, esp, terms_per_context):
     # TODO. Move this away into the related annotator.
     # TODO. Annotator, based on the predefined annotations in the original collection.
     e_target = esp._doc_entities[internal_opinion.TargetId]
-    if not is_entity_ignored(e_target, OpinionEntityType.Object):
+    if is_entity_ignored(e_target, OpinionEntityType.Object):
         return False
 
     return InputSampleBase.check_ability_to_create_sample(
