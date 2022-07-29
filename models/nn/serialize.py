@@ -1,3 +1,4 @@
+from arekit.common.data.input.writers.base import BaseWriter
 from arekit.common.experiment.data_type import DataType
 from arekit.common.experiment.name_provider import ExperimentNameProvider
 from arekit.common.frames.variants.collection import FrameVariantsCollection
@@ -20,14 +21,14 @@ from arekit.processing.text.pipeline_tokenizer import DefaultTextTokenizer
 from entity.formatter import CustomEntitiesFormatter
 from experiment.ctx import CustomNetworkSerializationContext
 from experiment.doc_ops import CustomDocOperations
-from experiment.io import CustomExperimentSerializationIO
+from experiment.io import CustomNetworkSerializationIO
 from folding.factory import FoldingFactory
 from labels.formatter import SentimentLabelFormatter
 from labels.scaler import PosNegNeuRelationsLabelScaler
 from pipelines.collection import prepare_data_pipelines
 
 
-def serialize_nn(output_dir, split_filepath, folding_type="fixed",
+def serialize_nn(output_dir, split_filepath, writer=None, folding_type="fixed",
                  entities_fmt=CustomEntitiesFormatter(), limit=None, suffix="nn"):
     """ Run data preparation process for neural networks, i.e.
         convolutional neural networks and recurrent-based neural networks.
@@ -36,6 +37,7 @@ def serialize_nn(output_dir, split_filepath, folding_type="fixed",
     assert(isinstance(suffix, str))
     assert(isinstance(output_dir, str))
     assert(isinstance(limit, int) or limit is None)
+    assert(isinstance(writer, BaseWriter) or writer is None)
 
     terms_per_context = 50
     stemmer = MystemWrapper()
@@ -73,7 +75,7 @@ def serialize_nn(output_dir, split_filepath, folding_type="fixed",
             TermTypes.FRAME: bpe_vectorizer,
             TermTypes.TOKEN: norm_vectorizer
         },
-        exp_io=CustomExperimentSerializationIO(output_dir=output_dir, exp_ctx=exp_ctx),
+        exp_io=CustomNetworkSerializationIO(output_dir=output_dir, exp_ctx=exp_ctx, writer=writer),
         str_entity_fmt=entities_fmt,
         balance_func=lambda data_type: data_type == DataType.Train,
         save_labels_func=lambda data_type: data_type == DataType.Train or data_type == DataType.Etalon,

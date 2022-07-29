@@ -1,6 +1,7 @@
 import unittest
 from os.path import dirname, realpath, join
 
+from arekit.common.data.input.writers.tsv import TsvWriter
 from arekit.common.experiment.name_provider import ExperimentNameProvider
 from arekit.contrib.bert.terms.mapper import BertDefaultStringTextTermsMapper
 
@@ -9,6 +10,7 @@ from labels.formatter import PosNegNeuRelationsLabelFormatter
 from labels.scaler import PosNegNeuRelationsLabelScaler
 from models.bert.serialize import CroppedBertSampleRowProvider, serialize_bert
 from models.nn.serialize import serialize_nn
+from writers.opennre_json import OpenNREJsonWriter
 
 
 class TestSerialize(unittest.TestCase):
@@ -21,6 +23,14 @@ class TestSerialize(unittest.TestCase):
         serialize_nn(limit=1,
                      output_dir=self.output_dir,
                      folding_type="fixed",
+                     writer=TsvWriter(),
+                     split_filepath="../data/split_fixed.txt")
+
+    def test_nn_json(self):
+        serialize_nn(limit=1,
+                     output_dir=self.output_dir,
+                     folding_type="fixed",
+                     writer=OpenNREJsonWriter(),
                      split_filepath="../data/split_fixed.txt")
 
     def test_bert(self):
