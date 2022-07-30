@@ -19,11 +19,11 @@ class TestSerialize(unittest.TestCase):
     output_dir = join(current_dir, "_out")
 
     def test_nn(self):
-
         serialize_nn(limit=1,
                      output_dir=self.output_dir,
                      folding_type="fixed",
-                     writer=TsvWriter(),
+                     writer=TsvWriter(write_header=True),
+                     labels_scaler=PosNegNeuRelationsLabelScaler(),
                      split_filepath="../data/split_fixed.txt")
 
     def test_nn_json(self):
@@ -31,10 +31,10 @@ class TestSerialize(unittest.TestCase):
                      output_dir=self.output_dir,
                      folding_type="fixed",
                      writer=OpenNREJsonWriter(),
+                     labels_scaler=PosNegNeuRelationsLabelScaler(),
                      split_filepath="../data/split_fixed.txt")
 
     def test_bert(self):
-
         serialize_bert(limit=1,
                        terms_per_context=50,
                        output_dir=self.output_dir,

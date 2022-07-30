@@ -29,6 +29,7 @@ from pipelines.collection import prepare_data_pipelines
 
 
 def serialize_nn(output_dir, split_filepath, writer=None, folding_type="fixed",
+                 labels_scaler=PosNegNeuRelationsLabelScaler(),
                  entities_fmt=CustomEntitiesFormatter(), limit=None, suffix="nn"):
     """ Run data preparation process for neural networks, i.e.
         convolutional neural networks and recurrent-based neural networks.
@@ -56,7 +57,7 @@ def serialize_nn(output_dir, split_filepath, writer=None, folding_type="fixed",
     name_provider = ExperimentNameProvider(name="serialize", suffix=suffix)
 
     exp_ctx = CustomNetworkSerializationContext(
-        labels_scaler=PosNegNeuRelationsLabelScaler(),
+        labels_scaler=labels_scaler,
         terms_per_context=terms_per_context,
         pos_tagger=pos_tagger,
         name_provider=name_provider,
