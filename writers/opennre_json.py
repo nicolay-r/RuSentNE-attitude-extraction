@@ -8,6 +8,18 @@ from arekit.common.data.storages.base import BaseRowsStorage, logger
 
 class OpenNREJsonWriter(BaseWriter):
     """ This is a bag-based writer for the samples.
+        Project page: https://github.com/thunlp/OpenNRE
+
+        Every bag presented as follows:
+            {
+              'text' or 'token': ...,
+              'h': {'pos': [start, end], 'id': ... },
+              't': {'pos': [start, end], 'id': ... }
+              'id': "id_of_the_text_opinion"
+            }
+
+        In terms of the linked opinions (i0, i1, etc.) we consider id of the first opinion in linkage.
+        During the dataset reading stage via OpenNRE, these linkages automaticaly groups into bags.
     """
 
     BAG_TAG = "anno_relation_list"
