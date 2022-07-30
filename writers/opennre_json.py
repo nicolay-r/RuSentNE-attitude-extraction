@@ -7,15 +7,37 @@ from arekit.common.data.storages.base import BaseRowsStorage, logger
 
 
 class OpenNREJsonWriter(BaseWriter):
+    """ This is a bag-based writer for the samples.
+    """
+
+    BAG_TAG = "anno_relation_list"
 
     def __init__(self, encoding="utf-8"):
         assert(isinstance(encoding, str))
         self.__encoding = encoding
 
     @staticmethod
-    def __write(data, json_file):
-        json.dump(data, json_file, separators=(",", ":"), ensure_ascii=False)
+    def __optional_write_bag(bag, json_file):
+        assert(isinstance(bag, dict) or bag is None)
+
+        if bag is None:
+            return
+
+        bag_contents = bag[OpenNREJsonWriter.BAG_TAG]
+        if len(bag_contents) == 0:
+            return
+
+        data_to_write = bag if len(bag_contents) > 1 else bag_contents[0]
+        json.dump(data_to_write, json_file, separators=(",", ":"), ensure_ascii=False)
         json_file.write("\n")
+
+    @staticmethod
+    def __create_bag(row_id):
+        return {
+            OpenNREJsonWriter.BAG_TAG: [],
+            "h": {"id": row_id + "sb"},
+            "t": {"id": row_id + "tb"}
+        }
 
     def save(self, storage, target):
         assert(isinstance(storage, BaseRowsStorage))
@@ -27,30 +49,29 @@ class OpenNREJsonWriter(BaseWriter):
         os.makedirs(os.path.dirname(target), exist_ok=True)
         with open(target, "w", encoding=self.__encoding) as json_file:
 
-            bag = []
+            bag = None
 
             for row_index, row in storage:
 
-                json_row = {}
-                json_row["token"] = row["text_a"].split()
                 s_ind = int(row["s_ind"])
-                json_row["h"] = {"pos": [s_ind, s_ind + 1]}
                 t_ind = int(row["t_ind"])
-                json_row["t"] = {"pos": [t_ind, t_ind + 1]}
+
+                json_row = {}
+                json_row["id"] = row["id"]
+                json_row["token"] = row["text_a"].split()
+                json_row["h"] = {"pos": [s_ind, s_ind + 1], "id": str(row["id"] + "s")}
+                json_row["t"] = {"pos": [t_ind, t_ind + 1], "id": str(row["id"] + "t")}
 
                 if "label" in row:
-                    json_row["relation"] = int(row["label"])
+                    json_row["relation"] = str(int(row["label"]))
 
-                json_row["id"] = row["id"]
+                if bag is None or ("i0_" in json_row["id"] and len(bag) > 0):
+                    self.__optional_write_bag(bag, json_file=json_file)
+                    bag = self.__create_bag(row_id=row["id"])
 
-                if "i0_" in json_row["id"] and len(bag) > 0:
-                    self.__write(data=bag, json_file=json_file)
-                    bag = []
+                bag[self.BAG_TAG].append(json_row)
 
-                bag.append(json_row)
-
-            if len(bag) > 0:
-                self.__write(data=bag, json_file=json_file)
+            self.__optional_write_bag(bag, json_file=json_file)
 
         logger.info("Saving completed!")
         logger.info(df.info())
