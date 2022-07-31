@@ -2,8 +2,8 @@ from arekit.common.entities.collection import EntityCollection
 from arekit.common.labels.str_fmt import StringLabelsFormatter
 from arekit.contrib.source.brat.annot import BratAnnotationParser
 from arekit.contrib.source.brat.news_reader import BratDocumentSentencesReader
+from arekit.contrib.utils.processing.lemmatization.mystem import MystemWrapper
 from arekit.contrib.utils.synonyms.stemmer_based import StemmerBasedSynonymCollection
-from arekit.processing.lemmatization.mystem import MystemWrapper
 
 from collection.entities import CollectionEntityCollection
 from collection.io_utils import CollectionIOUtils, CollectionVersions

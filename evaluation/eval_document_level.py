@@ -14,7 +14,7 @@ from arekit.common.opinions.base import Opinion
 from arekit.common.labels.base import Label
 from arekit.contrib.utils.evaluation.iterators import DataPairsIterators
 from arekit.contrib.utils.synonyms.stemmer_based import StemmerBasedSynonymCollection
-from arekit.processing.lemmatization.mystem import MystemWrapper
+from arekit.contrib.utils.processing.lemmatization.mystem import MystemWrapper
 
 from evaluation.utils import row_to_context_opinion, row_to_opinion, create_filter_labels_func, assign_labels, \
     select_doc_ids, create_evaluator

@@ -15,7 +15,7 @@ from arekit.contrib.networks.enum_name_types import ModelNames
 from arekit.contrib.networks.factory import create_network_and_network_config_funcs
 from arekit.contrib.networks.pipelines.items.training import NetworksTrainingPipelineItem
 from arekit.contrib.utils.np_utils.writer import NpzDataWriter
-from arekit.processing.languages.ru.pos_service import PartOfSpeechTypesService
+from arekit.contrib.utils.processing.languages.ru.pos_service import PartOfSpeechTypesService
 
 from experiment.io import CustomExperimentTrainIO
 from folding.factory import FoldingFactory

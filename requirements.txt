@@ -1,1 +1,2 @@
+deeppavlov==0.11.0
 arekit @ git+https://github.com/nicolay-r/AREkit@master
