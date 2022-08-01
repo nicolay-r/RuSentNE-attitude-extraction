@@ -1,6 +1,5 @@
 from tqdm import tqdm
 from collections import OrderedDict
-from itertools import chain
 from os.path import exists
 
 from arekit.common.data.row_ids.multiple import MultipleIDProvider

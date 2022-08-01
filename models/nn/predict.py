@@ -27,7 +27,7 @@ from arekit.contrib.networks.enum_input_types import ModelInputType
 from arekit.contrib.networks.enum_name_types import ModelNames
 from arekit.contrib.networks.factory import create_network_and_network_config_funcs
 from arekit.contrib.networks.shapes import NetworkInputShapes
-from arekit.processing.languages.ru.pos_service import PartOfSpeechTypesService
+from arekit.contrib.utils.processing.languages.ru.pos_service import PartOfSpeechTypesService
 
 from experiment.io import InferIOUtils
 from labels.scaler import PosNegNeuRelationsLabelScaler
@@ -129,8 +129,7 @@ class TensorflowNetworkInferencePipelineItem(BasePipelineItem):
 
 
 def predict_nn(extra_name_suffix, output_dir, exp_name="serialize", data_folding_name="fixed",
-               bag_size=1, bags_per_minibatch=4, model_name=ModelNames.CNN, labels_count=3,
-               data_type=DataType.Test):
+               bag_size=1, bags_per_minibatch=4, model_name=ModelNames.CNN, data_type=DataType.Test):
     """ Perform inference for dataset using a pre-trained collection
         This is a pipeline-based impelementation, taken from
         the ARElight repository, see the following code for reference:

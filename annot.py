@@ -3,8 +3,8 @@ from arekit.common.labels.provider.constant import ConstantLabelProvider
 from arekit.common.opinions.annot.algo.pair_based import PairBasedOpinionAnnotationAlgorithm
 from arekit.common.opinions.annot.algo_based import AlgorithmBasedOpinionAnnotator
 from arekit.common.opinions.collection import OpinionCollection
+from arekit.contrib.utils.processing.lemmatization.mystem import MystemWrapper
 from arekit.contrib.utils.synonyms.stemmer_based import StemmerBasedSynonymCollection
-from arekit.processing.lemmatization.mystem import MystemWrapper
 
 from entity.filter import is_entity_ignored
 

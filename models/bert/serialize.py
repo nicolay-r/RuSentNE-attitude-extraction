@@ -11,7 +11,7 @@ from arekit.common.text.parser import BaseTextParser
 from arekit.contrib.bert.pipelines.items.serializer import BertExperimentInputSerializerPipelineItem
 from arekit.contrib.bert.samplers.nli_m import NliMultipleSampleProvider
 from arekit.contrib.source.brat.entities.parser import BratTextEntitiesParser
-from arekit.processing.text.pipeline_tokenizer import DefaultTextTokenizer
+from arekit.contrib.utils.pipelines.items.text.tokenizer import DefaultTextTokenizer
 
 from experiment.doc_ops import CustomDocOperations
 from experiment.io import InferIOUtils
