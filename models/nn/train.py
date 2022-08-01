@@ -14,10 +14,11 @@ from arekit.contrib.networks.enum_input_types import ModelInputType
 from arekit.contrib.networks.enum_name_types import ModelNames
 from arekit.contrib.networks.factory import create_network_and_network_config_funcs
 from arekit.contrib.networks.pipelines.items.training import NetworksTrainingPipelineItem
+from arekit.contrib.utils.io_utils.embedding import NpzEmbeddingIOUtils
+from arekit.contrib.utils.io_utils.samples import SamplesIO
 from arekit.contrib.utils.np_utils.writer import NpzDataWriter
 from arekit.contrib.utils.processing.languages.ru.pos_service import PartOfSpeechTypesService
 
-from experiment.io import CustomExperimentTrainIO
 from folding.factory import FoldingFactory
 
 
@@ -50,9 +51,6 @@ def train_nn(output_dir, model_log_dir, split_filepath, folding_type="fixed",
 
     exp_ctx.set_model_io(model_io)
 
-    exp_io = CustomExperimentTrainIO(exp_ctx=exp_ctx,
-                                     source_dir=output_dir)
-
     data_writer = NpzDataWriter()
 
     network_func, network_config_func = create_network_and_network_config_funcs(
@@ -83,8 +81,9 @@ def train_nn(output_dir, model_log_dir, split_filepath, folding_type="fixed",
         load_model=True,
         model_io=model_io,
         labels_count=labels_count,
-        exp_io=exp_io,
         create_network_func=network_func,
+        samples_io=SamplesIO(target_dir=output_dir),
+        emb_io=NpzEmbeddingIOUtils(target_dir=output_dir, exp_ctx=exp_ctx),
         config=config,
         bags_collection_type=SingleBagsCollection,
         network_callbacks=network_callbacks,

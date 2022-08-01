@@ -17,10 +17,12 @@ class TestSerialize(unittest.TestCase):
 
     current_dir = dirname(realpath(__file__))
     output_dir = join(current_dir, "_out")
+    output_nn_dir = join(output_dir, "serialize-nn")
+    output_bert_dir = join(output_dir, "serialize-bert")
 
-    def test_nn(self):
+    def test_nn_tsv(self):
         serialize_nn(limit=1,
-                     output_dir=self.output_dir,
+                     output_dir=self.output_nn_dir,
                      folding_type="fixed",
                      writer=TsvWriter(write_header=True),
                      labels_scaler=PosNegNeuRelationsLabelScaler(),
@@ -28,18 +30,19 @@ class TestSerialize(unittest.TestCase):
 
     def test_nn_json(self):
         serialize_nn(limit=1,
-                     output_dir=self.output_dir,
+                     output_dir=self.output_nn_dir,
                      folding_type="fixed",
                      writer=OpenNREJsonWriter(),
                      labels_scaler=PosNegNeuRelationsLabelScaler(),
                      split_filepath="../data/split_fixed.txt")
 
-    def test_bert(self):
+    def test_bert_json(self):
         serialize_bert(limit=1,
                        terms_per_context=50,
                        output_dir=self.output_dir,
                        split_filepath="../data/split_fixed.txt",
                        name_provider=ExperimentNameProvider(name="serialize", suffix="bert"),
+                       writer=OpenNREJsonWriter(),
                        folding_type="fixed",
                        sample_row_provider=CroppedBertSampleRowProvider(
                            crop_window_size=50,

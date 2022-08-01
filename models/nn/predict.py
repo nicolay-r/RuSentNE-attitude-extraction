@@ -3,6 +3,7 @@ from os.path import join
 from arekit.common.data.row_ids.multiple import MultipleIDProvider
 from arekit.common.data.storages.base import BaseRowsStorage
 from arekit.common.data.views.samples import BaseSampleStorageView
+from arekit.common.experiment.api.base_samples_io import BaseSamplesIO
 from arekit.common.experiment.api.ctx_base import ExperimentContext
 from arekit.common.experiment.data_type import DataType
 from arekit.common.experiment.name_provider import ExperimentNameProvider
@@ -13,6 +14,7 @@ from arekit.common.pipeline.context import PipelineContext
 from arekit.common.pipeline.items.base import BasePipelineItem
 from arekit.contrib.networks.core.callback.writer import PredictResultWriterCallback
 from arekit.contrib.networks.core.ctx_inference import InferenceContext
+from arekit.contrib.networks.core.embedding_io import BaseEmbeddingIO
 from arekit.contrib.networks.core.feeding.bags.collection.single import SingleBagsCollection
 from arekit.contrib.networks.core.model import BaseTensorflowModel
 from arekit.contrib.networks.core.model_ctx import TensorflowModelContext
@@ -27,9 +29,10 @@ from arekit.contrib.networks.enum_input_types import ModelInputType
 from arekit.contrib.networks.enum_name_types import ModelNames
 from arekit.contrib.networks.factory import create_network_and_network_config_funcs
 from arekit.contrib.networks.shapes import NetworkInputShapes
+from arekit.contrib.utils.io_utils.embedding import NpzEmbeddingIOUtils
+from arekit.contrib.utils.io_utils.samples import SamplesIO
 from arekit.contrib.utils.processing.languages.ru.pos_service import PartOfSpeechTypesService
 
-from experiment.io import InferIOUtils
 from labels.scaler import PosNegNeuRelationsLabelScaler
 
 
@@ -76,21 +79,27 @@ class TensorflowNetworkInferencePipelineItem(BasePipelineItem):
         self.__data_folding = data_folding
 
     def apply_core(self, input_data, pipeline_ctx):
-        assert(isinstance(input_data, InferIOUtils))
         assert(isinstance(pipeline_ctx, PipelineContext))
+        assert("emb_io" in input_data)
+        assert("samples_io" in input_data)
+        assert("predict_root" in input_data)
+
+        emb_io = input_data["emb_io"]
+        samples_io = input_data["samples_io"]
+        predict_root = input_data["predict_root"]
+        assert(isinstance(emb_io, BaseEmbeddingIO))
+        assert(isinstance(samples_io, BaseSamplesIO))
 
         # Setup predicted result writer.
         full_model_name = pipeline_ctx.provide_or_none("full_model_name")
-        exp_root = join(input_data._get_experiment_sources_dir(),
-                        input_data.get_experiment_folder_name())
-        tgt = join(exp_root, "predict-{fmn}-{dtype}.tsv.gz".format(
+        tgt = join(predict_root, "predict-{fmn}-{dtype}.tsv.gz".format(
             fmn=full_model_name, dtype=str(self.__data_type).lower().split('.')[-1]))
 
         # Fetch other required in furter information from input_data.
-        samples_filepath = input_data.create_samples_writer_target(
+        samples_filepath = samples_io.create_target(
             data_type=self.__data_type, data_folding=self.__data_folding)
-        embedding = input_data.load_embedding(data_folding=self.__data_folding)
-        vocab = input_data.load_vocab(data_folding=self.__data_folding)
+        embedding = emb_io.load_embedding(data_folding=self.__data_folding)
+        vocab = emb_io.load_vocab(data_folding=self.__data_folding)
 
         # Setup config parameters.
         self.__config.set_term_embedding(embedding)
@@ -128,14 +137,17 @@ class TensorflowNetworkInferencePipelineItem(BasePipelineItem):
         model.predict(data_type=self.__data_type, do_compile=True)
 
 
-def predict_nn(extra_name_suffix, output_dir, exp_name="serialize", data_folding_name="fixed",
-               bag_size=1, bags_per_minibatch=4, model_name=ModelNames.CNN, data_type=DataType.Test):
+def predict_nn(extra_name_suffix, output_dir, embedding_dir, samples_dir, exp_name="serialize",
+               data_folding_name="fixed", bag_size=1, bags_per_minibatch=4,
+               model_name=ModelNames.CNN, data_type=DataType.Test):
     """ Perform inference for dataset using a pre-trained collection
         This is a pipeline-based impelementation, taken from
         the ARElight repository, see the following code for reference:
             https://github.com/nicolay-r/ARElight/blob/v0.22.0/arelight/pipelines/inference_nn.py
     """
     assert(isinstance(output_dir, str))
+    assert(isinstance(embedding_dir, str))
+    assert(isinstance(samples_dir, str))
 
     data_folding = NoFolding(doc_ids_to_fold=[], supported_data_types=[data_type])
     full_model_name = "-".join([data_folding_name, model_name.value])
@@ -163,7 +175,10 @@ def predict_nn(extra_name_suffix, output_dir, exp_name="serialize", data_folding
     exp_ctx = ExperimentContext(
         name_provider=ExperimentNameProvider(name=exp_name, suffix=extra_name_suffix))
 
-    ppl.run(InferIOUtils(output_dir=output_dir, exp_ctx=exp_ctx),
-            {
-                "full_model_name": model_name.value
-            })
+    input_data = {
+        "samples_io": SamplesIO(target_dir=samples_dir),
+        "emb_io": NpzEmbeddingIOUtils(target_dir=embedding_dir, exp_ctx=exp_ctx),
+        "predict_root": output_dir
+    }
+
+    ppl.run(input_data=input_data, params_dict={ "full_model_name": model_name.value })

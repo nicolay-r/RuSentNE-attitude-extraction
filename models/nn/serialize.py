@@ -10,6 +10,8 @@ from arekit.contrib.source.brat.entities.parser import BratTextEntitiesParser
 from arekit.contrib.source.rusentiframes.collection import RuSentiFramesCollection
 from arekit.contrib.source.rusentiframes.labels_fmt import RuSentiFramesLabelsFormatter
 from arekit.contrib.source.rusentiframes.types import RuSentiFramesVersions
+from arekit.contrib.utils.io_utils.embedding import NpzEmbeddingIOUtils
+from arekit.contrib.utils.io_utils.samples import SamplesIO
 from arekit.contrib.utils.pipelines.items.text.frames_lemmatized import LemmasBasedFrameVariantsParser
 from arekit.contrib.utils.pipelines.items.text.tokenizer import DefaultTextTokenizer
 from arekit.contrib.utils.processing.lemmatization.mystem import MystemWrapper
@@ -21,11 +23,11 @@ from arekit.contrib.utils.vectorizers.random_norm import RandomNormalVectorizer
 from entity.formatter import CustomEntitiesFormatter
 from experiment.ctx import CustomNetworkSerializationContext
 from experiment.doc_ops import CustomDocOperations
-from experiment.io import CustomNetworkSerializationIO
 from folding.factory import FoldingFactory
 from labels.formatter import SentimentLabelFormatter
 from labels.scaler import PosNegNeuRelationsLabelScaler
 from pipelines.collection import prepare_data_pipelines
+from writers.utils import create_writer_extension
 
 
 def serialize_nn(output_dir, split_filepath, writer=None, folding_type="fixed",
@@ -38,7 +40,7 @@ def serialize_nn(output_dir, split_filepath, writer=None, folding_type="fixed",
     assert(isinstance(suffix, str))
     assert(isinstance(output_dir, str))
     assert(isinstance(limit, int) or limit is None)
-    assert(isinstance(writer, BaseWriter) or writer is None)
+    assert(isinstance(writer, BaseWriter))
 
     terms_per_context = 50
     stemmer = MystemWrapper()
@@ -76,7 +78,10 @@ def serialize_nn(output_dir, split_filepath, writer=None, folding_type="fixed",
             TermTypes.FRAME: bpe_vectorizer,
             TermTypes.TOKEN: norm_vectorizer
         },
-        exp_io=CustomNetworkSerializationIO(output_dir=output_dir, exp_ctx=exp_ctx, writer=writer),
+        samples_io=SamplesIO(target_dir=output_dir,
+                             writer=writer,
+                             target_extension=create_writer_extension(writer)),
+        emb_io=NpzEmbeddingIOUtils(target_dir=output_dir, exp_ctx=exp_ctx),
         str_entity_fmt=entities_fmt,
         balance_func=lambda data_type: data_type == DataType.Train,
         save_labels_func=lambda data_type: data_type == DataType.Train or data_type == DataType.Etalon,

@@ -4,20 +4,19 @@ from arekit.common.entities.base import Entity
 from arekit.common.experiment.api.ctx_serialization import ExperimentSerializationContext
 from arekit.common.experiment.data_type import DataType
 from arekit.common.experiment.name_provider import ExperimentNameProvider
-from arekit.common.labels.base import NoLabel
-from arekit.common.labels.scaler.single import SingleLabelScaler
 from arekit.common.pipeline.base import BasePipeline
 from arekit.common.text.parser import BaseTextParser
 from arekit.contrib.bert.pipelines.items.serializer import BertExperimentInputSerializerPipelineItem
 from arekit.contrib.bert.samplers.nli_m import NliMultipleSampleProvider
 from arekit.contrib.source.brat.entities.parser import BratTextEntitiesParser
+from arekit.contrib.utils.io_utils.samples import SamplesIO
 from arekit.contrib.utils.pipelines.items.text.tokenizer import DefaultTextTokenizer
 
 from experiment.doc_ops import CustomDocOperations
-from experiment.io import InferIOUtils
 from folding.factory import FoldingFactory
 from labels.formatter import SentimentLabelFormatter
 from pipelines.collection import prepare_data_pipelines
+from writers.utils import create_writer_extension
 
 
 class BertSerializationContext(ExperimentSerializationContext):
@@ -125,7 +124,7 @@ class CroppedBertSampleRowProvider(NliMultipleSampleProvider):
         row[const.T_IND] = t_ind
 
 
-def serialize_bert(split_filepath, terms_per_context, name_provider,
+def serialize_bert(split_filepath, terms_per_context, name_provider, writer,
                    sample_row_provider, output_dir, folding_type="fixed", limit=None):
     assert(isinstance(limit, int) or limit is None)
     assert(isinstance(split_filepath, str))
@@ -134,15 +133,12 @@ def serialize_bert(split_filepath, terms_per_context, name_provider,
     assert(isinstance(name_provider, ExperimentNameProvider))
     assert(isinstance(output_dir, str))
 
-    exp_ctx = BertSerializationContext(label_scaler=SingleLabelScaler(NoLabel()),
-                                       terms_per_context=terms_per_context,
-                                       name_provider=name_provider)
-
     pipeline = BasePipeline([
-         BertExperimentInputSerializerPipelineItem(
+        BertExperimentInputSerializerPipelineItem(
             balance_func=lambda data_type: data_type == DataType.Train,
-            exp_io=InferIOUtils(exp_ctx=exp_ctx,
-                                output_dir=output_dir),
+            samples_io=SamplesIO(target_dir=output_dir,
+                                 writer=writer,
+                                 target_extension=create_writer_extension(writer)),
             save_labels_func=lambda data_type: data_type != DataType.Test,
             sample_rows_provider=sample_row_provider)
     ])
