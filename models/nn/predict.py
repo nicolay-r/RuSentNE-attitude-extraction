@@ -6,7 +6,6 @@ from arekit.common.data.views.samples import BaseSampleStorageView
 from arekit.common.experiment.api.base_samples_io import BaseSamplesIO
 from arekit.common.experiment.api.ctx_base import ExperimentContext
 from arekit.common.experiment.data_type import DataType
-from arekit.common.experiment.name_provider import ExperimentNameProvider
 from arekit.common.folding.base import BaseDataFolding
 from arekit.common.folding.nofold import NoFolding
 from arekit.common.pipeline.base import BasePipeline
@@ -137,9 +136,8 @@ class TensorflowNetworkInferencePipelineItem(BasePipelineItem):
         model.predict(data_type=self.__data_type, do_compile=True)
 
 
-def predict_nn(extra_name_suffix, output_dir, embedding_dir, samples_dir, exp_name="serialize",
-               data_folding_name="fixed", bag_size=1, bags_per_minibatch=4,
-               model_name=ModelNames.CNN, data_type=DataType.Test):
+def predict_nn(output_dir, embedding_dir, samples_dir, data_folding_name="fixed", bag_size=1,
+               bags_per_minibatch=32, model_name=ModelNames.CNN, data_type=DataType.Test):
     """ Perform inference for dataset using a pre-trained collection
         This is a pipeline-based impelementation, taken from
         the ARElight repository, see the following code for reference:
@@ -172,8 +170,7 @@ def predict_nn(extra_name_suffix, output_dir, embedding_dir, samples_dir, exp_na
     ])
 
     # Hack with the training context.
-    exp_ctx = ExperimentContext(
-        name_provider=ExperimentNameProvider(name=exp_name, suffix=extra_name_suffix))
+    exp_ctx = ExperimentContext()
 
     input_data = {
         "samples_io": SamplesIO(target_dir=samples_dir),
@@ -181,4 +178,4 @@ def predict_nn(extra_name_suffix, output_dir, embedding_dir, samples_dir, exp_na
         "predict_root": output_dir
     }
 
-    ppl.run(input_data=input_data, params_dict={ "full_model_name": model_name.value })
+    ppl.run(input_data=input_data, params_dict={"full_model_name": model_name.value})

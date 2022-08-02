@@ -1,9 +1,7 @@
 from arekit.common.data import const
 from arekit.common.data.input.providers.rows.samples import BaseSampleRowProvider
 from arekit.common.entities.base import Entity
-from arekit.common.experiment.api.ctx_serialization import ExperimentSerializationContext
 from arekit.common.experiment.data_type import DataType
-from arekit.common.experiment.name_provider import ExperimentNameProvider
 from arekit.common.pipeline.base import BasePipeline
 from arekit.common.text.parser import BaseTextParser
 from arekit.contrib.bert.pipelines.items.serializer import BertExperimentInputSerializerPipelineItem
@@ -17,29 +15,6 @@ from folding.factory import FoldingFactory
 from labels.formatter import SentimentLabelFormatter
 from pipelines.collection import prepare_data_pipelines
 from writers.utils import create_writer_extension
-
-
-class BertSerializationContext(ExperimentSerializationContext):
-
-    @property
-    def FramesConnotationProvider(self):
-        raise NotImplementedError()
-
-    @property
-    def FrameVariantCollection(self):
-        raise NotImplementedError()
-
-    def __init__(self, label_scaler, terms_per_context, name_provider):
-        assert(isinstance(terms_per_context, int))
-
-        super(BertSerializationContext, self).__init__(name_provider=name_provider,
-                                                       label_scaler=label_scaler)
-
-        self.__terms_per_context = terms_per_context
-
-    @property
-    def TermsPerContext(self):
-        return self.__terms_per_context
 
 
 class CroppedBertSampleRowProvider(NliMultipleSampleProvider):
@@ -130,7 +105,6 @@ def serialize_bert(split_filepath, terms_per_context, name_provider, writer,
     assert(isinstance(split_filepath, str))
     assert(isinstance(terms_per_context, int))
     assert(isinstance(sample_row_provider, BaseSampleRowProvider))
-    assert(isinstance(name_provider, ExperimentNameProvider))
     assert(isinstance(output_dir, str))
 
     pipeline = BasePipeline([

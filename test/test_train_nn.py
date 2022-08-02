@@ -16,10 +16,7 @@ class TestNetworkTraining(unittest.TestCase):
                  model_log_dir=join(current_dir, "_model"),
                  split_filepath=join(current_dir, "..", "data/split_fixed.txt"))
 
-        predict_nn(extra_name_suffix="nn",
-                   output_dir=output_nn_dir,
-                   embedding_dir=output_nn_dir,
-                   samples_dir=output_nn_dir)
+        predict_nn(output_dir=output_nn_dir, embedding_dir=output_nn_dir, samples_dir=output_nn_dir)
 
 
 if __name__ == '__main__':

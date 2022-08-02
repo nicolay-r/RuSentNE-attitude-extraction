@@ -2,7 +2,6 @@ from os.path import join
 
 from arekit.common.experiment.api.ctx_base import ExperimentContext
 from arekit.common.experiment.data_type import DataType
-from arekit.common.experiment.name_provider import ExperimentNameProvider
 from arekit.common.pipeline.base import BasePipeline
 from arekit.contrib.networks.core.callback.hidden import HiddenStatesWriterCallback
 from arekit.contrib.networks.core.callback.hidden_input import InputHiddenStatesWriterCallback
@@ -23,11 +22,10 @@ from folding.factory import FoldingFactory
 
 
 def train_nn(output_dir, model_log_dir, split_filepath, folding_type="fixed",
-             exp_name="serialize", extra_name_suffix="nn",
              epochs_count=100, labels_count=3, model_name=ModelNames.CNN,
-             bags_per_minibatch=4, bag_size=1, terms_per_context=50,
+             bags_per_minibatch=32, bag_size=1, terms_per_context=50,
              learning_rate=0.01, embedding_dropout_keep_prob=1.0,
-             dropout_keep_prob=0.9, train_acc_limit=0.99, finetune_existed=True):
+             dropout_keep_prob=0.9, train_acc_limit=0.999, finetune_existed=True):
     """ Training TensorFlow-based model (version 1.14),
         provided by contributional part of the AREkit framework.
         From the list of the predefined moels.
@@ -46,9 +44,7 @@ def train_nn(output_dir, model_log_dir, split_filepath, folding_type="fixed",
                                     source_dir=output_dir if finetune_existed else None,
                                     model_name_tag=u'')
 
-    exp_ctx = ExperimentContext(
-        name_provider=ExperimentNameProvider(name=exp_name, suffix=extra_name_suffix))
-
+    exp_ctx = ExperimentContext()
     exp_ctx.set_model_io(model_io)
 
     data_writer = NpzDataWriter()
