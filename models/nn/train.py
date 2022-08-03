@@ -25,7 +25,7 @@ def train_nn(output_dir, model_log_dir, split_filepath, folding_type="fixed",
              epochs_count=100, labels_count=3, model_name=ModelNames.CNN,
              bags_per_minibatch=32, bag_size=1, terms_per_context=50,
              learning_rate=0.01, embedding_dropout_keep_prob=1.0,
-             dropout_keep_prob=0.9, train_acc_limit=0.999, finetune_existed=True):
+             dropout_keep_prob=0.9, train_acc_limit=0.99, finetune_existed=True):
     """ Training TensorFlow-based model (version 1.14),
         provided by contributional part of the AREkit framework.
         From the list of the predefined moels.
