@@ -1,6 +1,5 @@
 from arekit.common.data.input.writers.base import BaseWriter
 from arekit.common.experiment.data_type import DataType
-from arekit.common.experiment.name_provider import ExperimentNameProvider
 from arekit.common.frames.variants.collection import FrameVariantsCollection
 from arekit.common.pipeline.base import BasePipeline
 from arekit.common.text.parser import BaseTextParser
@@ -30,7 +29,7 @@ from pipelines.collection import prepare_data_pipelines
 from writers.utils import create_writer_extension
 
 
-def serialize_nn(output_dir, split_filepath, writer=None, folding_type="fixed",
+def serialize_nn(output_dir, split_filepath, writer, folding_type="fixed",
                  labels_scaler=PosNegNeuRelationsLabelScaler(),
                  entities_fmt=CustomEntitiesFormatter(), limit=None, suffix="nn"):
     """ Run data preparation process for neural networks, i.e.
@@ -56,13 +55,10 @@ def serialize_nn(output_dir, split_filepath, writer=None, folding_type="fixed",
         overwrite_existed_variant=True,
         raise_error_on_existed_variant=False)
 
-    name_provider = ExperimentNameProvider(name="serialize", suffix=suffix)
-
     exp_ctx = CustomNetworkSerializationContext(
         labels_scaler=labels_scaler,
         terms_per_context=terms_per_context,
         pos_tagger=pos_tagger,
-        name_provider=name_provider,
         frames_collection=frames_collection,
         frame_variant_collection=frame_variant_collection)
 
