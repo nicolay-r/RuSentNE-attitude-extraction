@@ -53,6 +53,7 @@ class OpenNREJsonWriter(BaseWriter):
                 json_row = {}
 
                 json_row["id"] = bag_id
+                json_row["id_orig"] = sample_id
                 json_row["token"] = row["text_a"].split()
                 json_row["h"] = {"pos": [s_ind, s_ind + 1], "id": str(bag_id + "s")}
                 json_row["t"] = {"pos": [t_ind, t_ind + 1], "id": str(bag_id + "t")}
