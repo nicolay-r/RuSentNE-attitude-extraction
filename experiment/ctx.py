@@ -8,15 +8,13 @@ from labels.scaler import ThreeLabelScaler
 
 class CustomNetworkSerializationContext(NetworkSerializationContext):
 
-    def __init__(self, labels_scaler, pos_tagger, terms_per_context, frames_collection, frame_variant_collection):
+    def __init__(self, labels_scaler, pos_tagger, frames_collection, frame_variant_collection):
         assert(isinstance(pos_tagger, POSTagger))
         assert(isinstance(frames_collection, RuSentiFramesCollection))
-        assert(isinstance(terms_per_context, int))
 
         super(CustomNetworkSerializationContext, self).__init__(labels_scaler=labels_scaler)
 
         self.__pos_tagger = pos_tagger
-        self.__terms_per_context = terms_per_context
         self.__frames_collection = frames_collection
         self.__frame_variant_collection = frame_variant_collection
         self.__frame_roles_label_scaler = ThreeLabelScaler()
@@ -29,10 +27,6 @@ class CustomNetworkSerializationContext(NetworkSerializationContext):
     @property
     def FrameVariantCollection(self):
         return self.__frame_variant_collection
-
-    @property
-    def TermsPerContext(self):
-        return self.__terms_per_context
 
     @property
     def FramesConnotationProvider(self):

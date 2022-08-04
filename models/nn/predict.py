@@ -4,7 +4,6 @@ from arekit.common.data.row_ids.multiple import MultipleIDProvider
 from arekit.common.data.storages.base import BaseRowsStorage
 from arekit.common.data.views.samples import BaseSampleStorageView
 from arekit.common.experiment.api.base_samples_io import BaseSamplesIO
-from arekit.common.experiment.api.ctx_base import ExperimentContext
 from arekit.common.experiment.data_type import DataType
 from arekit.common.folding.base import BaseDataFolding
 from arekit.common.folding.nofold import NoFolding
@@ -28,7 +27,7 @@ from arekit.contrib.networks.enum_input_types import ModelInputType
 from arekit.contrib.networks.enum_name_types import ModelNames
 from arekit.contrib.networks.factory import create_network_and_network_config_funcs
 from arekit.contrib.networks.shapes import NetworkInputShapes
-from arekit.contrib.utils.io_utils.embedding import NpzEmbeddingIOUtils
+from arekit.contrib.utils.io_utils.embedding import NpzEmbeddingIO
 from arekit.contrib.utils.io_utils.samples import SamplesIO
 from arekit.contrib.utils.processing.languages.ru.pos_service import PartOfSpeechTypesService
 
@@ -169,12 +168,9 @@ def predict_nn(output_dir, embedding_dir, samples_dir, data_folding_name="fixed"
             nn_io=model_io)
     ])
 
-    # Hack with the training context.
-    exp_ctx = ExperimentContext()
-
     input_data = {
         "samples_io": SamplesIO(target_dir=samples_dir),
-        "emb_io": NpzEmbeddingIOUtils(target_dir=embedding_dir, exp_ctx=exp_ctx),
+        "emb_io": NpzEmbeddingIO(target_dir=embedding_dir),
         "predict_root": output_dir
     }
 

@@ -9,7 +9,7 @@ from arekit.contrib.source.brat.entities.parser import BratTextEntitiesParser
 from arekit.contrib.source.rusentiframes.collection import RuSentiFramesCollection
 from arekit.contrib.source.rusentiframes.labels_fmt import RuSentiFramesLabelsFormatter
 from arekit.contrib.source.rusentiframes.types import RuSentiFramesVersions
-from arekit.contrib.utils.io_utils.embedding import NpzEmbeddingIOUtils
+from arekit.contrib.utils.io_utils.embedding import NpzEmbeddingIO
 from arekit.contrib.utils.io_utils.samples import SamplesIO
 from arekit.contrib.utils.pipelines.items.text.frames_lemmatized import LemmasBasedFrameVariantsParser
 from arekit.contrib.utils.pipelines.items.text.tokenizer import DefaultTextTokenizer
@@ -31,7 +31,7 @@ from writers.utils import create_writer_extension
 
 def serialize_nn(output_dir, split_filepath, writer, folding_type="fixed",
                  labels_scaler=PosNegNeuRelationsLabelScaler(),
-                 entities_fmt=CustomEntitiesFormatter(), limit=None, suffix="nn"):
+                 terms_per_context=50, entities_fmt=CustomEntitiesFormatter(), limit=None, suffix="nn"):
     """ Run data preparation process for neural networks, i.e.
         convolutional neural networks and recurrent-based neural networks.
         Implementation based on AREkit toolkit API.
@@ -41,7 +41,6 @@ def serialize_nn(output_dir, split_filepath, writer, folding_type="fixed",
     assert(isinstance(limit, int) or limit is None)
     assert(isinstance(writer, BaseWriter))
 
-    terms_per_context = 50
     stemmer = MystemWrapper()
     pos_tagger = POSMystemWrapper(mystem=stemmer.MystemInstance)
 
@@ -57,7 +56,6 @@ def serialize_nn(output_dir, split_filepath, writer, folding_type="fixed",
 
     exp_ctx = CustomNetworkSerializationContext(
         labels_scaler=labels_scaler,
-        terms_per_context=terms_per_context,
         pos_tagger=pos_tagger,
         frames_collection=frames_collection,
         frame_variant_collection=frame_variant_collection)
@@ -77,7 +75,7 @@ def serialize_nn(output_dir, split_filepath, writer, folding_type="fixed",
         samples_io=SamplesIO(target_dir=output_dir,
                              writer=writer,
                              target_extension=create_writer_extension(writer)),
-        emb_io=NpzEmbeddingIOUtils(target_dir=output_dir, exp_ctx=exp_ctx),
+        emb_io=NpzEmbeddingIO(target_dir=output_dir),
         str_entity_fmt=entities_fmt,
         balance_func=lambda data_type: data_type == DataType.Train,
         save_labels_func=lambda data_type: data_type == DataType.Train or data_type == DataType.Etalon,
