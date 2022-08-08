@@ -38,17 +38,17 @@ class TestRuAttitudes(unittest.TestCase):
     """
 
     @staticmethod
-    def __iter_id_with_news(news_it, keep_doc_ids_only):
+    def __iter_id_with_news(docs_it, keep_doc_ids_only):
         if keep_doc_ids_only:
-            for doc_id in news_it:
+            for doc_id in docs_it:
                 yield doc_id, None
         else:
-            for news in news_it:
+            for news in docs_it:
                 assert (isinstance(news, RuAttitudesNews))
                 yield news.ID, news
 
     @staticmethod
-    def read_ruattitudes_in_memory(version, keep_doc_ids_only, doc_id_func):
+    def read_ruattitudes_in_memory(version, keep_doc_ids_only, doc_id_func, limit=None):
         """ Performs reading of ruattitude formatted documents and
             selection according to 'doc_ids_set' parameter.
         """
@@ -61,22 +61,25 @@ class TestRuAttitudes(unittest.TestCase):
                                              return_inds_only=keep_doc_ids_only)
 
         it_formatted_and_logged = progress_bar_iter(
-            iterable=TestRuAttitudes.__iter_id_with_news(news_it=it, keep_doc_ids_only=keep_doc_ids_only),
+            iterable=TestRuAttitudes.__iter_id_with_news(docs_it=it, keep_doc_ids_only=keep_doc_ids_only),
             desc="Loading RuAttitudes Collection [{}]".format("doc ids only" if keep_doc_ids_only else "fully"),
             unit='docs')
 
         d = {}
         for doc_id, news in it_formatted_and_logged:
             d[doc_id] = news
+            if limit is not None and doc_id > limit:
+                break
 
         return d
 
     def test_serialize_ruattitudes(self):
 
         ru_attitudes = TestRuAttitudes.read_ruattitudes_in_memory(
-            version=RuAttitudesVersions.V20Large,
+            version=RuAttitudesVersions.V20Base,
             doc_id_func=lambda doc_id: doc_id,
-            keep_doc_ids_only=False)
+            keep_doc_ids_only=False,
+            limit=None)
 
         doc_ops = RuAttitudesDocumentOperations(ru_attitudes)
 
@@ -100,7 +103,8 @@ class TestRuAttitudes(unittest.TestCase):
         data_folding = NoFolding(doc_ids_to_fold=ru_attitudes.keys(),
                                  supported_data_types=[DataType.Train])
 
-        serialize_nn(output_dir="_out/serialize-nn", split_filepath="data/split_fixed.txt",
+        serialize_nn(output_dir="_out/serialize-nn",
+                     split_filepath=None,
                      data_type_pipelines={DataType.Train: pipeline},
                      folding_type=None,
                      data_folding=data_folding,
