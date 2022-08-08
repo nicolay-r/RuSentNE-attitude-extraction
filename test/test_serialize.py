@@ -2,7 +2,6 @@ import unittest
 from os.path import dirname, realpath, join
 
 from arekit.common.data.input.writers.tsv import TsvWriter
-from arekit.common.experiment.name_provider import ExperimentNameProvider
 from arekit.contrib.bert.terms.mapper import BertDefaultStringTextTermsMapper
 
 from entity.formatter import CustomEntitiesFormatter
@@ -41,7 +40,6 @@ class TestSerialize(unittest.TestCase):
                        terms_per_context=50,
                        output_dir=self.output_dir,
                        split_filepath="../data/split_fixed.txt",
-                       name_provider=ExperimentNameProvider(name="serialize", suffix="bert"),
                        writer=OpenNREJsonWriter(),
                        folding_type="fixed",
                        sample_row_provider=CroppedBertSampleRowProvider(
