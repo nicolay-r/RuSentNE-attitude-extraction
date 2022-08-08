@@ -1,13 +1,13 @@
 from arekit.common.entities.collection import EntityCollection
 from arekit.common.labels.str_fmt import StringLabelsFormatter
 from arekit.contrib.source.brat.annot import BratAnnotationParser
-from arekit.contrib.source.brat.news_reader import BratDocumentSentencesReader
+from arekit.contrib.source.brat.news import BratNews
+from arekit.contrib.source.brat.sentences_reader import BratDocumentSentencesReader
 from arekit.contrib.utils.processing.lemmatization.mystem import MystemWrapper
 from arekit.contrib.utils.synonyms.stemmer_based import StemmerBasedSynonymCollection
 
 from collection.entities import CollectionEntityCollection
 from collection.io_utils import CollectionIOUtils, CollectionVersions
-from collection.news import CustomNews
 from collection.opinions.converter import CollectionOpinionConverter
 
 
@@ -38,9 +38,9 @@ class CollectionNewsReader(object):
 
         def file_to_doc(input_file):
             sentences = BratDocumentSentencesReader.from_file(input_file=input_file, entities=entities)
-            return CustomNews(doc_id=doc_id,
-                              sentences=sentences,
-                              text_opinions=opinions)
+            return BratNews(doc_id=doc_id,
+                            sentences=sentences,
+                            text_opinions=opinions)
 
         synonyms = StemmerBasedSynonymCollection(iter_group_values_lists=[],
                                                  stemmer=MystemWrapper(),

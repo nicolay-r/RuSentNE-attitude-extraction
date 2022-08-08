@@ -14,8 +14,8 @@ from arekit.common.pipeline.item_map import MapPipelineItem
 from arekit.common.pipeline.items.flatten import FlattenIterPipelineItem
 from arekit.common.synonyms.grouping import SynonymsCollectionValuesGroupingProviders
 from arekit.common.text_opinions.base import TextOpinion
+from arekit.contrib.source.brat.news import BratNews
 
-from collection.news import CustomNews
 from entity.filter import is_entity_ignored
 
 
@@ -38,7 +38,7 @@ def create_train_pipeline(text_parser, doc_ops, annotator, synonyms, terms_per_c
 
 
 def __convert_opinion_id(news, origin_id, esp):
-    assert(isinstance(news, CustomNews))
+    assert(isinstance(news, BratNews))
     assert(isinstance(origin_id, int))
     assert(isinstance(esp, BaseParsedNewsServiceProvider))
 
@@ -94,7 +94,7 @@ def __filter_internal_opinion(internal_opinion, esp, terms_per_context):
 def iter_train_text_opinion_linkages(news, parsed_news, annotator, parsed_news_service, terms_per_context):
     """ #TODO. Provide a couple of annotators.
     """
-    assert(isinstance(news, CustomNews))
+    assert(isinstance(news, BratNews))
     assert(isinstance(annotator, BaseOpinionAnnotator) or annotator is None)
     assert(isinstance(parsed_news, ParsedNews))
     assert(isinstance(parsed_news_service, ParsedNewsService))
