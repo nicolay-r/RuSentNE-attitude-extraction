@@ -99,7 +99,7 @@ class CroppedBertSampleRowProvider(NliMultipleSampleProvider):
         row[const.T_IND] = t_ind
 
 
-def serialize_bert(split_filepath, terms_per_context, name_provider, writer,
+def serialize_bert(split_filepath, terms_per_context, writer,
                    sample_row_provider, output_dir, folding_type="fixed", limit=None):
     assert(isinstance(limit, int) or limit is None)
     assert(isinstance(split_filepath, str))
