@@ -14,16 +14,16 @@ class CustomNews(News):
 
         self.__entity_by_id = {}
 
-        for s in sentences:
-            assert(isinstance(s, BratSentence))
-            for e, _ in s.iter_entity_with_local_bounds():
-                assert(isinstance(e, BratEntity))
-                self.__entity_by_id[e.ID] = e
+        for sentence in sentences:
+            assert(isinstance(sentence, BratSentence))
+            for brat_entity, _ in sentence.iter_entity_with_local_bounds():
+                assert(isinstance(brat_entity, BratEntity))
+                self.__entity_by_id[brat_entity.ID] = brat_entity
 
     @property
     def TextOpinions(self):
-        for o in self.__text_opinions:
-            yield o
+        for text_opinion in self.__text_opinions:
+            yield text_opinion
 
     def contains_entity(self, entity_id):
         return entity_id in self.__entity_by_id
