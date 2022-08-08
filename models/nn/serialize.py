@@ -31,7 +31,8 @@ from writers.utils import create_writer_extension
 
 def serialize_nn(output_dir, split_filepath, writer, folding_type="fixed",
                  labels_scaler=PosNegNeuRelationsLabelScaler(),
-                 terms_per_context=50, entities_fmt=CustomEntitiesFormatter(), limit=None, suffix="nn"):
+                 terms_per_context=50, entities_fmt=CustomEntitiesFormatter(),
+                 data_folding=None, data_type_pipelines=None, limit=None, suffix="nn"):
     """ Run data preparation process for neural networks, i.e.
         convolutional neural networks and recurrent-based neural networks.
         Implementation based on AREkit toolkit API.
@@ -82,26 +83,29 @@ def serialize_nn(output_dir, split_filepath, writer, folding_type="fixed",
         exp_ctx=exp_ctx,
         save_embedding=True)
 
-    data_folding = None
-    filenames_by_ids = None
+    doc_ops = None
 
-    if folding_type == "fixed":
-        filenames_by_ids, data_folding = FoldingFactory.create_fixed_folding(
-            fixed_split_filepath=split_filepath, limit=limit)
+    if data_folding is None:
+        # Selecting from presets.
+        if folding_type == "fixed":
+            filenames_by_ids, data_folding = FoldingFactory.create_fixed_folding(
+                fixed_split_filepath=split_filepath, limit=limit)
+            doc_ops = CustomDocOperations(label_formatter=SentimentLabelFormatter(),
+                                          filename_by_id=filenames_by_ids)
 
-    doc_ops = CustomDocOperations(label_formatter=SentimentLabelFormatter(),
-                                  filename_by_id=filenames_by_ids)
+    if data_type_pipelines is None:
+        # considering a default pipeline.
 
-    text_parser = BaseTextParser([
-        BratTextEntitiesParser(),
-        DefaultTextTokenizer(keep_tokens=True),
-        LemmasBasedFrameVariantsParser(frame_variants=exp_ctx.FrameVariantCollection,
-                                       stemmer=stemmer)]
-    )
+        text_parser = BaseTextParser([
+            BratTextEntitiesParser(),
+            DefaultTextTokenizer(keep_tokens=True),
+            LemmasBasedFrameVariantsParser(frame_variants=exp_ctx.FrameVariantCollection,
+                                           stemmer=stemmer)]
+        )
 
-    data_type_pipelines = prepare_data_pipelines(text_parser=text_parser,
-                                                 doc_ops=doc_ops,
-                                                 terms_per_context=terms_per_context)
+        data_type_pipelines = prepare_data_pipelines(text_parser=text_parser,
+                                                     doc_ops=doc_ops,
+                                                     terms_per_context=terms_per_context)
 
     ppl = BasePipeline([pipeline_item])
     ppl.run(input_data=None,

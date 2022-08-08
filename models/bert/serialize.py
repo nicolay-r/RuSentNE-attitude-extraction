@@ -99,8 +99,8 @@ class CroppedBertSampleRowProvider(NliMultipleSampleProvider):
         row[const.T_IND] = t_ind
 
 
-def serialize_bert(split_filepath, terms_per_context, writer,
-                   sample_row_provider, output_dir, folding_type="fixed", limit=None):
+def serialize_bert(split_filepath, terms_per_context, writer, sample_row_provider, output_dir,
+                   data_type_pipelines=None, folding_type="fixed", limit=None):
     assert(isinstance(limit, int) or limit is None)
     assert(isinstance(split_filepath, str))
     assert(isinstance(terms_per_context, int))
@@ -124,15 +124,15 @@ def serialize_bert(split_filepath, terms_per_context, writer,
         filenames_by_ids, data_folding = FoldingFactory.create_fixed_folding(
             fixed_split_filepath=split_filepath, limit=limit)
 
-    doc_ops = CustomDocOperations(label_formatter=SentimentLabelFormatter(),
-                                  filename_by_id=filenames_by_ids)
-
-    text_parser = BaseTextParser(pipeline=[BratTextEntitiesParser(),
-                                           DefaultTextTokenizer()])
-
-    data_type_pipelines = prepare_data_pipelines(text_parser=text_parser,
-                                                 doc_ops=doc_ops,
-                                                 terms_per_context=terms_per_context)
+    if data_type_pipelines is None:
+        # considering a default pipeline.
+        doc_ops = CustomDocOperations(label_formatter=SentimentLabelFormatter(),
+                                      filename_by_id=filenames_by_ids)
+        text_parser = BaseTextParser(pipeline=[BratTextEntitiesParser(),
+                                               DefaultTextTokenizer()])
+        data_type_pipelines = prepare_data_pipelines(text_parser=text_parser,
+                                                     doc_ops=doc_ops,
+                                                     terms_per_context=terms_per_context)
 
     pipeline.run(input_data=None,
                  params_dict={
