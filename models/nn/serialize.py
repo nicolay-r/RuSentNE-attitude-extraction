@@ -21,10 +21,10 @@ from arekit.contrib.utils.vectorizers.random_norm import RandomNormalVectorizer
 
 from collection.doc_ops import CollectionDocOperation
 from entity.formatter import CustomEntitiesFormatter
-from experiment.ctx import CustomNetworkSerializationContext
 from folding.factory import FoldingFactory
 from labels.formatter import SentimentLabelFormatter
 from labels.scaler import PosNegNeuRelationsLabelScaler
+from models.nn.ctx import CustomNetworkSerializationContext
 from pipelines.collection import prepare_data_pipelines
 from writers.utils import create_writer_extension
 
