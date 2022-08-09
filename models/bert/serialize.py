@@ -10,7 +10,7 @@ from arekit.contrib.source.brat.entities.parser import BratTextEntitiesParser
 from arekit.contrib.utils.io_utils.samples import SamplesIO
 from arekit.contrib.utils.pipelines.items.text.tokenizer import DefaultTextTokenizer
 
-from experiment.doc_ops import CustomDocOperations
+from collection.doc_ops import CollectionDocOperation
 from folding.factory import FoldingFactory
 from labels.formatter import SentimentLabelFormatter
 from pipelines.collection import prepare_data_pipelines
@@ -126,8 +126,8 @@ def serialize_bert(split_filepath, terms_per_context, writer, sample_row_provide
 
     if data_type_pipelines is None:
         # considering a default pipeline.
-        doc_ops = CustomDocOperations(label_formatter=SentimentLabelFormatter(),
-                                      filename_by_id=filenames_by_ids)
+        doc_ops = CollectionDocOperation(label_formatter=SentimentLabelFormatter(),
+                                         filename_by_id=filenames_by_ids)
         text_parser = BaseTextParser(pipeline=[BratTextEntitiesParser(),
                                                DefaultTextTokenizer()])
         data_type_pipelines = prepare_data_pipelines(text_parser=text_parser,

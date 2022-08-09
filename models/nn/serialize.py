@@ -19,9 +19,9 @@ from arekit.contrib.utils.resources import load_embedding_news_mystem_skipgram_1
 from arekit.contrib.utils.vectorizers.bpe import BPEVectorizer
 from arekit.contrib.utils.vectorizers.random_norm import RandomNormalVectorizer
 
+from collection.doc_ops import CollectionDocOperation
 from entity.formatter import CustomEntitiesFormatter
 from experiment.ctx import CustomNetworkSerializationContext
-from experiment.doc_ops import CustomDocOperations
 from folding.factory import FoldingFactory
 from labels.formatter import SentimentLabelFormatter
 from labels.scaler import PosNegNeuRelationsLabelScaler
@@ -90,8 +90,8 @@ def serialize_nn(output_dir, split_filepath, writer, folding_type="fixed",
         if folding_type == "fixed":
             filenames_by_ids, data_folding = FoldingFactory.create_fixed_folding(
                 fixed_split_filepath=split_filepath, limit=limit)
-            doc_ops = CustomDocOperations(label_formatter=SentimentLabelFormatter(),
-                                          filename_by_id=filenames_by_ids)
+            doc_ops = CollectionDocOperation(label_formatter=SentimentLabelFormatter(),
+                                             filename_by_id=filenames_by_ids)
 
     if data_type_pipelines is None:
         # considering a default pipeline.

@@ -11,10 +11,12 @@ from arekit.contrib.source.ruattitudes.collection import RuAttitudesCollection
 from arekit.contrib.source.ruattitudes.entity.parser import RuAttitudesTextEntitiesParser
 from arekit.contrib.source.ruattitudes.io_utils import RuAttitudesVersions
 from arekit.contrib.source.ruattitudes.news import RuAttitudesNews
+from arekit.contrib.source.ruattitudes.news_brat import RuAttitudesNewsConverter
 from arekit.contrib.utils.pipelines.items.text.tokenizer import DefaultTextTokenizer
 from arekit.contrib.utils.processing.lemmatization.mystem import MystemWrapper
 from arekit.contrib.utils.synonyms.stemmer_based import StemmerBasedSynonymCollection
 
+from labels.scaler import PosNegNeuRelationsLabelScaler
 from models.nn.serialize import serialize_nn
 from pipelines.train import text_opinions_to_opinion_linkages_pipeline
 
@@ -48,7 +50,7 @@ class TestRuAttitudes(unittest.TestCase):
                 yield news.ID, news
 
     @staticmethod
-    def read_ruattitudes_in_memory(version, keep_doc_ids_only, doc_id_func, limit=None):
+    def read_ruattitudes_to_brat_in_memory(version, keep_doc_ids_only, doc_id_func, label_scaler, limit=None):
         """ Performs reading of ruattitude formatted documents and
             selection according to 'doc_ids_set' parameter.
         """
@@ -67,7 +69,8 @@ class TestRuAttitudes(unittest.TestCase):
 
         d = {}
         for doc_id, news in it_formatted_and_logged:
-            d[doc_id] = news
+            assert(isinstance(news, RuAttitudesNews))
+            d[doc_id] = RuAttitudesNewsConverter.to_brat_news(news, label_scaler=label_scaler)
             if limit is not None and doc_id > limit:
                 break
 
@@ -75,11 +78,12 @@ class TestRuAttitudes(unittest.TestCase):
 
     def test_serialize_ruattitudes(self):
 
-        ru_attitudes = TestRuAttitudes.read_ruattitudes_in_memory(
+        ru_attitudes = TestRuAttitudes.read_ruattitudes_to_brat_in_memory(
             version=RuAttitudesVersions.V20Base,
             doc_id_func=lambda doc_id: doc_id,
             keep_doc_ids_only=False,
-            limit=None)
+            label_scaler=PosNegNeuRelationsLabelScaler(),
+            limit=200)
 
         doc_ops = RuAttitudesDocumentOperations(ru_attitudes)
 
@@ -103,7 +107,7 @@ class TestRuAttitudes(unittest.TestCase):
         data_folding = NoFolding(doc_ids_to_fold=ru_attitudes.keys(),
                                  supported_data_types=[DataType.Train])
 
-        serialize_nn(output_dir="_out/serialize-nn",
+        serialize_nn(output_dir="_out/serialize-ruattitudes-nn",
                      split_filepath=None,
                      data_type_pipelines={DataType.Train: pipeline},
                      folding_type=None,
