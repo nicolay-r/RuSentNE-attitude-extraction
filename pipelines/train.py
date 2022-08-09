@@ -16,7 +16,7 @@ from arekit.common.synonyms.grouping import SynonymsCollectionValuesGroupingProv
 from arekit.common.text_opinions.base import TextOpinion
 from arekit.contrib.source.brat.news import BratNews
 
-from entity.filter import is_entity_ignored
+from entity.filter import EntityFilter, CollectionEntityFilter
 
 
 def create_train_pipeline(text_parser, doc_ops, annotator, synonyms, terms_per_context):
@@ -32,6 +32,7 @@ def create_train_pipeline(text_parser, doc_ops, annotator, synonyms, terms_per_c
         get_doc_func=lambda doc_id: doc_ops.get_doc(doc_id),
         text_parser=text_parser,
         neut_annotator=annotator,
+        entity_filter=CollectionEntityFilter(),
         value_to_group_id_func=lambda value:
             SynonymsCollectionValuesGroupingProviders.provide_existed_or_register_missed_value(
                 synonyms=synonyms, value=value))
@@ -56,9 +57,10 @@ def __convert_opinion_id(news, origin_id, esp):
     return document_entity.IdInDocument
 
 
-def __filter_internal_opinion(internal_opinion, esp, terms_per_context):
+def __filter_internal_opinion(internal_opinion, esp, terms_per_context, entity_filter):
     """ This method describes internal opinion filtering
     """
+    assert(isinstance(entity_filter, EntityFilter) or entity_filter is None)
     assert(isinstance(internal_opinion, TextOpinion) or internal_opinion is None)
 
     if internal_opinion is None:
@@ -76,13 +78,13 @@ def __filter_internal_opinion(internal_opinion, esp, terms_per_context):
     # TODO. Move this away into the related annotator.
     # TODO. Annotator, based on the predefined annotations in the original collection.
     e_source = esp._doc_entities[internal_opinion.SourceId]
-    if is_entity_ignored(e_source, OpinionEntityType.Subject):
+    if entity_filter is not None and entity_filter.is_ignored(e_source, OpinionEntityType.Subject):
         return False
 
     # TODO. Move this away into the related annotator.
     # TODO. Annotator, based on the predefined annotations in the original collection.
     e_target = esp._doc_entities[internal_opinion.TargetId]
-    if is_entity_ignored(e_target, OpinionEntityType.Object):
+    if entity_filter is not None and entity_filter.is_ignored(e_target, OpinionEntityType.Object):
         return False
 
     return InputSampleBase.check_ability_to_create_sample(
@@ -91,7 +93,8 @@ def __filter_internal_opinion(internal_opinion, esp, terms_per_context):
         window_size=terms_per_context)
 
 
-def iter_train_text_opinion_linkages(news, parsed_news, annotator, parsed_news_service, terms_per_context):
+def iter_train_text_opinion_linkages(news, parsed_news, annotator, parsed_news_service,
+                                     terms_per_context, entity_filter):
     """ #TODO. Provide a couple of annotators.
     """
     assert(isinstance(news, BratNews))
@@ -99,6 +102,7 @@ def iter_train_text_opinion_linkages(news, parsed_news, annotator, parsed_news_s
     assert(isinstance(parsed_news, ParsedNews))
     assert(isinstance(parsed_news_service, ParsedNewsService))
     assert(isinstance(terms_per_context, int))
+    assert(isinstance(entity_filter, EntityFilter))
 
     def __to_id(text_opinion):
         return "{}_{}".format(text_opinion.SourceId, text_opinion.TargetId)
@@ -121,7 +125,8 @@ def iter_train_text_opinion_linkages(news, parsed_news, annotator, parsed_news_s
 
         keep_internal_opinion = __filter_internal_opinion(internal_opinion=internal_opinion,
                                                           esp=esp,
-                                                          terms_per_context=terms_per_context)
+                                                          terms_per_context=terms_per_context,
+                                                          entity_filter=entity_filter)
 
         if not keep_internal_opinion:
             continue
@@ -148,7 +153,8 @@ def iter_train_text_opinion_linkages(news, parsed_news, annotator, parsed_news_s
 
             keep_internal_opinion = __filter_internal_opinion(internal_opinion=neut_text_opinion,
                                                               esp=esp,
-                                                              terms_per_context=terms_per_context)
+                                                              terms_per_context=terms_per_context,
+                                                              entity_filter=entity_filter)
 
             if not keep_internal_opinion:
                 continue
@@ -163,10 +169,11 @@ def iter_train_text_opinion_linkages(news, parsed_news, annotator, parsed_news_s
 
 
 def text_opinions_to_opinion_linkages_pipeline(text_parser, get_doc_func, neut_annotator, terms_per_context,
-                                               value_to_group_id_func):
+                                               value_to_group_id_func, entity_filter):
     assert(callable(get_doc_func))
     assert(isinstance(terms_per_context, int))
     assert(callable(value_to_group_id_func))
+    assert(isinstance(entity_filter, EntityFilter))
 
     return BasePipeline([
         # (doc_id) -> (news)
@@ -190,7 +197,8 @@ def text_opinions_to_opinion_linkages_pipeline(text_parser, get_doc_func, neut_a
             annotator=neut_annotator,
             parsed_news=data[2],
             parsed_news_service=data[1],
-            terms_per_context=terms_per_context)),
+            terms_per_context=terms_per_context,
+            entity_filter=entity_filter)),
 
         # linkages[] -> linkages.
         FlattenIterPipelineItem()

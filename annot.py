@@ -6,7 +6,7 @@ from arekit.common.opinions.collection import OpinionCollection
 from arekit.contrib.utils.processing.lemmatization.mystem import MystemWrapper
 from arekit.contrib.utils.synonyms.stemmer_based import StemmerBasedSynonymCollection
 
-from entity.filter import is_entity_ignored
+from entity.filter import CollectionEntityFilter
 
 
 def create_neutral_annotator(terms_per_context):
@@ -23,7 +23,7 @@ def create_neutral_annotator(terms_per_context):
     annotator = AlgorithmBasedOpinionAnnotator(
         annot_algo=PairBasedOpinionAnnotationAlgorithm(
             dist_in_sents=0,
-            is_entity_ignored_func=is_entity_ignored,
+            entity_filter=CollectionEntityFilter(),
             dist_in_terms_bound=terms_per_context,
             label_provider=ConstantLabelProvider(NoLabel())),
         create_empty_collection_func=lambda: OpinionCollection(

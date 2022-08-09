@@ -1,6 +1,7 @@
 import unittest
 
 from arekit.common.data.input.writers.tsv import TsvWriter
+from arekit.common.entities.types import OpinionEntityType
 from arekit.common.experiment.api.ops_doc import DocumentOperations
 from arekit.common.experiment.data_type import DataType
 from arekit.common.folding.nofold import NoFolding
@@ -14,6 +15,7 @@ from arekit.contrib.source.ruattitudes.entity.parser import RuAttitudesTextEntit
 from arekit.contrib.source.ruattitudes.io_utils import RuAttitudesVersions
 from arekit.contrib.source.ruattitudes.news import RuAttitudesNews
 from arekit.contrib.source.ruattitudes.news_brat import RuAttitudesNewsConverter
+from arekit.contrib.source.ruattitudes.synonyms import RuAttitudesSynonymsCollectionHelper
 from arekit.contrib.source.rusentiframes.collection import RuSentiFramesCollection
 from arekit.contrib.source.rusentiframes.labels_fmt import RuSentiFramesLabelsFormatter
 from arekit.contrib.source.rusentiframes.types import RuSentiFramesVersions
@@ -22,6 +24,7 @@ from arekit.contrib.utils.pipelines.items.text.tokenizer import DefaultTextToken
 from arekit.contrib.utils.processing.lemmatization.mystem import MystemWrapper
 from arekit.contrib.utils.synonyms.stemmer_based import StemmerBasedSynonymCollection
 
+from entity.filter import EntityFilter
 from entity.formatter import CustomEntitiesFormatter
 from labels.formatter import PosNegNeuRelationsLabelFormatter
 from labels.scaler import PosNegNeuRelationsLabelScaler
@@ -41,6 +44,19 @@ class RuAttitudesDocumentOperations(DocumentOperations):
         assert(isinstance(doc_id, int))
         return self.__ru_attitudes[doc_id]
 
+
+class RuAttitudesEntityFilter(EntityFilter):
+
+    def is_ignored(self, entity, e_type):
+
+        supported = ["GPE", "PERSON", "LOCAL", "GEO", "ORG"]
+
+        if e_type == OpinionEntityType.Subject:
+            return entity.Type not in supported
+        if e_type == OpinionEntityType.Object:
+            return entity.Type not in supported
+        else:
+            return True
 
 class TestRuAttitudes(unittest.TestCase):
     """ This test is related to #232 issue of the AREkit
@@ -91,13 +107,16 @@ class TestRuAttitudes(unittest.TestCase):
         """ Processing pipeline for RuAttitudes.
         """
 
-        synonyms = StemmerBasedSynonymCollection(iter_group_values_lists=[],
-                                                 stemmer=MystemWrapper(),
-                                                 is_read_only=False,
-                                                 debug=False)
+        version = RuAttitudesVersions.V20Base
+
+        synonyms = StemmerBasedSynonymCollection(
+            iter_group_values_lists=RuAttitudesSynonymsCollectionHelper.iter_groups(version),
+            stemmer=MystemWrapper(),
+            is_read_only=False,
+            debug=False)
 
         ru_attitudes = TestRuAttitudes.read_ruattitudes_to_brat_in_memory(
-            version=RuAttitudesVersions.V20Base,
+            version=version,
             doc_id_func=lambda doc_id: doc_id,
             keep_doc_ids_only=False,
             label_scaler=PosNegNeuRelationsLabelScaler(),
@@ -110,6 +129,7 @@ class TestRuAttitudes(unittest.TestCase):
             get_doc_func=lambda doc_id: doc_ops.get_doc(doc_id),
             text_parser=text_parser,
             neut_annotator=None,
+            entity_filter=RuAttitudesEntityFilter(),
             value_to_group_id_func=lambda value:
             SynonymsCollectionValuesGroupingProviders.provide_existed_or_register_missed_value(
                 synonyms=synonyms, value=value))
