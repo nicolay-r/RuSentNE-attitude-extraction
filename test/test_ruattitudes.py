@@ -107,7 +107,7 @@ class TestRuAttitudes(unittest.TestCase):
         """ Processing pipeline for RuAttitudes.
         """
 
-        version = RuAttitudesVersions.V20Base
+        version = RuAttitudesVersions.V20Large
 
         synonyms = StemmerBasedSynonymCollection(
             iter_group_values_lists=RuAttitudesSynonymsCollectionHelper.iter_groups(version),
@@ -120,7 +120,7 @@ class TestRuAttitudes(unittest.TestCase):
             doc_id_func=lambda doc_id: doc_id,
             keep_doc_ids_only=False,
             label_scaler=PosNegNeuRelationsLabelScaler(),
-            limit=200)
+            limit=None)
 
         doc_ops = RuAttitudesDocumentOperations(ru_attitudes)
 
