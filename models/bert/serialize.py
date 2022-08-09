@@ -100,9 +100,9 @@ class CroppedBertSampleRowProvider(NliMultipleSampleProvider):
 
 
 def serialize_bert(split_filepath, terms_per_context, writer, sample_row_provider, output_dir,
-                   data_type_pipelines=None, folding_type="fixed", limit=None):
+                   data_type_pipelines=None, data_folding=None, folding_type="fixed", limit=None):
     assert(isinstance(limit, int) or limit is None)
-    assert(isinstance(split_filepath, str))
+    assert(isinstance(split_filepath, str) or split_filepath is None)
     assert(isinstance(terms_per_context, int))
     assert(isinstance(sample_row_provider, BaseSampleRowProvider))
     assert(isinstance(output_dir, str))
@@ -117,17 +117,18 @@ def serialize_bert(split_filepath, terms_per_context, writer, sample_row_provide
             sample_rows_provider=sample_row_provider)
     ])
 
-    data_folding = None
-    filenames_by_ids = None
+    doc_ops = None
 
-    if folding_type == "fixed":
-        filenames_by_ids, data_folding = FoldingFactory.create_fixed_folding(
-            fixed_split_filepath=split_filepath, limit=limit)
+    if data_folding is None:
+        # Selecting from presets.
+        if folding_type == "fixed":
+            filenames_by_ids, data_folding = FoldingFactory.create_fixed_folding(
+                fixed_split_filepath=split_filepath, limit=limit)
+            doc_ops = CollectionDocOperation(label_formatter=SentimentLabelFormatter(),
+                                             filename_by_id=filenames_by_ids)
 
     if data_type_pipelines is None:
         # considering a default pipeline.
-        doc_ops = CollectionDocOperation(label_formatter=SentimentLabelFormatter(),
-                                         filename_by_id=filenames_by_ids)
         text_parser = BaseTextParser(pipeline=[BratTextEntitiesParser(),
                                                DefaultTextTokenizer()])
         data_type_pipelines = prepare_data_pipelines(text_parser=text_parser,
