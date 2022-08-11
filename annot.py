@@ -20,12 +20,14 @@ def create_neutral_annotator(terms_per_context):
                                              is_read_only=False,
                                              debug=False)
 
+    entity_filter = CollectionEntityFilter()
+
     annotator = AlgorithmBasedOpinionAnnotator(
         annot_algo=PairBasedOpinionAnnotationAlgorithm(
             dist_in_sents=0,
-            entity_filter=CollectionEntityFilter(),
             dist_in_terms_bound=terms_per_context,
-            label_provider=ConstantLabelProvider(NoLabel())),
+            label_provider=ConstantLabelProvider(NoLabel()),
+            is_entity_ignored_func=lambda e, e_type: entity_filter.is_ignored(e, e_type)),
         create_empty_collection_func=lambda: OpinionCollection(
             opinions=[],
             synonyms=synonyms,
