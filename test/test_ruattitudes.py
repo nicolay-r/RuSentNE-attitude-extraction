@@ -31,6 +31,7 @@ from labels.scaler import PosNegNeuRelationsLabelScaler
 from models.bert.serialize import serialize_bert, CroppedBertSampleRowProvider
 from models.nn.serialize import serialize_nn
 from pipelines.train import text_opinions_to_opinion_linkages_pipeline
+from writers.opennre_json import OpenNREJsonWriter
 
 
 class RuAttitudesDocumentOperations(DocumentOperations):
@@ -57,6 +58,7 @@ class RuAttitudesEntityFilter(EntityFilter):
             return entity.Type not in supported
         else:
             return True
+
 
 class TestRuAttitudes(unittest.TestCase):
     """ This test is related to #232 issue of the AREkit
@@ -136,7 +138,7 @@ class TestRuAttitudes(unittest.TestCase):
 
         return pipeline, ru_attitudes
 
-    def test_serialize_bert(self):
+    def __test_serialize_bert(self, writer):
 
         text_parser = BaseTextParser(pipeline=[RuAttitudesTextEntitiesParser(),
                                                DefaultTextTokenizer()])
@@ -161,9 +163,9 @@ class TestRuAttitudes(unittest.TestCase):
                        sample_row_provider=sample_row_provider,
                        folding_type=None,
                        data_folding=data_folding,
-                       writer=TsvWriter(write_header=True))
+                       writer=writer)
 
-    def test_serialize_nn(self):
+    def __test_serialize_nn(self, writer):
 
         stemmer = MystemWrapper()
         frames_collection = RuSentiFramesCollection.read_collection(
@@ -191,4 +193,16 @@ class TestRuAttitudes(unittest.TestCase):
                      data_type_pipelines={DataType.Train: pipeline},
                      folding_type=None,
                      data_folding=data_folding,
-                     writer=TsvWriter(write_header=True))
+                     writer=writer)
+
+    def test_serialize_bert_csv(self):
+        self.__test_serialize_bert(writer=TsvWriter(write_header=True))
+
+    def test_serialize_bert_opennre(self):
+        self.__test_serialize_bert(writer=OpenNREJsonWriter())
+
+    def test_serialize_nn_csv(self):
+        self.__test_serialize_nn(writer=TsvWriter(write_header=True))
+
+    def test_serialize_nn_opennre(self):
+        self.__test_serialize_nn(writer=OpenNREJsonWriter())
