@@ -98,10 +98,10 @@ class TestRuSentRel(unittest.TestCase):
         text_parser = BaseTextParser(pipeline=[BratTextEntitiesParser(),
                                                DefaultTextTokenizer()])
 
-        pipeline, ru_attitudes = self.__create_pipeline(rusentrel_version=version,
-                                                        text_parser=text_parser)
+        pipeline = self.__create_pipeline(rusentrel_version=version,
+                                          text_parser=text_parser)
 
-        data_folding = NoFolding(doc_ids_to_fold=ru_attitudes.keys(),
+        data_folding = NoFolding(doc_ids_to_fold=RuSentRelIOUtils.iter_collection_indices(version),
                                  supported_data_types=[DataType.Train])
 
         sample_row_provider = NliMultipleSampleProvider(
