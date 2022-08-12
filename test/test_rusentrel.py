@@ -1,5 +1,9 @@
 import unittest
 
+from arekit.common.data.input.writers.tsv import TsvWriter
+from arekit.common.entities.base import Entity
+from arekit.common.entities.str_fmt import StringEntitiesFormatter
+from arekit.common.entities.types import OpinionEntityType
 from arekit.common.experiment.api.ops_doc import DocumentOperations
 from arekit.common.experiment.data_type import DataType
 from arekit.common.folding.nofold import NoFolding
@@ -51,6 +55,29 @@ class RuSentrelDocumentOperations(DocumentOperations):
         return RuSentRelNewsReader.read_document(doc_id=doc_id, synonyms=self.__synonyms, version=self.__version)
 
 
+class RuSentRelEntitiesFormatter(StringEntitiesFormatter):
+    """ Форматирование сущностей. Было принято решение использовать тип сущности в качетстве значений.
+        Поскольку тексты русскоязычные, то и типы были руссифицированы из соображений более удачных embeddings.
+    """
+
+    def __init__(self, subject_fmt='[субъект]', object_fmt="[объект]"):
+        self.__subject_fmt = subject_fmt
+        self.__object_fmt = object_fmt
+
+    def to_string(self, original_value, entity_type):
+        assert(isinstance(original_value, Entity))
+        assert(isinstance(entity_type, OpinionEntityType))
+
+        if entity_type == OpinionEntityType.Other:
+            return original_value.Type
+        elif entity_type == OpinionEntityType.Object or entity_type == OpinionEntityType.SynonymObject:
+            return self.__object_fmt
+        elif entity_type == OpinionEntityType.Subject or entity_type == OpinionEntityType.SynonymSubject:
+            return self.__subject_fmt
+
+        return None
+
+
 class TestRuSentRel(unittest.TestCase):
     """ TODO: This might be a test example for AREkit (utils).
     """
@@ -91,7 +118,7 @@ class TestRuSentRel(unittest.TestCase):
 
         return pipeline
 
-    def test_serialize_bert(self):
+    def __test_serialize_bert(self, writer):
 
         version = RuSentRelVersions.V11
 
@@ -108,7 +135,7 @@ class TestRuSentRel(unittest.TestCase):
             label_scaler=PosNegNeuRelationsLabelScaler(),
             text_b_labels_fmt=PosNegNeuRelationsLabelFormatter(),
             text_terms_mapper=BertDefaultStringTextTermsMapper(
-                entity_formatter=CustomEntitiesFormatter(subject_fmt="#S", object_fmt="#O")
+                entity_formatter=RuSentRelEntitiesFormatter(subject_fmt="#S", object_fmt="#O")
             ))
 
         serialize_bert(output_dir="_out/serialize-rusentrel-bert",
@@ -118,9 +145,9 @@ class TestRuSentRel(unittest.TestCase):
                        sample_row_provider=sample_row_provider,
                        folding_type=None,
                        data_folding=data_folding,
-                       writer=OpenNREJsonWriter())
+                       writer=writer)
 
-    def test_serialize_nn(self):
+    def __test_serialize_nn(self, writer):
 
         version = RuSentRelVersions.V11
 
@@ -151,4 +178,16 @@ class TestRuSentRel(unittest.TestCase):
                      data_type_pipelines={DataType.Train: pipeline},
                      folding_type=None,
                      data_folding=data_folding,
-                     writer=OpenNREJsonWriter())
+                     writer=writer)
+
+    def test_serialize_bert_csv(self):
+        self.__test_serialize_bert(writer=TsvWriter(write_header=True))
+
+    def test_serialize_bert_opennre(self):
+        self.__test_serialize_bert(writer=OpenNREJsonWriter("bert"))
+
+    def test_serialize_nn_csv(self):
+        self.__test_serialize_nn(writer=TsvWriter(write_header=True))
+
+    def test_serialize_nn_opennre(self):
+        self.__test_serialize_nn(writer=OpenNREJsonWriter())

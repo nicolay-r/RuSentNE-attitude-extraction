@@ -16,4 +16,4 @@ if __name__ == '__main__':
         ])
 
     ppl.run(input_data="_out/serialize-bert/sample-train-0.tsv.gz",
-            params_dict={"epochs_count": 4, "batch_size": 6})
+            params_dict={"epochs_count": 2, "batch_size": 6})

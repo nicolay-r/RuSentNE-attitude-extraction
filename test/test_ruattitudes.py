@@ -1,6 +1,8 @@
 import unittest
 
 from arekit.common.data.input.writers.tsv import TsvWriter
+from arekit.common.entities.base import Entity
+from arekit.common.entities.str_fmt import StringEntitiesFormatter
 from arekit.common.entities.types import OpinionEntityType
 from arekit.common.experiment.api.ops_doc import DocumentOperations
 from arekit.common.experiment.data_type import DataType
@@ -58,6 +60,29 @@ class RuAttitudesEntityFilter(EntityFilter):
             return entity.Type not in supported
         else:
             return True
+
+
+class RuAttitudesEntitiesFormatter(StringEntitiesFormatter):
+    """ Форматирование сущностей. Было принято решение использовать тип сущности в качетстве значений.
+        Поскольку тексты русскоязычные, то и типы были руссифицированы из соображений более удачных embeddings.
+    """
+
+    def __init__(self, subject_fmt='[субъект]', object_fmt="[объект]"):
+        self.__subject_fmt = subject_fmt
+        self.__object_fmt = object_fmt
+
+    def to_string(self, original_value, entity_type):
+        assert(isinstance(original_value, Entity))
+        assert(isinstance(entity_type, OpinionEntityType))
+
+        if entity_type == OpinionEntityType.Other:
+            return original_value.Type
+        elif entity_type == OpinionEntityType.Object or entity_type == OpinionEntityType.SynonymObject:
+            return self.__object_fmt
+        elif entity_type == OpinionEntityType.Subject or entity_type == OpinionEntityType.SynonymSubject:
+            return self.__subject_fmt
+
+        return None
 
 
 class TestRuAttitudes(unittest.TestCase):
@@ -153,7 +178,7 @@ class TestRuAttitudes(unittest.TestCase):
             label_scaler=PosNegNeuRelationsLabelScaler(),
             text_b_labels_fmt=PosNegNeuRelationsLabelFormatter(),
             text_terms_mapper=BertDefaultStringTextTermsMapper(
-                entity_formatter=CustomEntitiesFormatter(subject_fmt="#S", object_fmt="#O")
+                entity_formatter=RuAttitudesEntitiesFormatter(subject_fmt="#S", object_fmt="#O")
         ))
 
         serialize_bert(output_dir="_out/serialize-ruattitudes-bert",
