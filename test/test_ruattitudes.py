@@ -199,7 +199,7 @@ class TestRuAttitudes(unittest.TestCase):
         self.__test_serialize_bert(writer=TsvWriter(write_header=True))
 
     def test_serialize_bert_opennre(self):
-        self.__test_serialize_bert(writer=OpenNREJsonWriter())
+        self.__test_serialize_bert(writer=OpenNREJsonWriter("bert"))
 
     def test_serialize_nn_csv(self):
         self.__test_serialize_nn(writer=TsvWriter(write_header=True))

@@ -24,9 +24,17 @@ class OpenNREJsonWriter(BaseWriter):
 
     BAG_TAG = "anno_relation_list"
 
-    def __init__(self, encoding="utf-8"):
+    def __init__(self, text_columns_type="default", encoding="utf-8"):
         assert(isinstance(encoding, str))
+        assert(isinstance(text_columns_type, str))
+        assert(text_columns_type in ["default", "bert"])
         self.__encoding = encoding
+
+        self.__text_columns = None
+        if text_columns_type == "default":
+            self.__text_columns = ["text_a"]
+        if text_columns_type == "bert":
+            self.__text_columns = ["text_a", "text_b"]
 
     @staticmethod
     def __write_bag(bag, json_file):
@@ -50,14 +58,21 @@ class OpenNREJsonWriter(BaseWriter):
                 sample_id = row["id"]
                 bag_id = sample_id[0:sample_id.find('_i')]
 
-                json_row = {}
+                # Gather tokens.
+                tokens = []
+                for text_col in self.__text_columns:
+                    tokens.extend(row[text_col].split())
+                print(len(tokens))
 
-                json_row["id"] = bag_id
-                json_row["id_orig"] = sample_id
-                json_row["token"] = row["text_a"].split()
-                json_row["h"] = {"pos": [s_ind, s_ind + 1], "id": str(bag_id + "s")}
-                json_row["t"] = {"pos": [t_ind, t_ind + 1], "id": str(bag_id + "t")}
-                json_row["relation"] = str(int(row["label"])) if "label" in row else "NA"
+                # Fillring JSON row.
+                json_row = {
+                    "id": bag_id,
+                    "id_orig": sample_id,
+                    "token": tokens,
+                    "h": {"pos": [s_ind, s_ind + 1], "id": str(bag_id + "s")},
+                    "t": {"pos": [t_ind, t_ind + 1], "id": str(bag_id + "t")},
+                    "relation": str(int(row["label"])) if "label" in row else "NA"
+                }
 
                 self.__write_bag(json_row, json_file=json_file)
 

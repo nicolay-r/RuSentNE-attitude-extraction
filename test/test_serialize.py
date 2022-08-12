@@ -38,9 +38,9 @@ class TestSerialize(unittest.TestCase):
     def test_bert_json(self):
         serialize_bert(limit=1,
                        terms_per_context=50,
-                       output_dir=self.output_dir,
+                       output_dir=self.output_bert_dir,
                        split_filepath="../data/split_fixed.txt",
-                       writer=OpenNREJsonWriter(),
+                       writer=OpenNREJsonWriter(text_columns_type="bert"),
                        folding_type="fixed",
                        sample_row_provider=CroppedBertSampleRowProvider(
                            crop_window_size=50,
