@@ -59,6 +59,14 @@ class RuSentRelEntitiesFormatter(StringEntitiesFormatter):
         Поскольку тексты русскоязычные, то и типы были руссифицированы из соображений более удачных embeddings.
     """
 
+    type_formatter = {
+        "GEOPOLIT": "гео-сущность",
+        "ORG": "организация",
+        "PER": "личность",
+        "LOC": "локация",
+        "ОRG": "организация"
+    }
+
     def __init__(self, subject_fmt='[субъект]', object_fmt="[объект]"):
         self.__subject_fmt = subject_fmt
         self.__object_fmt = object_fmt
@@ -68,7 +76,7 @@ class RuSentRelEntitiesFormatter(StringEntitiesFormatter):
         assert(isinstance(entity_type, OpinionEntityType))
 
         if entity_type == OpinionEntityType.Other:
-            return original_value.Type
+            return RuSentRelEntitiesFormatter.type_formatter[original_value.Type]
         elif entity_type == OpinionEntityType.Object or entity_type == OpinionEntityType.SynonymObject:
             return self.__object_fmt
         elif entity_type == OpinionEntityType.Subject or entity_type == OpinionEntityType.SynonymSubject:
@@ -84,6 +92,9 @@ class TestRuSentRel(unittest.TestCase):
     @staticmethod
     def __create_pipeline(rusentrel_version, text_parser, terms_per_context=50, dist_in_sentences=0):
         """ Processing pipeline for RuSentRel.
+
+            Original collection paper: arxiv.org/abs/1808.08932
+
             version: enum
                 Version of the RuSentRel collection.
             terms_per_context: int

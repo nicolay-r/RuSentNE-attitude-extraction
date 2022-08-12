@@ -50,14 +50,14 @@ class DictionaryBasedDocumentOperations(DocumentOperations):
 
 class RuAttitudesEntityFilter(EntityFilter):
 
+    supported = ["GPE", "PERSON", "LOCAL", "GEO", "ORG"]
+
     def is_ignored(self, entity, e_type):
 
-        supported = ["GPE", "PERSON", "LOCAL", "GEO", "ORG"]
-
         if e_type == OpinionEntityType.Subject:
-            return entity.Type not in supported
+            return entity.Type not in RuAttitudesEntityFilter.supported
         if e_type == OpinionEntityType.Object:
-            return entity.Type not in supported
+            return entity.Type not in RuAttitudesEntityFilter.supported
         else:
             return True
 
@@ -66,6 +66,13 @@ class RuAttitudesEntitiesFormatter(StringEntitiesFormatter):
     """ Форматирование сущностей. Было принято решение использовать тип сущности в качетстве значений.
         Поскольку тексты русскоязычные, то и типы были руссифицированы из соображений более удачных embeddings.
     """
+
+    type_formatter = {
+        "GPE": "гео-сущность",
+        "PERSON": "личность",
+        "LOCAL": "локация",
+        "ОRG": "организация"
+    }
 
     def __init__(self, subject_fmt='[субъект]', object_fmt="[объект]"):
         self.__subject_fmt = subject_fmt
@@ -76,7 +83,7 @@ class RuAttitudesEntitiesFormatter(StringEntitiesFormatter):
         assert(isinstance(entity_type, OpinionEntityType))
 
         if entity_type == OpinionEntityType.Other:
-            return original_value.Type
+            return RuAttitudesEntitiesFormatter.type_formatter[original_value.Type]
         elif entity_type == OpinionEntityType.Object or entity_type == OpinionEntityType.SynonymObject:
             return self.__object_fmt
         elif entity_type == OpinionEntityType.Subject or entity_type == OpinionEntityType.SynonymSubject:
@@ -141,6 +148,9 @@ class TestRuAttitudes(unittest.TestCase):
                           limit=None):
         """ Processing pipeline for RuAttitudes.
             This pipeline is based on the in-memory RuAttitudes storage.
+
+            Original collection paper:  www.aclweb.org/anthology/r19-1118/
+            Github repository:          https://github.com/nicolay-r/RuAttitudes
 
             version: enum
                 Version of the RuAttitudes collection.
