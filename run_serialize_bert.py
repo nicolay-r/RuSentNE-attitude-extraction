@@ -7,13 +7,13 @@ from labels.scaler import PosNegNeuRelationsLabelScaler
 from models.bert.serialize import CroppedBertSampleRowProvider, serialize_bert
 from writers.opennre_json import OpenNREJsonWriter
 
-if __name__ == '__main__':
 
+def do(writer):
     serialize_bert(
         terms_per_context=50,
         output_dir="_out/serialize-bert/",
         split_filepath="data/split_fixed.txt",
-        writer=TsvWriter(write_header=True),
+        writer=writer,
         sample_row_provider=CroppedBertSampleRowProvider(
             crop_window_size=50,
             label_scaler=PosNegNeuRelationsLabelScaler(),
@@ -21,3 +21,9 @@ if __name__ == '__main__':
             text_terms_mapper=BertDefaultStringTextTermsMapper(
                 entity_formatter=CustomEntitiesFormatter(subject_fmt="#S", object_fmt="#O")
             )))
+
+
+if __name__ == '__main__':
+
+    do(TsvWriter(write_header=True))
+    do(OpenNREJsonWriter("bert"))
