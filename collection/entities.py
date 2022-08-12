@@ -29,7 +29,7 @@ class CollectionEntityCollection(EntityCollection):
             entities=contents["entities"],
             value_to_group_id_func=value_to_group_id_func)
 
-        self._sort_entities(key=lambda entity: entity.CharIndexBegin)
+        self._sort_entities(key=lambda entity: entity.IndexBegin)
 
     def __keep_entity(self, entity):
         assert(isinstance(entity, BratEntity))
