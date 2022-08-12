@@ -8,6 +8,7 @@ from arekit.common.experiment.api.ops_doc import DocumentOperations
 from arekit.common.experiment.data_type import DataType
 from arekit.common.folding.nofold import NoFolding
 from arekit.common.frames.variants.collection import FrameVariantsCollection
+from arekit.common.labels.scaler.base import BaseLabelScaler
 from arekit.common.synonyms.grouping import SynonymsCollectionValuesGroupingProviders
 from arekit.common.text.parser import BaseTextParser
 from arekit.common.utils import progress_bar_iter
@@ -27,7 +28,6 @@ from arekit.contrib.utils.processing.lemmatization.mystem import MystemWrapper
 from arekit.contrib.utils.synonyms.stemmer_based import StemmerBasedSynonymCollection
 
 from entity.filter import EntityFilter
-from entity.formatter import CustomEntitiesFormatter
 from labels.formatter import PosNegNeuRelationsLabelFormatter
 from labels.scaler import PosNegNeuRelationsLabelScaler
 from models.bert.serialize import serialize_bert, CroppedBertSampleRowProvider
@@ -36,11 +36,11 @@ from pipelines.train import text_opinions_to_opinion_linkages_pipeline
 from writers.opennre_json import OpenNREJsonWriter
 
 
-class RuAttitudesDocumentOperations(DocumentOperations):
+class DictionaryBasedDocumentOperations(DocumentOperations):
 
     def __init__(self, ru_attitudes):
         assert(isinstance(ru_attitudes, dict))
-        super(RuAttitudesDocumentOperations, self).__init__()
+        super(DictionaryBasedDocumentOperations, self).__init__()
         self.__ru_attitudes = ru_attitudes
 
     def get_doc(self, doc_id):
@@ -104,7 +104,7 @@ class TestRuAttitudes(unittest.TestCase):
 
     @staticmethod
     def read_ruattitudes_to_brat_in_memory(version, keep_doc_ids_only, doc_id_func, label_scaler, limit=None):
-        """ Performs reading of ruattitude formatted documents and
+        """ Performs reading of RuAttitude formatted documents and
             selection according to 'doc_ids_set' parameter.
         """
         assert (isinstance(version, RuAttitudesVersions))
@@ -121,20 +121,42 @@ class TestRuAttitudes(unittest.TestCase):
             unit='docs')
 
         d = {}
+        docs_read = 0
         for doc_id, news in it_formatted_and_logged:
             assert(isinstance(news, RuAttitudesNews))
             d[doc_id] = RuAttitudesNewsConverter.to_brat_news(news, label_scaler=label_scaler)
-            if limit is not None and doc_id > limit:
+            docs_read += 1
+            if limit is not None and docs_read >= limit:
                 break
 
         return d
 
     @staticmethod
-    def __create_pipeline(text_parser):
+    def __create_pipeline(text_parser,
+                          label_scaler,
+                          version=RuAttitudesVersions.V20Large,
+                          terms_per_context=50,
+                          entity_filter=RuAttitudesEntityFilter(),
+                          nolabel_annotator=None,
+                          limit=None):
         """ Processing pipeline for RuAttitudes.
-        """
+            This pipeline is based on the in-memory RuAttitudes storage.
 
-        version = RuAttitudesVersions.V20Large
+            version: enum
+                Version of the RuAttitudes collection.
+                NOTE: we consider to support a variations of the 2.0 versions.
+            terms_per_context: int
+                Amount of terms that we consider in between the Object and Subject.
+            entity_filter:
+                Entity filter
+            nolabel_annotator:
+                Annontator that could be adopted in order to perform automatic annotation
+                of a non-labeled attitudes.
+            limit: int or None
+                Limit of documents to consider.
+        """
+        assert(isinstance(label_scaler, BaseLabelScaler))
+        assert(isinstance(version, RuAttitudesVersions))
 
         synonyms = StemmerBasedSynonymCollection(
             iter_group_values_lists=RuAttitudesSynonymsCollectionHelper.iter_groups(version),
@@ -146,17 +168,17 @@ class TestRuAttitudes(unittest.TestCase):
             version=version,
             doc_id_func=lambda doc_id: doc_id,
             keep_doc_ids_only=False,
-            label_scaler=PosNegNeuRelationsLabelScaler(),
-            limit=None)
+            label_scaler=label_scaler,
+            limit=limit)
 
-        doc_ops = RuAttitudesDocumentOperations(ru_attitudes)
+        doc_ops = DictionaryBasedDocumentOperations(ru_attitudes)
 
         pipeline = text_opinions_to_opinion_linkages_pipeline(
-            terms_per_context=50,
+            terms_per_context=terms_per_context,
             get_doc_func=lambda doc_id: doc_ops.get_doc(doc_id),
             text_parser=text_parser,
-            neut_annotator=None,
-            entity_filter=RuAttitudesEntityFilter(),
+            neut_annotator=nolabel_annotator,
+            entity_filter=entity_filter,
             value_to_group_id_func=lambda value:
             SynonymsCollectionValuesGroupingProviders.provide_existed_or_register_missed_value(
                 synonyms=synonyms, value=value))
@@ -168,7 +190,8 @@ class TestRuAttitudes(unittest.TestCase):
         text_parser = BaseTextParser(pipeline=[RuAttitudesTextEntitiesParser(),
                                                DefaultTextTokenizer()])
 
-        pipeline, ru_attitudes = self.__create_pipeline(text_parser=text_parser)
+        pipeline, ru_attitudes = self.__create_pipeline(text_parser=text_parser,
+                                                        label_scaler=PosNegNeuRelationsLabelScaler())
 
         data_folding = NoFolding(doc_ids_to_fold=ru_attitudes.keys(),
                                  supported_data_types=[DataType.Train])
@@ -208,7 +231,8 @@ class TestRuAttitudes(unittest.TestCase):
                                                    frame_variants=frame_variant_collection,
                                                    stemmer=stemmer)])
 
-        pipeline, ru_attitudes = self.__create_pipeline(text_parser=text_parser)
+        pipeline, ru_attitudes = self.__create_pipeline(text_parser=text_parser,
+                                                        label_scaler=PosNegNeuRelationsLabelScaler())
 
         data_folding = NoFolding(doc_ids_to_fold=ru_attitudes.keys(),
                                  supported_data_types=[DataType.Train])
