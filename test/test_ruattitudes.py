@@ -145,6 +145,9 @@ class TestRuAttitudes(unittest.TestCase):
             version: enum
                 Version of the RuAttitudes collection.
                 NOTE: we consider to support a variations of the 2.0 versions.
+            label_scaler:
+                Scaler that allows to perform conversion from integer labels (RuAttitudes) to
+                the actual `Label` instances, required in further for text_opinions instances.
             terms_per_context: int
                 Amount of terms that we consider in between the Object and Subject.
             entity_filter:
