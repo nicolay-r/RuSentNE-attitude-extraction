@@ -31,7 +31,6 @@ from arekit.contrib.utils.pipelines.items.text.tokenizer import DefaultTextToken
 from arekit.contrib.utils.processing.lemmatization.mystem import MystemWrapper
 from arekit.contrib.utils.synonyms.stemmer_based import StemmerBasedSynonymCollection
 
-from entity.formatter import CustomEntitiesFormatter
 from labels.formatter import PosNegNeuRelationsLabelFormatter
 from labels.scaler import PosNegNeuRelationsLabelScaler
 from models.bert.serialize import serialize_bert
@@ -83,8 +82,14 @@ class TestRuSentRel(unittest.TestCase):
     """
 
     @staticmethod
-    def __create_pipeline(rusentrel_version, text_parser):
+    def __create_pipeline(rusentrel_version, text_parser, terms_per_context=50, dist_in_sentences=0):
         """ Processing pipeline for RuSentRel.
+            version: enum
+                Version of the RuSentRel collection.
+            terms_per_context: int
+                Amount of terms that we consider in between the Object and Subject.
+            dist_in_sentences: int
+                considering amount of sentences that could be in between Object and Subject.
         """
 
         synonyms = StemmerBasedSynonymCollection(
@@ -97,8 +102,8 @@ class TestRuSentRel(unittest.TestCase):
 
         annotator = AlgorithmBasedOpinionAnnotator(
             annot_algo=PairBasedOpinionAnnotationAlgorithm(
-                dist_in_sents=0,
-                dist_in_terms_bound=50,
+                dist_in_sents=dist_in_sentences,
+                dist_in_terms_bound=terms_per_context,
                 label_provider=ConstantLabelProvider(NoLabel())),
             create_empty_collection_func=lambda: OpinionCollection(
                 opinions=[],
@@ -110,7 +115,7 @@ class TestRuSentRel(unittest.TestCase):
         pipeline = attitude_extraction_default_pipeline(
             annotator=annotator,
             entity_index_func=lambda brat_entity: brat_entity.ID,
-            terms_per_context=50,
+            terms_per_context=terms_per_context,
             get_doc_func=lambda doc_id: doc_ops.get_doc(doc_id),
             text_parser=text_parser,
             value_to_group_id_func=lambda value:
