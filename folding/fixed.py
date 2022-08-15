@@ -23,7 +23,8 @@ def create_fixed_folding(train_filenames, test_filenames):
     fixed_folding = FixedFolding.from_parts({
         DataType.Train: train_doc_ids,
         DataType.Test: test_doc_ids,
-        DataType.Etalon: test_doc_ids
+        DataType.Etalon: test_doc_ids,
+        DataType.Dev: test_doc_ids
     })
 
     return filenames_by_ids, fixed_folding
