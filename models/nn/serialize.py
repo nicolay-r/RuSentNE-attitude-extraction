@@ -79,7 +79,7 @@ def serialize_nn(output_dir, split_filepath, writer, folding_type="fixed",
         emb_io=NpzEmbeddingIO(target_dir=output_dir),
         str_entity_fmt=entities_fmt,
         balance_func=lambda data_type: data_type == DataType.Train,
-        save_labels_func=lambda data_type: data_type == DataType.Train or data_type == DataType.Etalon,
+        save_labels_func=lambda data_type: data_type != DataType.Test,
         exp_ctx=exp_ctx,
         save_embedding=True)
 
