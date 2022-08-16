@@ -27,7 +27,7 @@ def __group_text_opinions_by_doc_id(view):
     return text_opinions_by_doc_id
 
 
-def text_opinion_per_document_two_class_result_evaluator(
+def text_opinion_per_document_result_evaluator(
         test_predict_filepath, etalon_samples_filepath, test_samples_filepath,
         doc_ids_mode="joined", evaluator_type="two_class",
         label_scaler=PosNegNeuRelationsLabelScaler()):

@@ -27,7 +27,7 @@ def extract_context_opinions_by_row_id(view, label_scaler, no_label):
     return context_opinions_by_row_id
 
 
-def text_opinion_per_collection_two_class_result_evaluator(
+def text_opinion_per_collection_result_evaluator(
         test_predict_filepath, etalon_samples_filepath, test_samples_filepath,
         evaluator_type="two_class",
         label_scaler=PosNegNeuRelationsLabelScaler()):
