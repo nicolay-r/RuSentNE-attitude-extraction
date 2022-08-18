@@ -150,7 +150,7 @@ class TestRuSentRel(unittest.TestCase):
         sample_row_provider=CroppedBertSampleRowProvider(
             crop_window_size=50,
             label_scaler=PosNegNeuRelationsLabelScaler(),
-            text_b_template=BertTextBTemplates.NLI,
+            text_b_template=BertTextBTemplates.NLI.value,
             text_b_labels_fmt=PosNegNeuRelationsLabelFormatter(),
             text_terms_mapper=BertDefaultStringTextTermsMapper(
                 entity_formatter=RuSentRelEntitiesFormatter(subject_fmt="#S", object_fmt="#O")

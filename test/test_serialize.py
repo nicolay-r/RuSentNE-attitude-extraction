@@ -3,6 +3,7 @@ from os.path import dirname, realpath, join
 
 from arekit.common.data.input.writers.tsv import TsvWriter
 from arekit.contrib.bert.terms.mapper import BertDefaultStringTextTermsMapper
+from arekit.contrib.utils.bert.text_b_rus import BertTextBTemplates
 
 from entity.formatter import CustomEntitiesFormatter
 from labels.formatter import PosNegNeuRelationsLabelFormatter
@@ -35,8 +36,8 @@ class TestSerialize(unittest.TestCase):
                      labels_scaler=PosNegNeuRelationsLabelScaler(),
                      split_filepath="../data/split_fixed.txt")
 
-    def test_bert_json(self):
-        serialize_bert(limit=1,
+    def test_bert_json(self, limit=1):
+        serialize_bert(limit=limit,
                        terms_per_context=50,
                        output_dir=self.output_bert_dir,
                        split_filepath="../data/split_fixed.txt",
@@ -44,11 +45,15 @@ class TestSerialize(unittest.TestCase):
                        folding_type="fixed",
                        sample_row_provider=CroppedBertSampleRowProvider(
                            crop_window_size=50,
+                           text_b_template=BertTextBTemplates.NLI.value,
                            label_scaler=PosNegNeuRelationsLabelScaler(),
                            text_b_labels_fmt=PosNegNeuRelationsLabelFormatter(),
                            text_terms_mapper=BertDefaultStringTextTermsMapper(
                                entity_formatter=CustomEntitiesFormatter(subject_fmt="#S", object_fmt="#O")
                            )))
+
+    def test_bert_json_full(self):
+        self.test_bert_json(limit=None)
 
 
 if __name__ == '__main__':
