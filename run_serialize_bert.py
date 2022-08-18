@@ -1,5 +1,6 @@
 from arekit.common.data.input.writers.tsv import TsvWriter
 from arekit.contrib.bert.terms.mapper import BertDefaultStringTextTermsMapper
+from arekit.contrib.utils.bert.text_b_rus import BertTextBTemplates
 
 from entity.formatter import CustomEntitiesFormatter
 from labels.formatter import PosNegNeuRelationsLabelFormatter
@@ -18,6 +19,7 @@ def do(writer):
             crop_window_size=50,
             label_scaler=PosNegNeuRelationsLabelScaler(),
             text_b_labels_fmt=PosNegNeuRelationsLabelFormatter(),
+            text_b_template=BertTextBTemplates.NLI,
             text_terms_mapper=BertDefaultStringTextTermsMapper(
                 entity_formatter=CustomEntitiesFormatter(subject_fmt="#S", object_fmt="#O")
             )))
@@ -26,4 +28,4 @@ def do(writer):
 if __name__ == '__main__':
 
     do(TsvWriter(write_header=True))
-    do(OpenNREJsonWriter("bert"))
+    # do(OpenNREJsonWriter("bert"))

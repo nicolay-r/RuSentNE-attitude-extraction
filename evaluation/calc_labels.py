@@ -1,10 +1,10 @@
+import numpy as np
+from tqdm import tqdm
 from os.path import exists
 
-import numpy as np
 from arekit.common.data.row_ids.multiple import MultipleIDProvider
 from arekit.common.data.storages.base import BaseRowsStorage
-from arekit.common.data.views.samples import BaseSampleStorageView
-from tqdm import tqdm
+from arekit.common.data.views.samples import LinkedSamplesStorageView
 
 from labels.scaler import PosNegNeuRelationsLabelScaler
 
@@ -16,10 +16,11 @@ def calculate_predicted_count_per_label(test_predict_filepath,
     if not exists(test_predict_filepath):
         raise FileNotFoundError(test_predict_filepath)
 
-    predict_view = BaseSampleStorageView(storage=BaseRowsStorage.from_tsv(filepath=test_predict_filepath),
-                                         row_ids_provider=MultipleIDProvider())
+    predict_linked_view = LinkedSamplesStorageView(
+        storage=BaseRowsStorage.from_tsv(filepath=test_predict_filepath),
+        row_ids_provider=MultipleIDProvider())
 
-    test_linked_iter = predict_view.iter_rows_linked_by_text_opinions()
+    test_linked_iter = predict_linked_view
     labels_stat = {}
     for linkage in tqdm(test_linked_iter):
         for row in linkage:
@@ -38,10 +39,11 @@ def calculate_samples_count_per_label(samples_filepath, no_label_uint):
     if not exists(samples_filepath):
         raise FileNotFoundError(samples_filepath)
 
-    predict_view = BaseSampleStorageView(storage=BaseRowsStorage.from_tsv(filepath=samples_filepath),
-                                         row_ids_provider=MultipleIDProvider())
+    predict_linked_view = LinkedSamplesStorageView(
+        storage=BaseRowsStorage.from_tsv(filepath=samples_filepath),
+        row_ids_provider=MultipleIDProvider())
 
-    test_linked_iter = predict_view.iter_rows_linked_by_text_opinions()
+    test_linked_iter = predict_linked_view
     labels_stat = {}
     used_row_ids = set()
 

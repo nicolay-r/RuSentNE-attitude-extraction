@@ -1,10 +1,10 @@
+from arekit.common.data.views.samples import LinkedSamplesStorageView
 from tqdm import tqdm
 from collections import OrderedDict
 from os.path import exists
 
 from arekit.common.data.row_ids.multiple import MultipleIDProvider
 from arekit.common.data.storages.base import BaseRowsStorage
-from arekit.common.data.views.samples import BaseSampleStorageView
 from arekit.common.evaluation.comparators.text_opinions import TextOpinionBasedComparator
 from arekit.common.evaluation.evaluators.modes import EvaluationModes
 from arekit.common.utils import progress_bar_defined
@@ -15,9 +15,9 @@ from evaluation.utils import assign_labels, select_doc_ids, create_filter_labels
 from labels.scaler import PosNegNeuRelationsLabelScaler
 
 
-def __group_text_opinions_by_doc_id(view):
+def __group_text_opinions_by_doc_id(linked_view):
     text_opinions_by_doc_id = OrderedDict()
-    for linkage in tqdm(view.iter_rows_linked_by_text_opinions()):
+    for linkage in tqdm(linked_view):
         for row in linkage:
             doc_id = row["doc_id"]
             if doc_id not in text_opinions_by_doc_id:
@@ -55,24 +55,24 @@ def text_opinion_per_document_result_evaluator(
     no_label = label_scaler.uint_to_label(0)
 
     # Setup views.
-    etalon_view = BaseSampleStorageView(storage=BaseRowsStorage.from_tsv(filepath=etalon_samples_filepath),
-                                        row_ids_provider=MultipleIDProvider())
-    test_view = BaseSampleStorageView(storage=BaseRowsStorage.from_tsv(filepath=test_samples_filepath),
-                                      row_ids_provider=MultipleIDProvider())
-    predict_view = BaseSampleStorageView(storage=BaseRowsStorage.from_tsv(filepath=test_predict_filepath),
-                                         row_ids_provider=MultipleIDProvider())
+    etalon_linked_view = LinkedSamplesStorageView(storage=BaseRowsStorage.from_tsv(filepath=etalon_samples_filepath),
+                                                  row_ids_provider=MultipleIDProvider())
+    test_linked_view = LinkedSamplesStorageView(storage=BaseRowsStorage.from_tsv(filepath=test_samples_filepath),
+                                                row_ids_provider=MultipleIDProvider())
+    predict_linked_view = LinkedSamplesStorageView(storage=BaseRowsStorage.from_tsv(filepath=test_predict_filepath),
+                                                   row_ids_provider=MultipleIDProvider())
 
     # Reading collection through storage views.
     etalon_context_opinions_by_row_id = extract_context_opinions_by_row_id(
-        view=etalon_view, label_scaler=label_scaler, no_label=no_label)
+        linked_view=etalon_linked_view, label_scaler=label_scaler, no_label=no_label)
     test_context_opinions_by_row_id = extract_context_opinions_by_row_id(
-        view=test_view, label_scaler=label_scaler, no_label=no_label)
+        linked_view=test_linked_view, label_scaler=label_scaler, no_label=no_label)
 
     # Gathering them by doc_id.
-    etalon_row_ids_by_doc_id = __group_text_opinions_by_doc_id(view=etalon_view)
-    test_row_ids_by_doc_id = __group_text_opinions_by_doc_id(view=test_view)
+    etalon_row_ids_by_doc_id = __group_text_opinions_by_doc_id(linked_view=etalon_linked_view)
+    test_row_ids_by_doc_id = __group_text_opinions_by_doc_id(linked_view=test_linked_view)
 
-    assign_labels(predict_view=predict_view,
+    assign_labels(predict_linked_view=predict_linked_view,
                   text_opinions=test_context_opinions_by_row_id.values(),
                   row_id_to_context_opin_id_func=lambda row_id: test_context_opinions_by_row_id[row_id].Tag,
                   label_scaler=label_scaler)

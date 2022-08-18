@@ -2,7 +2,7 @@ from os.path import join
 
 from arekit.common.data.row_ids.multiple import MultipleIDProvider
 from arekit.common.data.storages.base import BaseRowsStorage
-from arekit.common.data.views.samples import BaseSampleStorageView
+from arekit.common.data.views.samples import LinkedSamplesStorageView
 from arekit.common.experiment.api.base_samples_io import BaseSamplesIO
 from arekit.common.experiment.data_type import DataType
 from arekit.common.folding.base import BaseDataFolding
@@ -106,7 +106,7 @@ class TensorflowNetworkInferencePipelineItem(BasePipelineItem):
         inference_ctx.initialize(
             dtypes=[self.__data_type],
             bags_collection_type=self.__bags_collection_type,
-            create_samples_view_func=lambda data_type: BaseSampleStorageView(
+            create_samples_view_func=lambda data_type: LinkedSamplesStorageView(
                 storage=BaseRowsStorage.from_tsv(samples_filepath),
                 row_ids_provider=MultipleIDProvider()),
             has_model_predefined_state=True,

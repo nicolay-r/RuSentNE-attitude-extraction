@@ -16,7 +16,6 @@ from arekit.common.opinions.collection import OpinionCollection
 from arekit.common.synonyms.base import SynonymsCollection
 from arekit.common.synonyms.grouping import SynonymsCollectionValuesGroupingProviders
 from arekit.common.text.parser import BaseTextParser
-from arekit.contrib.bert.samplers.nli_m import NliMultipleSampleProvider
 from arekit.contrib.bert.terms.mapper import BertDefaultStringTextTermsMapper
 from arekit.contrib.source.brat.entities.parser import BratTextEntitiesParser
 from arekit.contrib.source.rusentiframes.collection import RuSentiFramesCollection
@@ -25,6 +24,7 @@ from arekit.contrib.source.rusentiframes.types import RuSentiFramesVersions
 from arekit.contrib.source.rusentrel.io_utils import RuSentRelVersions, RuSentRelIOUtils
 from arekit.contrib.source.rusentrel.news_reader import RuSentRelNewsReader
 from arekit.contrib.source.rusentrel.synonyms import RuSentRelSynonymsCollectionHelper
+from arekit.contrib.utils.bert.text_b_rus import BertTextBTemplates
 from arekit.contrib.utils.pipelines.annot.base import attitude_extraction_default_pipeline
 from arekit.contrib.utils.pipelines.items.text.frames_lemmatized import LemmasBasedFrameVariantsParser
 from arekit.contrib.utils.pipelines.items.text.tokenizer import DefaultTextTokenizer
@@ -33,7 +33,7 @@ from arekit.contrib.utils.synonyms.stemmer_based import StemmerBasedSynonymColle
 
 from labels.formatter import PosNegNeuRelationsLabelFormatter
 from labels.scaler import PosNegNeuRelationsLabelScaler
-from models.bert.serialize import serialize_bert
+from models.bert.serialize import serialize_bert, CroppedBertSampleRowProvider
 from models.nn.serialize import serialize_nn
 from writers.opennre_json import OpenNREJsonWriter
 
@@ -147,8 +147,10 @@ class TestRuSentRel(unittest.TestCase):
         data_folding = NoFolding(doc_ids_to_fold=RuSentRelIOUtils.iter_collection_indices(version),
                                  supported_data_types=[DataType.Train])
 
-        sample_row_provider = NliMultipleSampleProvider(
+        sample_row_provider=CroppedBertSampleRowProvider(
+            crop_window_size=50,
             label_scaler=PosNegNeuRelationsLabelScaler(),
+            text_b_template=BertTextBTemplates.NLI,
             text_b_labels_fmt=PosNegNeuRelationsLabelFormatter(),
             text_terms_mapper=BertDefaultStringTextTermsMapper(
                 entity_formatter=RuSentRelEntitiesFormatter(subject_fmt="#S", object_fmt="#O")

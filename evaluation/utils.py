@@ -12,7 +12,7 @@ from arekit.contrib.utils.evaluation.evaluators.two_class import TwoClassEvaluat
 from tqdm import tqdm
 
 
-def assign_labels(predict_view, text_opinions, row_id_to_context_opin_id_func, label_scaler):
+def assign_labels(predict_linked_view, text_opinions, row_id_to_context_opin_id_func, label_scaler):
     """ Назначение меток с результата разметки на TextOpinion соответствующего множества.
     """
     assert(callable(row_id_to_context_opin_id_func))
@@ -22,8 +22,7 @@ def assign_labels(predict_view, text_opinions, row_id_to_context_opin_id_func, l
         assert (isinstance(context_opinion, ContextOpinion))
         text_opinons_by_id[context_opinion.Tag] = context_opinion
 
-    test_linked_iter = predict_view.iter_rows_linked_by_text_opinions()
-    for linkage in tqdm(test_linked_iter):
+    for linkage in tqdm(predict_linked_view):
         for row in linkage:
             text_opinion_id = row_id_to_context_opin_id_func(row["id"])
             context_opinion = text_opinons_by_id[text_opinion_id]

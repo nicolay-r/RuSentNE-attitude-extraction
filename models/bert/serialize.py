@@ -1,11 +1,14 @@
 from arekit.common.data import const
+from arekit.common.data.input.providers.label.multiple import MultipleLabelProvider
 from arekit.common.data.input.providers.rows.samples import BaseSampleRowProvider
+from arekit.common.data.input.providers.text.single import BaseSingleTextProvider
 from arekit.common.entities.base import Entity
 from arekit.common.experiment.data_type import DataType
 from arekit.common.pipeline.base import BasePipeline
 from arekit.common.text.parser import BaseTextParser
+from arekit.contrib.bert.input.providers.text_pair import PairTextProvider
+
 from arekit.contrib.bert.pipelines.items.serializer import BertExperimentInputSerializerPipelineItem
-from arekit.contrib.bert.samplers.nli_m import NliMultipleSampleProvider
 from arekit.contrib.source.brat.entities.parser import BratTextEntitiesParser
 from arekit.contrib.utils.io_utils.samples import SamplesIO
 from arekit.contrib.utils.pipelines.items.text.tokenizer import DefaultTextTokenizer
@@ -17,17 +20,23 @@ from pipelines.collection import prepare_data_pipelines
 from writers.utils import create_writer_extension
 
 
-class CroppedBertSampleRowProvider(NliMultipleSampleProvider):
+class CroppedBertSampleRowProvider(BaseSampleRowProvider):
     """ Нужно немного изменить базовый провайдер так, чтобы
         возвращался небольшой контекст, который влкючает в себя
         объект и субъект, чтобы когда на вход в BERT будут подаваться семплы,
         не возникло проблемы отсечения ввиду огромного предложения.
     """
 
-    def __init__(self, crop_window_size, label_scaler, text_b_labels_fmt, text_terms_mapper):
-        super(CroppedBertSampleRowProvider, self).__init__(label_scaler=label_scaler,
-                                                           text_b_labels_fmt=text_b_labels_fmt,
-                                                           text_terms_mapper=text_terms_mapper)
+    def __init__(self, crop_window_size, label_scaler, text_terms_mapper, text_b_template, text_b_labels_fmt=None):
+
+        text_provider = BaseSingleTextProvider(text_terms_mapper=text_terms_mapper) \
+            if text_b_labels_fmt is None else PairTextProvider(text_b_template=text_b_template,
+                                                               text_b_labels_fmt=text_b_labels_fmt,
+                                                               text_terms_mapper=text_terms_mapper)
+
+        super(CroppedBertSampleRowProvider, self).__init__(label_provider=MultipleLabelProvider(label_scaler),
+                                                           text_provider=text_provider)
+
         self.__crop_window_size = crop_window_size
 
     @staticmethod
