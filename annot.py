@@ -23,9 +23,6 @@ def create_neutral_annotator(terms_per_context):
                                              is_read_only=False,
                                              debug=False)
 
-    # TODO. remove this from here. (duplicated usage)
-    entity_filter = CollectionEntityFilter()
-
     return AlgorithmBasedTextOpinionAnnotator(
         value_to_group_id_func=lambda value:
             SynonymsCollectionValuesGroupingProviders.provide_existed_or_register_missed_value(
@@ -33,8 +30,7 @@ def create_neutral_annotator(terms_per_context):
         annot_algo=PairBasedOpinionAnnotationAlgorithm(
             dist_in_sents=0,
             dist_in_terms_bound=terms_per_context,
-            label_provider=ConstantLabelProvider(NoLabel()),
-            is_entity_ignored_func=lambda e, e_type: entity_filter.is_ignored(e, e_type)),
+            label_provider=ConstantLabelProvider(NoLabel())),
         create_empty_collection_func=lambda: OpinionCollection(
             opinions=[],
             synonyms=synonyms,
