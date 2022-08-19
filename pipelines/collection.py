@@ -1,12 +1,13 @@
 from arekit.common.experiment.data_type import DataType
+from arekit.contrib.utils.pipelines.text_opinion.annot.predefined import PredefinedTextOpinionAnnotator
+from arekit.contrib.utils.pipelines.text_opinion.filters.distance_based import DistanceLimitedTextOpinionFilter
+from arekit.contrib.utils.pipelines.text_opinion.filters.entity_based import EntityBasedTextOpinionFilter
 
 from annot import create_neutral_annotator
 from entity.filter import CollectionEntityFilter
 from pipelines.etalon import create_etalon_pipeline, create_etalon_with_no_label_pipeline
 from pipelines.test import create_test_pipeline
 from pipelines.train import create_train_pipeline
-from collection.annot import PredefinedTextOpinionAnnotator
-from text_opinion_filter import EntityBasedTextOpinionFilter, DistanceLimitedTextOpinionFilter
 
 
 def prepare_data_pipelines(text_parser, doc_ops, terms_per_context):

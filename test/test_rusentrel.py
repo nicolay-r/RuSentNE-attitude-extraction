@@ -25,9 +25,13 @@ from arekit.contrib.source.rusentrel.io_utils import RuSentRelVersions, RuSentRe
 from arekit.contrib.source.rusentrel.news_reader import RuSentRelNewsReader
 from arekit.contrib.source.rusentrel.synonyms import RuSentRelSynonymsCollectionHelper
 from arekit.contrib.utils.bert.text_b_rus import BertTextBTemplates
-from arekit.contrib.utils.pipelines.annot.base import attitude_extraction_default_pipeline
 from arekit.contrib.utils.pipelines.items.text.frames_lemmatized import LemmasBasedFrameVariantsParser
 from arekit.contrib.utils.pipelines.items.text.tokenizer import DefaultTextTokenizer
+from arekit.contrib.utils.pipelines.text_opinion.annot.algo_based import AlgorithmBasedTextOpinionAnnotator
+from arekit.contrib.utils.pipelines.text_opinion.annot.predefined import PredefinedTextOpinionAnnotator
+from arekit.contrib.utils.pipelines.text_opinion.extraction import text_opinion_extraction_pipeline
+from arekit.contrib.utils.pipelines.text_opinion.filters.distance_based import DistanceLimitedTextOpinionFilter
+from arekit.contrib.utils.pipelines.text_opinion.filters.entity_based import EntityBasedTextOpinionFilter
 from arekit.contrib.utils.processing.lemmatization.mystem import MystemWrapper
 from arekit.contrib.utils.synonyms.stemmer_based import StemmerBasedSynonymCollection
 
@@ -111,7 +115,7 @@ class TestRuSentRel(unittest.TestCase):
 
         doc_ops = RuSentrelDocumentOperations(version=rusentrel_version, synonyms=synonyms)
 
-        annotator = AlgorithmBasedOpinionAnnotator(
+        algo_based_annotator = AlgorithmBasedTextOpinionAnnotator(
             annot_algo=PairBasedOpinionAnnotationAlgorithm(
                 dist_in_sents=dist_in_sentences,
                 dist_in_terms_bound=terms_per_context,
@@ -121,16 +125,20 @@ class TestRuSentRel(unittest.TestCase):
                 synonyms=synonyms,
                 error_on_duplicates=True,
                 error_on_synonym_end_missed=False),
-            get_doc_existed_opinions_func=lambda _: None)
-
-        pipeline = attitude_extraction_default_pipeline(
-            annotator=annotator,
-            entity_index_func=lambda brat_entity: brat_entity.ID,
-            terms_per_context=terms_per_context,
-            get_doc_func=lambda doc_id: doc_ops.get_doc(doc_id),
-            text_parser=text_parser,
+            get_doc_existed_opinions_func=lambda _: None,
             value_to_group_id_func=lambda value:
                 SynonymsCollectionValuesGroupingProviders.provide_existed_value(synonyms=synonyms, value=value))
+
+        pipeline = text_opinion_extraction_pipeline(
+            annotators=[
+                PredefinedTextOpinionAnnotator(doc_ops),
+                algo_based_annotator
+            ],
+            text_opinion_filters=[
+                DistanceLimitedTextOpinionFilter(terms_per_context)
+            ],
+            get_doc_func=lambda doc_id: doc_ops.get_doc(doc_id),
+            text_parser=text_parser)
 
         return pipeline
 
@@ -147,7 +155,7 @@ class TestRuSentRel(unittest.TestCase):
         data_folding = NoFolding(doc_ids_to_fold=RuSentRelIOUtils.iter_collection_indices(version),
                                  supported_data_types=[DataType.Train])
 
-        sample_row_provider=CroppedBertSampleRowProvider(
+        sample_row_provider = CroppedBertSampleRowProvider(
             crop_window_size=50,
             label_scaler=PosNegNeuRelationsLabelScaler(),
             text_b_template=BertTextBTemplates.NLI.value,

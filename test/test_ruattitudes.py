@@ -9,7 +9,6 @@ from arekit.common.experiment.data_type import DataType
 from arekit.common.folding.nofold import NoFolding
 from arekit.common.frames.variants.collection import FrameVariantsCollection
 from arekit.common.labels.scaler.base import BaseLabelScaler
-from arekit.common.synonyms.grouping import SynonymsCollectionValuesGroupingProviders
 from arekit.common.text.parser import BaseTextParser
 from arekit.common.utils import progress_bar_iter
 from arekit.contrib.bert.terms.mapper import BertDefaultStringTextTermsMapper
@@ -18,14 +17,16 @@ from arekit.contrib.source.ruattitudes.entity.parser import RuAttitudesTextEntit
 from arekit.contrib.source.ruattitudes.io_utils import RuAttitudesVersions
 from arekit.contrib.source.ruattitudes.news import RuAttitudesNews
 from arekit.contrib.source.ruattitudes.news_brat import RuAttitudesNewsConverter
-from arekit.contrib.source.ruattitudes.synonyms import RuAttitudesSynonymsCollectionHelper
 from arekit.contrib.source.rusentiframes.collection import RuSentiFramesCollection
 from arekit.contrib.source.rusentiframes.labels_fmt import RuSentiFramesLabelsFormatter
 from arekit.contrib.source.rusentiframes.types import RuSentiFramesVersions
+from arekit.contrib.utils.bert.text_b_rus import BertTextBTemplates
 from arekit.contrib.utils.pipelines.items.text.frames_lemmatized import LemmasBasedFrameVariantsParser
 from arekit.contrib.utils.pipelines.items.text.tokenizer import DefaultTextTokenizer
+from arekit.contrib.utils.pipelines.text_opinion.annot.predefined import PredefinedTextOpinionAnnotator
+from arekit.contrib.utils.pipelines.text_opinion.filters.distance_based import DistanceLimitedTextOpinionFilter
+from arekit.contrib.utils.pipelines.text_opinion.filters.entity_based import EntityBasedTextOpinionFilter
 from arekit.contrib.utils.processing.lemmatization.mystem import MystemWrapper
-from arekit.contrib.utils.synonyms.stemmer_based import StemmerBasedSynonymCollection
 
 from entity.filter import EntityFilter
 from labels.formatter import PosNegNeuRelationsLabelFormatter
@@ -144,7 +145,6 @@ class TestRuAttitudes(unittest.TestCase):
                           version=RuAttitudesVersions.V20Large,
                           terms_per_context=50,
                           entity_filter=RuAttitudesEntityFilter(),
-                          nolabel_annotator=None,
                           limit=None):
         """ Processing pipeline for RuAttitudes.
             This pipeline is based on the in-memory RuAttitudes storage.
@@ -162,20 +162,11 @@ class TestRuAttitudes(unittest.TestCase):
                 Amount of terms that we consider in between the Object and Subject.
             entity_filter:
                 Entity filter
-            nolabel_annotator:
-                Annontator that could be adopted in order to perform automatic annotation
-                of a non-labeled attitudes.
             limit: int or None
                 Limit of documents to consider.
         """
         assert(isinstance(label_scaler, BaseLabelScaler))
         assert(isinstance(version, RuAttitudesVersions))
-
-        synonyms = StemmerBasedSynonymCollection(
-            iter_group_values_lists=RuAttitudesSynonymsCollectionHelper.iter_groups(version),
-            stemmer=MystemWrapper(),
-            is_read_only=False,
-            debug=False)
 
         ru_attitudes = TestRuAttitudes.read_ruattitudes_to_brat_in_memory(
             version=version,
@@ -187,14 +178,15 @@ class TestRuAttitudes(unittest.TestCase):
         doc_ops = DictionaryBasedDocumentOperations(ru_attitudes)
 
         pipeline = text_opinion_extraction_pipeline(
-            terms_per_context=terms_per_context,
+            annotators=[
+                PredefinedTextOpinionAnnotator(doc_ops)
+            ],
+            text_opinion_filters=[
+                EntityBasedTextOpinionFilter(entity_filter=entity_filter),
+                DistanceLimitedTextOpinionFilter(terms_per_context)
+            ],
             get_doc_func=lambda doc_id: doc_ops.get_doc(doc_id),
-            text_parser=text_parser,
-            neut_annotator=nolabel_annotator,
-            entity_filter=entity_filter,
-            value_to_group_id_func=lambda value:
-            SynonymsCollectionValuesGroupingProviders.provide_existed_or_register_missed_value(
-                synonyms=synonyms, value=value))
+            text_parser=text_parser)
 
         return pipeline, ru_attitudes
 
@@ -212,6 +204,7 @@ class TestRuAttitudes(unittest.TestCase):
         sample_row_provider = CroppedBertSampleRowProvider(
             crop_window_size=50,
             label_scaler=PosNegNeuRelationsLabelScaler(),
+            text_b_template=BertTextBTemplates.NLI.value,
             text_b_labels_fmt=PosNegNeuRelationsLabelFormatter(),
             text_terms_mapper=BertDefaultStringTextTermsMapper(
                 entity_formatter=RuAttitudesEntitiesFormatter(subject_fmt="#S", object_fmt="#O")

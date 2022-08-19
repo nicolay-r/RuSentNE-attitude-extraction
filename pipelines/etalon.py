@@ -1,4 +1,5 @@
-from collection.annot import PredefinedTextOpinionAnnotator
+from arekit.contrib.utils.pipelines.text_opinion.annot.predefined import PredefinedTextOpinionAnnotator
+
 from pipelines.train import create_train_pipeline
 
 
