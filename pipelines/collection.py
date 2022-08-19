@@ -1,10 +1,12 @@
 from arekit.common.experiment.data_type import DataType
 
 from annot import create_neutral_annotator
+from entity.filter import CollectionEntityFilter
 from pipelines.etalon import create_etalon_pipeline, create_etalon_with_no_label_pipeline
 from pipelines.test import create_test_pipeline
 from pipelines.train import create_train_pipeline
 from collection.annot import PredefinedTextOpinionAnnotator
+from text_opinion_filter import EntityBasedTextOpinionFilter, DistanceLimitedTextOpinionFilter
 
 
 def prepare_data_pipelines(text_parser, doc_ops, terms_per_context):
@@ -14,6 +16,11 @@ def prepare_data_pipelines(text_parser, doc_ops, terms_per_context):
     train_neut_annot = create_neutral_annotator(terms_per_context)
     test_neut_annot = create_neutral_annotator(terms_per_context)
 
+    text_opinion_filters = [
+        EntityBasedTextOpinionFilter(entity_filter=CollectionEntityFilter()),
+        DistanceLimitedTextOpinionFilter(terms_per_context)
+    ]
+
     return {
         DataType.Train: create_train_pipeline(text_parser=text_parser,
                                               doc_ops=doc_ops,
@@ -21,21 +28,21 @@ def prepare_data_pipelines(text_parser, doc_ops, terms_per_context):
                                                   PredefinedTextOpinionAnnotator(doc_ops),
                                                   train_neut_annot
                                               ],
-                                              terms_per_context=terms_per_context),
+                                              text_opinion_filters=text_opinion_filters),
         DataType.Test: create_test_pipeline(text_parser=text_parser,
                                             doc_ops=doc_ops,
                                             annotators=[
                                                 test_neut_annot
                                             ],
-                                            terms_per_context=terms_per_context),
+                                            text_opinion_filters=text_opinion_filters),
         DataType.Etalon: create_etalon_pipeline(text_parser=text_parser,
                                                 doc_ops=doc_ops,
-                                                terms_per_context=terms_per_context),
+                                                text_opinion_filters=text_opinion_filters),
         DataType.Dev: create_etalon_with_no_label_pipeline(text_parser=text_parser,
                                                            doc_ops=doc_ops,
                                                            annotators=[
                                                                PredefinedTextOpinionAnnotator(doc_ops),
                                                                train_neut_annot
                                                            ],
-                                                           terms_per_context=terms_per_context)
+                                                           text_opinion_filters=text_opinion_filters)
     }

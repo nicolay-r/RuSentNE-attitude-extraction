@@ -9,8 +9,6 @@ from arekit.common.synonyms.grouping import SynonymsCollectionValuesGroupingProv
 from arekit.contrib.utils.processing.lemmatization.mystem import MystemWrapper
 from arekit.contrib.utils.synonyms.stemmer_based import StemmerBasedSynonymCollection
 
-from entity.filter import CollectionEntityFilter
-
 
 def create_neutral_annotator(terms_per_context):
     """ Default annotator, based on:
