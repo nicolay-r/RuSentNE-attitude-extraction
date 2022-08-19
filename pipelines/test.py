@@ -1,27 +1,21 @@
 from arekit.common.experiment.api.ops_doc import DocumentOperations
-from arekit.common.opinions.annot.base import BaseOpinionAnnotator
-from arekit.common.synonyms.base import SynonymsCollection
-from arekit.common.synonyms.grouping import SynonymsCollectionValuesGroupingProviders
 from arekit.common.text.parser import BaseTextParser
-from arekit.contrib.utils.pipelines.annot.base import attitude_extraction_default_pipeline
+from entity.filter import CollectionEntityFilter
+from pipelines.train import text_opinion_extraction_pipeline
 
 
-def create_test_pipeline(text_parser, doc_ops, annotator, synonyms, terms_per_context):
+def create_test_pipeline(text_parser, doc_ops, annotators, terms_per_context):
     """ This is a pipeline for TEST data annotation.
         We perform annotation of the attitudes.
     """
     assert(isinstance(text_parser, BaseTextParser))
-    assert(isinstance(annotator, BaseOpinionAnnotator))
+    assert(isinstance(annotators, list))
     assert(isinstance(doc_ops, DocumentOperations))
-    assert(isinstance(synonyms, SynonymsCollection))
     assert(isinstance(terms_per_context, int))
 
-    return attitude_extraction_default_pipeline(
-        annotator=annotator,
-        get_doc_func=lambda doc_id: doc_ops.get_doc(doc_id),
+    return text_opinion_extraction_pipeline(
+        annotators=annotators,
         text_parser=text_parser,
-        value_to_group_id_func=lambda value:
-            SynonymsCollectionValuesGroupingProviders.provide_existed_or_register_missed_value(
-                synonyms=synonyms, value=value),
+        get_doc_func=lambda doc_id: doc_ops.get_doc(doc_id),
         terms_per_context=terms_per_context,
-        entity_index_func=lambda brat_entity: brat_entity.ID)
+        entity_filter=CollectionEntityFilter())

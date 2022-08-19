@@ -32,7 +32,7 @@ from labels.formatter import PosNegNeuRelationsLabelFormatter
 from labels.scaler import PosNegNeuRelationsLabelScaler
 from models.bert.serialize import serialize_bert, CroppedBertSampleRowProvider
 from models.nn.serialize import serialize_nn
-from pipelines.train import text_opinions_to_opinion_linkages_pipeline
+from pipelines.train import text_opinion_extraction_pipeline
 from writers.opennre_json import OpenNREJsonWriter
 
 
@@ -186,7 +186,7 @@ class TestRuAttitudes(unittest.TestCase):
 
         doc_ops = DictionaryBasedDocumentOperations(ru_attitudes)
 
-        pipeline = text_opinions_to_opinion_linkages_pipeline(
+        pipeline = text_opinion_extraction_pipeline(
             terms_per_context=terms_per_context,
             get_doc_func=lambda doc_id: doc_ops.get_doc(doc_id),
             text_parser=text_parser,
