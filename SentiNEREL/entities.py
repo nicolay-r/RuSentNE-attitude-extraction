@@ -1,10 +1,11 @@
 from arekit.common.entities.collection import EntityCollection
-from arekit.common.synonyms.base import SynonymsCollection
 from arekit.common.synonyms.grouping import SynonymsCollectionValuesGroupingProviders
 from arekit.contrib.source.brat.annot import BratAnnotationParser
 from arekit.contrib.source.brat.entities.entity import BratEntity
+from arekit.contrib.utils.processing.lemmatization.mystem import MystemWrapper
+from arekit.contrib.utils.synonyms.stemmer_based import StemmerBasedSynonymCollection
 
-from collection.io_utils import CollectionIOUtils, CollectionVersions
+from SentiNEREL.io_utils import CollectionIOUtils
 
 
 class CollectionEntityCollection(EntityCollection):
@@ -36,9 +37,15 @@ class CollectionEntityCollection(EntityCollection):
         return entity.Type not in self.__dicard_entities
 
     @classmethod
-    def read_collection(cls, filename, synonyms, version=CollectionVersions.NO):
+    def read_collection(cls, filename, version):
         assert(isinstance(filename, str))
-        assert(isinstance(synonyms, SynonymsCollection))
+
+        # Since this dataset does not provide the synonyms collection by default,
+        # it is necessary to declare an empty collection to populate so in further.
+        synonyms = StemmerBasedSynonymCollection(iter_group_values_lists=[],
+                                                 stemmer=MystemWrapper(),
+                                                 is_read_only=False,
+                                                 debug=False)
 
         return CollectionIOUtils.read_from_zip(
             inner_path=CollectionIOUtils.get_annotation_innerpath(filename),

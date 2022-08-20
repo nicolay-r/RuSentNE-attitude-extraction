@@ -7,8 +7,7 @@ class CollectionOpinionConverter(object):
 
     @staticmethod
     def to_text_opinion(brat_relation, doc_id, label_formatter):
-        """
-        Converts opinion into document-level referenced opinion
+        """ Converts opinion into document-level referenced opinion
         """
         assert (isinstance(brat_relation, BratRelation))
         assert(isinstance(label_formatter, StringLabelsFormatter))

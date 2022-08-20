@@ -13,7 +13,7 @@ from arekit.contrib.source.brat.entities.parser import BratTextEntitiesParser
 from arekit.contrib.utils.io_utils.samples import SamplesIO
 from arekit.contrib.utils.pipelines.items.text.tokenizer import DefaultTextTokenizer
 
-from collection.doc_ops import CollectionDocOperation
+from SentiNEREL.doc_ops import CollectionDocOperation
 from folding.factory import FoldingFactory
 from labels.formatter import SentimentLabelFormatter
 from pipelines.collection import prepare_data_pipelines

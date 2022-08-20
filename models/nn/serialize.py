@@ -19,7 +19,7 @@ from arekit.contrib.utils.resources import load_embedding_news_mystem_skipgram_1
 from arekit.contrib.utils.vectorizers.bpe import BPEVectorizer
 from arekit.contrib.utils.vectorizers.random_norm import RandomNormalVectorizer
 
-from collection.doc_ops import CollectionDocOperation
+from SentiNEREL.doc_ops import CollectionDocOperation
 from entity.formatter import CustomEntitiesFormatter
 from folding.factory import FoldingFactory
 from labels.formatter import SentimentLabelFormatter

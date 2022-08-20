@@ -3,15 +3,13 @@ from arekit.common.labels.str_fmt import StringLabelsFormatter
 from arekit.contrib.source.brat.annot import BratAnnotationParser
 from arekit.contrib.source.brat.news import BratNews
 from arekit.contrib.source.brat.sentences_reader import BratDocumentSentencesReader
-from arekit.contrib.utils.processing.lemmatization.mystem import MystemWrapper
-from arekit.contrib.utils.synonyms.stemmer_based import StemmerBasedSynonymCollection
 
-from collection.entities import CollectionEntityCollection
-from collection.io_utils import CollectionIOUtils, CollectionVersions
-from collection.opinions.converter import CollectionOpinionConverter
+from SentiNEREL.entities import CollectionEntityCollection
+from SentiNEREL.io_utils import CollectionIOUtils, CollectionVersions
+from SentiNEREL.opinions.converter import CollectionOpinionConverter
 
 
-class CollectionNewsReader(object):
+class SentiNERELDocReader(object):
 
     @staticmethod
     def read_text_opinions(filename, doc_id, entities, version, label_formatter, keep_any_type):
@@ -42,15 +40,9 @@ class CollectionNewsReader(object):
                             sentences=sentences,
                             text_opinions=opinions)
 
-        synonyms = StemmerBasedSynonymCollection(iter_group_values_lists=[],
-                                                 stemmer=MystemWrapper(),
-                                                 is_read_only=False,
-                                                 debug=False)
+        entities = CollectionEntityCollection.read_collection(filename=filename, version=CollectionVersions.NO)
 
-        entities = CollectionEntityCollection.read_collection(
-            filename=filename, synonyms=synonyms, version=CollectionVersions.NO)
-
-        opinions = CollectionNewsReader.read_text_opinions(
+        opinions = SentiNERELDocReader.read_text_opinions(
             doc_id=doc_id,
             filename=filename,
             entities=entities,
