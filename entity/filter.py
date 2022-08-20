@@ -1,16 +1,8 @@
 from arekit.common.entities.base import Entity
 from arekit.common.entities.types import OpinionEntityType
+from arekit.contrib.utils.entities.filter import EntityFilter
 
 from entity.helper import EntityHelper
-
-
-class EntityFilter(object):
-
-    def __init__(self):
-        pass
-
-    def is_ignored(self, entity, e_type):
-        raise NotImplementedError()
 
 
 class CollectionEntityFilter(EntityFilter):
