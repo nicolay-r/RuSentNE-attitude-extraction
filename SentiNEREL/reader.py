@@ -38,11 +38,11 @@ class SentiNERELDocReader(object):
             sentences = BratDocumentSentencesReader.from_file(input_file=input_file, entities=entities)
             return BratNews(doc_id=doc_id,
                             sentences=sentences,
-                            text_opinions=opinions)
+                            text_opinions=text_opinions)
 
         entities = CollectionEntityCollection.read_collection(filename=filename, version=CollectionVersions.NO)
 
-        opinions = SentiNERELDocReader.read_text_opinions(
+        text_opinions = SentiNERELDocReader.read_text_opinions(
             doc_id=doc_id,
             filename=filename,
             entities=entities,
