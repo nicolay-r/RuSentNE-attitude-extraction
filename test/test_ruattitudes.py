@@ -4,63 +4,27 @@ from arekit.common.data.input.writers.tsv import TsvWriter
 from arekit.common.entities.base import Entity
 from arekit.common.entities.str_fmt import StringEntitiesFormatter
 from arekit.common.entities.types import OpinionEntityType
-from arekit.common.experiment.api.ops_doc import DocumentOperations
 from arekit.common.experiment.data_type import DataType
 from arekit.common.folding.nofold import NoFolding
 from arekit.common.frames.variants.collection import FrameVariantsCollection
-from arekit.common.labels.scaler.base import BaseLabelScaler
 from arekit.common.text.parser import BaseTextParser
-from arekit.common.utils import progress_bar_iter
 from arekit.contrib.bert.terms.mapper import BertDefaultStringTextTermsMapper
-from arekit.contrib.source.ruattitudes.collection import RuAttitudesCollection
 from arekit.contrib.source.ruattitudes.entity.parser import RuAttitudesTextEntitiesParser
-from arekit.contrib.source.ruattitudes.io_utils import RuAttitudesVersions
-from arekit.contrib.source.ruattitudes.news import RuAttitudesNews
-from arekit.contrib.source.ruattitudes.news_brat import RuAttitudesNewsConverter
 from arekit.contrib.source.rusentiframes.collection import RuSentiFramesCollection
 from arekit.contrib.source.rusentiframes.labels_fmt import RuSentiFramesLabelsFormatter
 from arekit.contrib.source.rusentiframes.types import RuSentiFramesVersions
 from arekit.contrib.utils.bert.text_b_rus import BertTextBTemplates
 from arekit.contrib.utils.pipelines.items.text.frames_lemmatized import LemmasBasedFrameVariantsParser
 from arekit.contrib.utils.pipelines.items.text.tokenizer import DefaultTextTokenizer
-from arekit.contrib.utils.pipelines.text_opinion.annot.predefined import PredefinedTextOpinionAnnotator
-from arekit.contrib.utils.pipelines.text_opinion.filters.distance_based import DistanceLimitedTextOpinionFilter
-from arekit.contrib.utils.pipelines.text_opinion.filters.entity_based import EntityBasedTextOpinionFilter
+from arekit.contrib.utils.pipelines.sources.ruattitudes.extract_text_opinions import \
+    create_text_opinion_extraction_pipeline
 from arekit.contrib.utils.processing.lemmatization.mystem import MystemWrapper
 
-from entity.filter import EntityFilter
 from labels.formatter import PosNegNeuRelationsLabelFormatter
 from labels.scaler import PosNegNeuRelationsLabelScaler
 from models.bert.serialize import serialize_bert, CroppedBertSampleRowProvider
 from models.nn.serialize import serialize_nn
-from pipelines.train import text_opinion_extraction_pipeline
 from writers.opennre_json import OpenNREJsonWriter
-
-
-class DictionaryBasedDocumentOperations(DocumentOperations):
-
-    def __init__(self, ru_attitudes):
-        assert(isinstance(ru_attitudes, dict))
-        super(DictionaryBasedDocumentOperations, self).__init__()
-        self.__ru_attitudes = ru_attitudes
-
-    def get_doc(self, doc_id):
-        assert(isinstance(doc_id, int))
-        return self.__ru_attitudes[doc_id]
-
-
-class RuAttitudesEntityFilter(EntityFilter):
-
-    supported = ["GPE", "PERSON", "LOCAL", "GEO", "ORG"]
-
-    def is_ignored(self, entity, e_type):
-
-        if e_type == OpinionEntityType.Subject:
-            return entity.Type not in RuAttitudesEntityFilter.supported
-        if e_type == OpinionEntityType.Object:
-            return entity.Type not in RuAttitudesEntityFilter.supported
-        else:
-            return True
 
 
 class RuAttitudesEntitiesFormatter(StringEntitiesFormatter):
@@ -100,103 +64,13 @@ class TestRuAttitudes(unittest.TestCase):
         TODO. This test could be moved into AREkit. (#232)
     """
 
-    @staticmethod
-    def __iter_id_with_news(docs_it, keep_doc_ids_only):
-        if keep_doc_ids_only:
-            for doc_id in docs_it:
-                yield doc_id, None
-        else:
-            for news in docs_it:
-                assert (isinstance(news, RuAttitudesNews))
-                yield news.ID, news
-
-    @staticmethod
-    def read_ruattitudes_to_brat_in_memory(version, keep_doc_ids_only, doc_id_func, label_scaler, limit=None):
-        """ Performs reading of RuAttitude formatted documents and
-            selection according to 'doc_ids_set' parameter.
-        """
-        assert (isinstance(version, RuAttitudesVersions))
-        assert (isinstance(keep_doc_ids_only, bool))
-        assert (callable(doc_id_func))
-
-        it = RuAttitudesCollection.iter_news(version=version,
-                                             get_news_index_func=doc_id_func,
-                                             return_inds_only=keep_doc_ids_only)
-
-        it_formatted_and_logged = progress_bar_iter(
-            iterable=TestRuAttitudes.__iter_id_with_news(docs_it=it, keep_doc_ids_only=keep_doc_ids_only),
-            desc="Loading RuAttitudes Collection [{}]".format("doc ids only" if keep_doc_ids_only else "fully"),
-            unit='docs')
-
-        d = {}
-        docs_read = 0
-        for doc_id, news in it_formatted_and_logged:
-            assert(isinstance(news, RuAttitudesNews))
-            d[doc_id] = RuAttitudesNewsConverter.to_brat_news(news, label_scaler=label_scaler)
-            docs_read += 1
-            if limit is not None and docs_read >= limit:
-                break
-
-        return d
-
-    @staticmethod
-    def __create_pipeline(text_parser,
-                          label_scaler,
-                          version=RuAttitudesVersions.V20Large,
-                          terms_per_context=50,
-                          entity_filter=RuAttitudesEntityFilter(),
-                          limit=None):
-        """ Processing pipeline for RuAttitudes.
-            This pipeline is based on the in-memory RuAttitudes storage.
-
-            Original collection paper:  www.aclweb.org/anthology/r19-1118/
-            Github repository:          https://github.com/nicolay-r/RuAttitudes
-
-            version: enum
-                Version of the RuAttitudes collection.
-                NOTE: we consider to support a variations of the 2.0 versions.
-            label_scaler:
-                Scaler that allows to perform conversion from integer labels (RuAttitudes) to
-                the actual `Label` instances, required in further for text_opinions instances.
-            terms_per_context: int
-                Amount of terms that we consider in between the Object and Subject.
-            entity_filter:
-                Entity filter
-            limit: int or None
-                Limit of documents to consider.
-        """
-        assert(isinstance(label_scaler, BaseLabelScaler))
-        assert(isinstance(version, RuAttitudesVersions))
-
-        ru_attitudes = TestRuAttitudes.read_ruattitudes_to_brat_in_memory(
-            version=version,
-            doc_id_func=lambda doc_id: doc_id,
-            keep_doc_ids_only=False,
-            label_scaler=label_scaler,
-            limit=limit)
-
-        doc_ops = DictionaryBasedDocumentOperations(ru_attitudes)
-
-        pipeline = text_opinion_extraction_pipeline(
-            annotators=[
-                PredefinedTextOpinionAnnotator(doc_ops)
-            ],
-            text_opinion_filters=[
-                EntityBasedTextOpinionFilter(entity_filter=entity_filter),
-                DistanceLimitedTextOpinionFilter(terms_per_context)
-            ],
-            get_doc_func=lambda doc_id: doc_ops.get_doc(doc_id),
-            text_parser=text_parser)
-
-        return pipeline, ru_attitudes
-
     def __test_serialize_bert(self, writer):
 
         text_parser = BaseTextParser(pipeline=[RuAttitudesTextEntitiesParser(),
                                                DefaultTextTokenizer()])
 
-        pipeline, ru_attitudes = self.__create_pipeline(text_parser=text_parser,
-                                                        label_scaler=PosNegNeuRelationsLabelScaler())
+        pipeline, ru_attitudes = create_text_opinion_extraction_pipeline(
+            text_parser=text_parser, label_scaler=PosNegNeuRelationsLabelScaler())
 
         data_folding = NoFolding(doc_ids_to_fold=ru_attitudes.keys(),
                                  supported_data_types=[DataType.Train])
@@ -237,8 +111,8 @@ class TestRuAttitudes(unittest.TestCase):
                                                    frame_variants=frame_variant_collection,
                                                    stemmer=stemmer)])
 
-        pipeline, ru_attitudes = self.__create_pipeline(text_parser=text_parser,
-                                                        label_scaler=PosNegNeuRelationsLabelScaler())
+        pipeline, ru_attitudes = create_text_opinion_extraction_pipeline(
+            text_parser=text_parser, label_scaler=PosNegNeuRelationsLabelScaler())
 
         data_folding = NoFolding(doc_ids_to_fold=ru_attitudes.keys(),
                                  supported_data_types=[DataType.Train])
