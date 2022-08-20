@@ -11,7 +11,6 @@ from arekit.common.frames.variants.collection import FrameVariantsCollection
 from arekit.common.labels.base import NoLabel
 from arekit.common.labels.provider.constant import ConstantLabelProvider
 from arekit.common.opinions.annot.algo.pair_based import PairBasedOpinionAnnotationAlgorithm
-from arekit.common.opinions.annot.algo_based import AlgorithmBasedOpinionAnnotator
 from arekit.common.opinions.collection import OpinionCollection
 from arekit.common.synonyms.base import SynonymsCollection
 from arekit.common.synonyms.grouping import SynonymsCollectionValuesGroupingProviders
@@ -31,7 +30,6 @@ from arekit.contrib.utils.pipelines.text_opinion.annot.algo_based import Algorit
 from arekit.contrib.utils.pipelines.text_opinion.annot.predefined import PredefinedTextOpinionAnnotator
 from arekit.contrib.utils.pipelines.text_opinion.extraction import text_opinion_extraction_pipeline
 from arekit.contrib.utils.pipelines.text_opinion.filters.distance_based import DistanceLimitedTextOpinionFilter
-from arekit.contrib.utils.pipelines.text_opinion.filters.entity_based import EntityBasedTextOpinionFilter
 from arekit.contrib.utils.processing.lemmatization.mystem import MystemWrapper
 from arekit.contrib.utils.synonyms.stemmer_based import StemmerBasedSynonymCollection
 
