@@ -4,11 +4,9 @@ from arekit.common.data.input.writers.tsv import TsvWriter
 from arekit.common.entities.base import Entity
 from arekit.common.entities.str_fmt import StringEntitiesFormatter
 from arekit.common.entities.types import OpinionEntityType
-from arekit.common.experiment.api.ops_doc import DocumentOperations
 from arekit.common.experiment.data_type import DataType
 from arekit.common.folding.nofold import NoFolding
 from arekit.common.frames.variants.collection import FrameVariantsCollection
-from arekit.common.synonyms.base import SynonymsCollection
 from arekit.common.text.parser import BaseTextParser
 from arekit.contrib.bert.terms.mapper import BertDefaultStringTextTermsMapper
 from arekit.contrib.source.brat.entities.parser import BratTextEntitiesParser
@@ -16,7 +14,6 @@ from arekit.contrib.source.rusentiframes.collection import RuSentiFramesCollecti
 from arekit.contrib.source.rusentiframes.labels_fmt import RuSentiFramesLabelsFormatter
 from arekit.contrib.source.rusentiframes.types import RuSentiFramesVersions
 from arekit.contrib.source.rusentrel.io_utils import RuSentRelVersions, RuSentRelIOUtils
-from arekit.contrib.source.rusentrel.news_reader import RuSentRelNewsReader
 from arekit.contrib.utils.bert.text_b_rus import BertTextBTemplates
 from arekit.contrib.utils.pipelines.items.text.frames_lemmatized import LemmasBasedFrameVariantsParser
 from arekit.contrib.utils.pipelines.items.text.tokenizer import DefaultTextTokenizer
@@ -29,22 +26,6 @@ from labels.scaler import PosNegNeuRelationsLabelScaler
 from models.bert.serialize import serialize_bert, CroppedBertSampleRowProvider
 from models.nn.serialize import serialize_nn
 from writers.opennre_json import OpenNREJsonWriter
-
-
-class RuSentrelDocumentOperations(DocumentOperations):
-    """ Limitations: Supported only train/test collections format
-    """
-
-    def __init__(self, version, synonyms):
-        assert(isinstance(version, RuSentRelVersions))
-        assert(isinstance(synonyms, SynonymsCollection))
-        super(RuSentrelDocumentOperations, self).__init__()
-        self.__version = version
-        self.__synonyms = synonyms
-
-    def get_doc(self, doc_id):
-        assert (isinstance(doc_id, int))
-        return RuSentRelNewsReader.read_document(doc_id=doc_id, synonyms=self.__synonyms, version=self.__version)
 
 
 class RuSentRelEntitiesFormatter(StringEntitiesFormatter):
