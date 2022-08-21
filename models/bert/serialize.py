@@ -142,6 +142,7 @@ def serialize_bert(split_filepath, terms_per_context, writer, sample_row_provide
                                                DefaultTextTokenizer()])
         data_type_pipelines = prepare_data_pipelines(text_parser=text_parser,
                                                      doc_ops=doc_ops,
+                                                     label_formatter=SentimentLabelFormatter(),
                                                      terms_per_context=terms_per_context)
 
     pipeline.run(input_data=None,

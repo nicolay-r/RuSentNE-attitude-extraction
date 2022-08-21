@@ -105,6 +105,7 @@ def serialize_nn(output_dir, split_filepath, writer, folding_type="fixed",
 
         data_type_pipelines = prepare_data_pipelines(text_parser=text_parser,
                                                      doc_ops=doc_ops,
+                                                     label_formatter=SentimentLabelFormatter(),
                                                      terms_per_context=terms_per_context)
 
     ppl = BasePipeline([pipeline_item])

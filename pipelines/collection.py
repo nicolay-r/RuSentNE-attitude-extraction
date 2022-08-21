@@ -10,7 +10,7 @@ from pipelines.test import create_test_pipeline
 from pipelines.train import create_train_pipeline
 
 
-def prepare_data_pipelines(text_parser, doc_ops, terms_per_context):
+def prepare_data_pipelines(text_parser, doc_ops, label_formatter, terms_per_context):
     """ Создаем словарь из pipelines для каждого типа данных.
     """
 
@@ -22,11 +22,13 @@ def prepare_data_pipelines(text_parser, doc_ops, terms_per_context):
         DistanceLimitedTextOpinionFilter(terms_per_context)
     ]
 
+    predefined_annot = PredefinedTextOpinionAnnotator(doc_ops, label_formatter)
+
     return {
         DataType.Train: create_train_pipeline(text_parser=text_parser,
                                               doc_ops=doc_ops,
                                               annotators=[
-                                                  PredefinedTextOpinionAnnotator(doc_ops),
+                                                  predefined_annot,
                                                   train_neut_annot
                                               ],
                                               text_opinion_filters=text_opinion_filters),
@@ -38,11 +40,12 @@ def prepare_data_pipelines(text_parser, doc_ops, terms_per_context):
                                             text_opinion_filters=text_opinion_filters),
         DataType.Etalon: create_etalon_pipeline(text_parser=text_parser,
                                                 doc_ops=doc_ops,
+                                                predefined_annot=predefined_annot,
                                                 text_opinion_filters=text_opinion_filters),
         DataType.Dev: create_etalon_with_no_label_pipeline(text_parser=text_parser,
                                                            doc_ops=doc_ops,
                                                            annotators=[
-                                                               PredefinedTextOpinionAnnotator(doc_ops),
+                                                               predefined_annot,
                                                                train_neut_annot
                                                            ],
                                                            text_opinion_filters=text_opinion_filters)

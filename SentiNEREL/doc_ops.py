@@ -17,7 +17,4 @@ class CollectionDocOperation(DocumentOperations):
         self.__filename_by_id = filename_by_id
 
     def get_doc(self, doc_id):
-        return SentiNERELDocReader.read_document(doc_id=doc_id,
-                                                 filename=self.__filename_by_id[doc_id],
-                                                 label_formatter=self.__label_formatter,
-                                                 keep_any_opinion=False)
+        return SentiNERELDocReader.read_document(doc_id=doc_id, filename=self.__filename_by_id[doc_id])
