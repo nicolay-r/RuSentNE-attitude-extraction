@@ -9,9 +9,8 @@ from SentiNEREL.io_utils import CollectionIOUtils, CollectionVersions
 class SentiNERELDocReader(object):
 
     @staticmethod
-    def read_text_relations(filename, doc_id, version):
+    def read_text_relations(filename, version):
         assert(isinstance(filename, str))
-        assert(isinstance(doc_id, int))
 
         return CollectionIOUtils.read_from_zip(
             inner_path=CollectionIOUtils.get_annotation_innerpath(filename),
@@ -30,8 +29,7 @@ class SentiNERELDocReader(object):
             return BratNews(doc_id=doc_id, sentences=sentences, text_relations=text_relations)
 
         entities = CollectionEntityCollection.read_collection(filename=filename, version=CollectionVersions.NO)
-        text_relations = SentiNERELDocReader.read_text_relations(
-            doc_id=doc_id, filename=filename, version=CollectionVersions.NO)
+        text_relations = SentiNERELDocReader.read_text_relations(filename=filename, version=CollectionVersions.NO)
 
         return CollectionIOUtils.read_from_zip(
             inner_path=CollectionIOUtils.get_news_innerpath(filename=filename),
