@@ -1,4 +1,3 @@
-from arekit.common.entities.collection import EntityCollection
 from arekit.contrib.source.brat.annot import BratAnnotationParser
 from arekit.contrib.source.brat.news import BratNews
 from arekit.contrib.source.brat.sentences_reader import BratDocumentSentencesReader
@@ -10,9 +9,8 @@ from SentiNEREL.io_utils import CollectionIOUtils, CollectionVersions
 class SentiNERELDocReader(object):
 
     @staticmethod
-    def read_text_relations(filename, doc_id, entities, version):
+    def read_text_relations(filename, doc_id, version):
         assert(isinstance(filename, str))
-        assert(isinstance(entities, EntityCollection))
         assert(isinstance(doc_id, int))
 
         return CollectionIOUtils.read_from_zip(
@@ -33,7 +31,7 @@ class SentiNERELDocReader(object):
 
         entities = CollectionEntityCollection.read_collection(filename=filename, version=CollectionVersions.NO)
         text_relations = SentiNERELDocReader.read_text_relations(
-            doc_id=doc_id, filename=filename, entities=entities, version=CollectionVersions.NO)
+            doc_id=doc_id, filename=filename, version=CollectionVersions.NO)
 
         return CollectionIOUtils.read_from_zip(
             inner_path=CollectionIOUtils.get_news_innerpath(filename=filename),
