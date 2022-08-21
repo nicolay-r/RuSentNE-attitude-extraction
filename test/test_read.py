@@ -1,6 +1,6 @@
 import unittest
-from arekit.common.text_opinions.base import TextOpinion
 from arekit.contrib.source.brat.news import BratNews
+from arekit.contrib.source.brat.relation import BratRelation
 from arekit.contrib.source.brat.sentence import BratSentence
 
 from SentiNEREL.reader import SentiNERELDocReader
@@ -23,8 +23,8 @@ class TestRead(unittest.TestCase):
         print()
 
         for brat_relation in news.Relations:
-            assert(isinstance(brat_relation, TextOpinion))
-            print(brat_relation.SourceId, brat_relation.TargetId, str(type(brat_relation.Sentiment)))
+            assert(isinstance(brat_relation, BratRelation))
+            print(brat_relation.SourceID, brat_relation.TargetID, brat_relation.Type)
 
 
 if __name__ == '__main__':
