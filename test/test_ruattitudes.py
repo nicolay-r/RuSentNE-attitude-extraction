@@ -48,7 +48,8 @@ class RuAttitudesEntitiesFormatter(StringEntitiesFormatter):
         assert(isinstance(entity_type, OpinionEntityType))
 
         if entity_type == OpinionEntityType.Other:
-            return RuAttitudesEntitiesFormatter.type_formatter[original_value.Type]
+            return self.type_formatter[original_value.Type] \
+                if original_value.Type in self.type_formatter else original_value.Value
         elif entity_type == OpinionEntityType.Object or entity_type == OpinionEntityType.SynonymObject:
             return self.__object_fmt
         elif entity_type == OpinionEntityType.Subject or entity_type == OpinionEntityType.SynonymSubject:
