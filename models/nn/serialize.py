@@ -10,7 +10,7 @@ from arekit.contrib.source.rusentiframes.collection import RuSentiFramesCollecti
 from arekit.contrib.source.rusentiframes.labels_fmt import RuSentiFramesLabelsFormatter, \
     RuSentiFramesEffectLabelsFormatter
 from arekit.contrib.source.rusentiframes.types import RuSentiFramesVersions
-from arekit.contrib.utils.io_utils.embedding import NpzEmbeddingIO
+from arekit.contrib.utils.io_utils.embedding import NpEmbeddingIO
 from arekit.contrib.utils.io_utils.samples import SamplesIO
 from arekit.contrib.utils.pipelines.items.text.frames_lemmatized import LemmasBasedFrameVariantsParser
 from arekit.contrib.utils.pipelines.items.text.tokenizer import DefaultTextTokenizer
@@ -79,7 +79,7 @@ def serialize_nn(output_dir, split_filepath, writer, folding_type="fixed",
         samples_io=SamplesIO(target_dir=output_dir,
                              writer=writer,
                              target_extension=create_writer_extension(writer)),
-        emb_io=NpzEmbeddingIO(target_dir=output_dir),
+        emb_io=NpEmbeddingIO(target_dir=output_dir),
         str_entity_fmt=entities_fmt,
         balance_func=lambda data_type: data_type == DataType.Train,
         save_labels_func=lambda data_type: data_type != DataType.Test,

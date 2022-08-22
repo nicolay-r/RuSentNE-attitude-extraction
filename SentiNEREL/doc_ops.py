@@ -1,6 +1,5 @@
 from arekit.common.experiment.api.ops_doc import DocumentOperations
-
-from SentiNEREL.reader import SentiNERELDocReader
+from arekit.contrib.source.sentinerel.reader import SentiNerelDocReader
 
 
 class CollectionDocOperation(DocumentOperations):
@@ -17,4 +16,4 @@ class CollectionDocOperation(DocumentOperations):
         self.__filename_by_id = filename_by_id
 
     def get_doc(self, doc_id):
-        return SentiNERELDocReader.read_document(doc_id=doc_id, filename=self.__filename_by_id[doc_id])
+        return SentiNerelDocReader.read_document(doc_id=doc_id, filename=self.__filename_by_id[doc_id])

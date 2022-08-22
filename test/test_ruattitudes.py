@@ -11,7 +11,8 @@ from arekit.common.text.parser import BaseTextParser
 from arekit.contrib.bert.terms.mapper import BertDefaultStringTextTermsMapper
 from arekit.contrib.source.ruattitudes.entity.parser import RuAttitudesTextEntitiesParser
 from arekit.contrib.source.rusentiframes.collection import RuSentiFramesCollection
-from arekit.contrib.source.rusentiframes.labels_fmt import RuSentiFramesLabelsFormatter
+from arekit.contrib.source.rusentiframes.labels_fmt import RuSentiFramesLabelsFormatter, \
+    RuSentiFramesEffectLabelsFormatter
 from arekit.contrib.source.rusentiframes.types import RuSentiFramesVersions
 from arekit.contrib.utils.bert.text_b_rus import BertTextBTemplates
 from arekit.contrib.utils.pipelines.items.text.frames_lemmatized import LemmasBasedFrameVariantsParser
@@ -22,6 +23,7 @@ from arekit.contrib.utils.processing.lemmatization.mystem import MystemWrapper
 
 from labels.formatter import PosNegNeuRelationsLabelFormatter
 from labels.scaler import PosNegNeuRelationsLabelScaler
+from labels.types import PositiveTo, NegativeTo
 from models.bert.serialize import serialize_bert, CroppedBertSampleRowProvider
 from models.nn.serialize import serialize_nn
 from writers.opennre_json import OpenNREJsonWriter
@@ -99,7 +101,8 @@ class TestRuAttitudes(unittest.TestCase):
         stemmer = MystemWrapper()
         frames_collection = RuSentiFramesCollection.read_collection(
             version=RuSentiFramesVersions.V20,
-            labels_fmt=RuSentiFramesLabelsFormatter())
+            labels_fmt=RuSentiFramesLabelsFormatter(pos_label_type=PositiveTo, neg_label_type=NegativeTo),
+            effect_labels_fmt=RuSentiFramesEffectLabelsFormatter(pos_label_type=PositiveTo, neg_label_type=NegativeTo))
         frame_variant_collection = FrameVariantsCollection()
         frame_variant_collection.fill_from_iterable(
             variants_with_id=frames_collection.iter_frame_id_and_variants(),
