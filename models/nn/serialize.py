@@ -7,7 +7,8 @@ from arekit.contrib.networks.core.input.term_types import TermTypes
 from arekit.contrib.networks.pipelines.items.serializer import NetworksInputSerializerPipelineItem
 from arekit.contrib.source.brat.entities.parser import BratTextEntitiesParser
 from arekit.contrib.source.rusentiframes.collection import RuSentiFramesCollection
-from arekit.contrib.source.rusentiframes.labels_fmt import RuSentiFramesLabelsFormatter
+from arekit.contrib.source.rusentiframes.labels_fmt import RuSentiFramesLabelsFormatter, \
+    RuSentiFramesEffectLabelsFormatter
 from arekit.contrib.source.rusentiframes.types import RuSentiFramesVersions
 from arekit.contrib.utils.io_utils.embedding import NpzEmbeddingIO
 from arekit.contrib.utils.io_utils.samples import SamplesIO
@@ -24,6 +25,7 @@ from entity.formatter import CustomEntitiesFormatter
 from folding.factory import FoldingFactory
 from labels.formatter import SentimentLabelFormatter
 from labels.scaler import PosNegNeuRelationsLabelScaler
+from labels.types import PositiveTo, NegativeTo
 from models.nn.ctx import CustomNetworkSerializationContext
 from pipelines.collection import prepare_data_pipelines
 from writers.utils import create_writer_extension
@@ -48,7 +50,8 @@ def serialize_nn(output_dir, split_filepath, writer, folding_type="fixed",
     # Frames initialization
     frames_collection = RuSentiFramesCollection.read_collection(
         version=RuSentiFramesVersions.V20,
-        labels_fmt=RuSentiFramesLabelsFormatter())
+        labels_fmt=RuSentiFramesLabelsFormatter(pos_label_type=PositiveTo, neg_label_type=NegativeTo),
+        effect_labels_fmt=RuSentiFramesEffectLabelsFormatter(pos_label_type=PositiveTo, neg_label_type=NegativeTo))
     frame_variant_collection = FrameVariantsCollection()
     frame_variant_collection.fill_from_iterable(
         variants_with_id=frames_collection.iter_frame_id_and_variants(),

@@ -3,7 +3,6 @@ from collections import OrderedDict
 from arekit.common.labels.base import NoLabel
 from arekit.common.labels.scaler.base import BaseLabelScaler
 from arekit.common.labels.scaler.sentiment import SentimentLabelScaler
-from arekit.contrib.source.common.labels import NegativeLabel, PositiveLabel
 import labels.types as labels
 
 
@@ -58,12 +57,12 @@ class ThreeLabelScaler(SentimentLabelScaler):
     def __init__(self):
 
         uint_labels = [(NoLabel(), 0),
-                       (PositiveLabel(), 1),
-                       (NegativeLabel(), 2)]
+                       (labels.PositiveTo(), 1),
+                       (labels.NegativeTo(), 2)]
 
         int_labels = [(NoLabel(), 0),
-                      (PositiveLabel(), 1),
-                      (NegativeLabel(), -1)]
+                      (labels.PositiveTo(), 1),
+                      (labels.NegativeTo(), -1)]
 
         super(ThreeLabelScaler, self).__init__(uint_dict=OrderedDict(uint_labels),
                                                int_dict=OrderedDict(int_labels))
