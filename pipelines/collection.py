@@ -3,7 +3,7 @@ from arekit.contrib.utils.pipelines.text_opinion.annot.predefined import Predefi
 from arekit.contrib.utils.pipelines.text_opinion.filters.distance_based import DistanceLimitedTextOpinionFilter
 from arekit.contrib.utils.pipelines.text_opinion.filters.entity_based import EntityBasedTextOpinionFilter
 
-from annot import create_neutral_annotator
+from annot import create_nolabel_text_opinion_annotator
 from entity.filter import CollectionEntityFilter
 from pipelines.etalon import create_etalon_pipeline, create_etalon_with_no_label_pipeline
 from pipelines.test import create_test_pipeline
@@ -14,8 +14,8 @@ def prepare_data_pipelines(text_parser, doc_ops, label_formatter, terms_per_cont
     """ Создаем словарь из pipelines для каждого типа данных.
     """
 
-    train_neut_annot = create_neutral_annotator(terms_per_context)
-    test_neut_annot = create_neutral_annotator(terms_per_context)
+    train_neut_annot = create_nolabel_text_opinion_annotator(terms_per_context)
+    test_neut_annot = create_nolabel_text_opinion_annotator(terms_per_context)
 
     text_opinion_filters = [
         EntityBasedTextOpinionFilter(entity_filter=CollectionEntityFilter()),
