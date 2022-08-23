@@ -31,7 +31,7 @@ from arekit.contrib.utils.io_utils.embedding import NpEmbeddingIO
 from arekit.contrib.utils.io_utils.samples import SamplesIO
 from arekit.contrib.utils.processing.languages.ru.pos_service import PartOfSpeechTypesService
 
-from labels.scaler import PosNegNeuRelationsLabelScaler
+from SentiNEREL.labels.scaler import PosNegNeuRelationsLabelScaler
 
 
 class TensorflowNetworkInferencePipelineItem(BasePipelineItem):

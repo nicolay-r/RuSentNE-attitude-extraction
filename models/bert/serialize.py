@@ -13,11 +13,12 @@ from arekit.contrib.source.brat.entities.parser import BratTextEntitiesParser
 from arekit.contrib.utils.io_utils.samples import SamplesIO
 from arekit.contrib.utils.pipelines.items.text.tokenizer import DefaultTextTokenizer
 
-from SentiNEREL.doc_ops import CollectionDocOperation
 from folding.factory import FoldingFactory
-from labels.formatter import SentimentLabelFormatter
 from pipelines.collection import prepare_data_pipelines
 from writers.utils import create_writer_extension
+
+from SentiNEREL.doc_ops import CollectionDocOperation
+from SentiNEREL.labels.formatter import SentimentLabelFormatter
 
 
 class CroppedBertSampleRowProvider(BaseSampleRowProvider):

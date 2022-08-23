@@ -16,10 +16,9 @@ from arekit.contrib.utils.evaluation.iterators import DataPairsIterators
 from arekit.contrib.utils.synonyms.stemmer_based import StemmerBasedSynonymCollection
 from arekit.contrib.utils.processing.lemmatization.mystem import MystemWrapper
 
+from SentiNEREL.labels.scaler import PosNegNeuRelationsLabelScaler
 from evaluation.utils import row_to_context_opinion, row_to_opinion, \
     create_filter_labels_func, assign_labels, select_doc_ids, create_evaluator
-
-from labels.scaler import PosNegNeuRelationsLabelScaler
 
 
 def __extract_context_opinions_from_test(test_linked_view, label_scaler, default_label):

@@ -3,7 +3,7 @@ from arekit.contrib.source.rusentiframes.collection import RuSentiFramesCollecti
 from arekit.contrib.utils.connotations.rusentiframes_sentiment import RuSentiFramesConnotationProvider
 from arekit.contrib.utils.processing.pos.base import POSTagger
 
-from labels.scaler import ThreeLabelScaler
+from SentiNEREL.labels.scaler import ThreeLabelScaler
 
 
 class CustomNetworkSerializationContext(NetworkSerializationContext):

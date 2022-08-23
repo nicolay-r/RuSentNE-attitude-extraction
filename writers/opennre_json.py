@@ -22,8 +22,6 @@ class OpenNREJsonWriter(BaseWriter):
         During the dataset reading stage via OpenNRE, these linkages automaticaly groups into bags.
     """
 
-    BAG_TAG = "anno_relation_list"
-
     def __init__(self, text_columns_type="default", encoding="utf-8"):
         assert(isinstance(encoding, str))
         assert(isinstance(text_columns_type, str))

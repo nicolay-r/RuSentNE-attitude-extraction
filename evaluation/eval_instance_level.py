@@ -9,8 +9,8 @@ from arekit.common.evaluation.comparators.text_opinions import TextOpinionBasedC
 from arekit.common.evaluation.evaluators.modes import EvaluationModes
 from arekit.common.evaluation.pairs.single import SingleDocumentDataPairsToCompare
 
+from SentiNEREL.labels.scaler import PosNegNeuRelationsLabelScaler
 from evaluation.utils import assign_labels, row_to_context_opinion, create_evaluator, create_filter_labels_func
-from labels.scaler import PosNegNeuRelationsLabelScaler
 
 
 def extract_context_opinions_by_row_id(linked_view, label_scaler, no_label):

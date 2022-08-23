@@ -18,8 +18,7 @@ from arekit.contrib.utils.pipelines.items.text.frames_negation import FrameVaria
 from arekit.contrib.utils.pipelines.items.text.tokenizer import DefaultTextTokenizer
 from arekit.contrib.utils.processing.lemmatization.mystem import MystemWrapper
 
-from labels.types import NegativeTo, PositiveTo
-
+from SentiNEREL.labels.types import PositiveTo, NegativeTo
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)

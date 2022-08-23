@@ -6,7 +6,7 @@ from arekit.common.data.row_ids.multiple import MultipleIDProvider
 from arekit.common.data.storages.base import BaseRowsStorage
 from arekit.common.data.views.samples import LinkedSamplesStorageView
 
-from labels.scaler import PosNegNeuRelationsLabelScaler
+from SentiNEREL.labels.scaler import PosNegNeuRelationsLabelScaler
 
 
 def calculate_predicted_count_per_label(test_predict_filepath,

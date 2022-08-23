@@ -3,7 +3,7 @@ from arekit.common.folding.nofold import NoFolding
 from arekit.common.pipeline.base import BasePipeline
 from arekit.contrib.networks.core.predict.tsv_writer import TsvPredictWriter
 
-from labels.scaler import PosNegNeuRelationsLabelScaler
+from SentiNEREL.labels.scaler import PosNegNeuRelationsLabelScaler
 from models.bert.predict import BertInferencePipelineItem
 from models.bert.states import BERT_CONFIG_PATH, BERT_FINETUNED_CKPT_PATH, BERT_VOCAB_PATH, BERT_DO_LOWERCASE
 

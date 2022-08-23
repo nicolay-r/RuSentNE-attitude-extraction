@@ -10,9 +10,9 @@ from arekit.common.evaluation.evaluators.modes import EvaluationModes
 from arekit.common.utils import progress_bar_defined
 from arekit.contrib.utils.evaluation.iterators import DataPairsIterators
 
+from SentiNEREL.labels.scaler import PosNegNeuRelationsLabelScaler
 from evaluation.eval_instance_level import extract_context_opinions_by_row_id
 from evaluation.utils import assign_labels, select_doc_ids, create_filter_labels_func, create_evaluator
-from labels.scaler import PosNegNeuRelationsLabelScaler
 
 
 def __group_text_opinions_by_doc_id(linked_view):

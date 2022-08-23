@@ -4,7 +4,7 @@ from arekit.contrib.utils.evaluation.results.two_class_prf import TwoClassEvalPr
 
 from evaluation.eval_document_level import opinions_per_document_two_class_result_evaluation
 from evaluation.eval_instance_level import text_opinion_per_collection_result_evaluator
-from labels.scaler import PosNegNeuRelationsLabelScaler
+from SentiNEREL.labels.scaler import PosNegNeuRelationsLabelScaler
 
 
 class TestEval(unittest.TestCase):

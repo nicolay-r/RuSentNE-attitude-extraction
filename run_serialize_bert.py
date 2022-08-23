@@ -1,12 +1,12 @@
 from arekit.common.data.input.writers.tsv import TsvWriter
 from arekit.contrib.bert.terms.mapper import BertDefaultStringTextTermsMapper
 from arekit.contrib.utils.bert.text_b_rus import BertTextBTemplates
-
 from entity.formatter import CustomEntitiesFormatter
-from labels.formatter import PosNegNeuRelationsLabelFormatter
-from labels.scaler import PosNegNeuRelationsLabelScaler
 from models.bert.serialize import CroppedBertSampleRowProvider, serialize_bert
 from writers.opennre_json import OpenNREJsonWriter
+
+from SentiNEREL.labels.formatter import PosNegNeuRelationsLabelFormatter
+from SentiNEREL.labels.scaler import PosNegNeuRelationsLabelScaler
 
 
 def do(writer):

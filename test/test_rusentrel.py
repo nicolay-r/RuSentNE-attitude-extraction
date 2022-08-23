@@ -23,9 +23,9 @@ from arekit.contrib.utils.processing.lemmatization.mystem import MystemWrapper
 from arekit.contrib.utils.pipelines.sources.rusentrel.extract_text_opinions import \
     create_text_opinion_extraction_pipeline
 
-from labels.formatter import PosNegNeuRelationsLabelFormatter
-from labels.scaler import PosNegNeuRelationsLabelScaler
-from labels.types import PositiveTo, NegativeTo
+from SentiNEREL.labels.formatter import PosNegNeuRelationsLabelFormatter
+from SentiNEREL.labels.scaler import PosNegNeuRelationsLabelScaler
+from SentiNEREL.labels.types import PositiveTo, NegativeTo
 from models.bert.serialize import serialize_bert, CroppedBertSampleRowProvider
 from models.nn.serialize import serialize_nn
 from writers.opennre_json import OpenNREJsonWriter

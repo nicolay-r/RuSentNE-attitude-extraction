@@ -21,11 +21,11 @@ from arekit.contrib.utils.vectorizers.bpe import BPEVectorizer
 from arekit.contrib.utils.vectorizers.random_norm import RandomNormalVectorizer
 
 from SentiNEREL.doc_ops import CollectionDocOperation
+from SentiNEREL.labels.formatter import SentimentLabelFormatter
+from SentiNEREL.labels.scaler import PosNegNeuRelationsLabelScaler
+from SentiNEREL.labels.types import PositiveTo, NegativeTo
 from entity.formatter import CustomEntitiesFormatter
 from folding.factory import FoldingFactory
-from labels.formatter import SentimentLabelFormatter
-from labels.scaler import PosNegNeuRelationsLabelScaler
-from labels.types import PositiveTo, NegativeTo
 from models.nn.ctx import CustomNetworkSerializationContext
 from pipelines.collection import prepare_data_pipelines
 from writers.utils import create_writer_extension
