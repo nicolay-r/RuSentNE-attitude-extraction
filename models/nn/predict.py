@@ -27,7 +27,7 @@ from arekit.contrib.networks.enum_input_types import ModelInputType
 from arekit.contrib.networks.enum_name_types import ModelNames
 from arekit.contrib.networks.factory import create_network_and_network_config_funcs
 from arekit.contrib.networks.shapes import NetworkInputShapes
-from arekit.contrib.utils.io_utils.embedding import NpzEmbeddingIO
+from arekit.contrib.utils.io_utils.embedding import NpEmbeddingIO
 from arekit.contrib.utils.io_utils.samples import SamplesIO
 from arekit.contrib.utils.processing.languages.ru.pos_service import PartOfSpeechTypesService
 
@@ -170,7 +170,7 @@ def predict_nn(output_dir, embedding_dir, samples_dir, data_folding_name="fixed"
 
     input_data = {
         "samples_io": SamplesIO(target_dir=samples_dir),
-        "emb_io": NpzEmbeddingIO(target_dir=embedding_dir),
+        "emb_io": NpEmbeddingIO(target_dir=embedding_dir),
         "predict_root": output_dir
     }
 

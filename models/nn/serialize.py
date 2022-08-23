@@ -64,7 +64,7 @@ def serialize_nn(output_dir, split_filepath, writer, folding_type="fixed",
         frames_collection=frames_collection,
         frame_variant_collection=frame_variant_collection)
 
-    embedding = load_embedding_news_mystem_skipgram_1000_20_2015()
+    embedding = load_embedding_news_mystem_skipgram_1000_20_2015(stemmer)
     bpe_vectorizer = BPEVectorizer(embedding=embedding, max_part_size=3)
     norm_vectorizer = RandomNormalVectorizer(vector_size=embedding.VectorSize,
                                              token_offset=12345)
