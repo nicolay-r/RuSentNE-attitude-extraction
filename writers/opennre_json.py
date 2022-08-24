@@ -60,7 +60,6 @@ class OpenNREJsonWriter(BaseWriter):
                 tokens = []
                 for text_col in self.__text_columns:
                     tokens.extend(row[text_col].split())
-                print(len(tokens))
 
                 # Fillring JSON row.
                 json_row = {

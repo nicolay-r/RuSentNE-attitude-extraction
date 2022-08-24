@@ -1,4 +1,5 @@
 import unittest
+from os.path import join
 
 from arekit.common.data.input.writers.tsv import TsvWriter
 from arekit.common.entities.base import Entity
@@ -24,6 +25,7 @@ from arekit.contrib.utils.processing.lemmatization.mystem import MystemWrapper
 from SentiNEREL.labels.formatter import PosNegNeuRelationsLabelFormatter
 from SentiNEREL.labels.scaler import PosNegNeuRelationsLabelScaler
 from SentiNEREL.labels.types import PositiveTo, NegativeTo
+from __run_evaluation import show_stat_for_samples
 from models.bert.serialize import serialize_bert, CroppedBertSampleRowProvider
 from models.nn.serialize import serialize_nn
 from writers.opennre_json import OpenNREJsonWriter
@@ -139,3 +141,7 @@ class TestRuAttitudes(unittest.TestCase):
 
     def test_serialize_nn_opennre(self):
         self.__test_serialize_nn(writer=OpenNREJsonWriter())
+
+    def test_show_stat(self):
+        show_stat_for_samples(samples_filepath=join("_out/serialize-ruattitudes-bert", "sample-train-0.tsv.gz"),
+                              no_label_uint=0)

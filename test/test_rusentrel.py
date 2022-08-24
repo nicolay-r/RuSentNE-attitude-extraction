@@ -1,4 +1,5 @@
 import unittest
+from os.path import join
 
 from arekit.common.data.input.writers.tsv import TsvWriter
 from arekit.common.entities.base import Entity
@@ -26,6 +27,7 @@ from arekit.contrib.utils.pipelines.sources.rusentrel.extract_text_opinions impo
 from SentiNEREL.labels.formatter import PosNegNeuRelationsLabelFormatter
 from SentiNEREL.labels.scaler import PosNegNeuRelationsLabelScaler
 from SentiNEREL.labels.types import PositiveTo, NegativeTo
+from __run_evaluation import show_stat_for_samples
 from models.bert.serialize import serialize_bert, CroppedBertSampleRowProvider
 from models.nn.serialize import serialize_nn
 from writers.opennre_json import OpenNREJsonWriter
@@ -123,7 +125,7 @@ class TestRuSentRel(unittest.TestCase):
         pipeline = create_text_opinion_extraction_pipeline(
             rusentrel_version=version,
             text_parser=text_parser,
-            labels_fmt=RuSentiFramesLabelsFormatter(pos_label_type=PositiveTo, neg_label_type=NegativeTo))
+            labels_fmt=RuSentRelLabelsFormatter(pos_label_type=PositiveTo, neg_label_type=NegativeTo))
 
         data_folding = NoFolding(doc_ids_to_fold=RuSentRelIOUtils.iter_collection_indices(version),
                                  supported_data_types=[DataType.Train])
@@ -146,3 +148,7 @@ class TestRuSentRel(unittest.TestCase):
 
     def test_serialize_nn_opennre(self):
         self.__test_serialize_nn(writer=OpenNREJsonWriter())
+
+    def test_show_stat(self):
+        show_stat_for_samples(samples_filepath=join("_out/serialize-rusentrel-bert", "sample-train-0.tsv.gz"),
+                              no_label_uint=0)
