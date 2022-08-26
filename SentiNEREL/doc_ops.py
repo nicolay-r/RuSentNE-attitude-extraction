@@ -4,7 +4,7 @@ from arekit.contrib.source.sentinerel.reader import SentiNerelDocReader
 
 class CollectionDocOperation(DocumentOperations):
 
-    def __init__(self, label_formatter, filename_by_id):
+    def __init__(self, filename_by_id):
         """ filename_ids: dict
                 Dictionary of {id: filename}, where
                     - id: int
@@ -12,7 +12,6 @@ class CollectionDocOperation(DocumentOperations):
         """
         assert(isinstance(filename_by_id, dict))
         super(CollectionDocOperation, self).__init__()
-        self.__label_formatter = label_formatter
         self.__filename_by_id = filename_by_id
 
     def get_doc(self, doc_id):

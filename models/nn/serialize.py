@@ -4,14 +4,15 @@ from arekit.common.frames.variants.collection import FrameVariantsCollection
 from arekit.common.pipeline.base import BasePipeline
 from arekit.common.text.parser import BaseTextParser
 from arekit.contrib.networks.core.input.term_types import TermTypes
-from arekit.contrib.networks.pipelines.items.serializer import NetworksInputSerializerPipelineItem
 from arekit.contrib.source.brat.entities.parser import BratTextEntitiesParser
 from arekit.contrib.source.rusentiframes.collection import RuSentiFramesCollection
 from arekit.contrib.source.rusentiframes.labels_fmt import RuSentiFramesLabelsFormatter, \
     RuSentiFramesEffectLabelsFormatter
 from arekit.contrib.source.rusentiframes.types import RuSentiFramesVersions
+from arekit.contrib.utils.connotations.rusentiframes_sentiment import RuSentiFramesConnotationProvider
 from arekit.contrib.utils.io_utils.embedding import NpEmbeddingIO
 from arekit.contrib.utils.io_utils.samples import SamplesIO
+from arekit.contrib.utils.pipelines.items.sampling.networks import NetworksInputSerializerPipelineItem
 from arekit.contrib.utils.pipelines.items.text.frames_lemmatized import LemmasBasedFrameVariantsParser
 from arekit.contrib.utils.pipelines.items.text.tokenizer import DefaultTextTokenizer
 from arekit.contrib.utils.processing.lemmatization.mystem import MystemWrapper
@@ -57,12 +58,14 @@ def serialize_nn(output_dir, split_filepath, writer, folding_type="fixed",
         variants_with_id=frames_collection.iter_frame_id_and_variants(),
         overwrite_existed_variant=True,
         raise_error_on_existed_variant=False)
+    frames_connotation_provider = RuSentiFramesConnotationProvider(frames_collection)
 
-    exp_ctx = CustomNetworkSerializationContext(
+    ctx = CustomNetworkSerializationContext(
         labels_scaler=labels_scaler,
         pos_tagger=pos_tagger,
         frames_collection=frames_collection,
-        frame_variant_collection=frame_variant_collection)
+        frame_variant_collection=frame_variant_collection,
+        frames_connotation_provider=frames_connotation_provider)
 
     embedding = load_embedding_news_mystem_skipgram_1000_20_2015(stemmer)
     bpe_vectorizer = BPEVectorizer(embedding=embedding, max_part_size=3)
@@ -83,7 +86,7 @@ def serialize_nn(output_dir, split_filepath, writer, folding_type="fixed",
         str_entity_fmt=entities_fmt,
         balance_func=lambda data_type: data_type == DataType.Train,
         save_labels_func=lambda data_type: data_type != DataType.Test,
-        exp_ctx=exp_ctx,
+        ctx=ctx,
         save_embedding=True)
 
     doc_ops = None
@@ -93,8 +96,7 @@ def serialize_nn(output_dir, split_filepath, writer, folding_type="fixed",
         if folding_type == "fixed":
             filenames_by_ids, data_folding = FoldingFactory.create_fixed_folding(
                 fixed_split_filepath=split_filepath, limit=limit)
-            doc_ops = CollectionDocOperation(label_formatter=SentimentLabelFormatter(),
-                                             filename_by_id=filenames_by_ids)
+            doc_ops = CollectionDocOperation(filenames_by_ids)
 
     if data_type_pipelines is None:
         # considering a default pipeline.
@@ -102,7 +104,7 @@ def serialize_nn(output_dir, split_filepath, writer, folding_type="fixed",
         text_parser = BaseTextParser([
             BratTextEntitiesParser(),
             DefaultTextTokenizer(keep_tokens=True),
-            LemmasBasedFrameVariantsParser(frame_variants=exp_ctx.FrameVariantCollection,
+            LemmasBasedFrameVariantsParser(frame_variants=ctx.FrameVariantCollection,
                                            stemmer=stemmer)]
         )
 

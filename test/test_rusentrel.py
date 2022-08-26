@@ -80,8 +80,8 @@ class TestRuSentRel(unittest.TestCase):
             text_parser=text_parser,
             labels_fmt=RuSentRelLabelsFormatter(pos_label_type=PositiveTo, neg_label_type=NegativeTo))
 
-        data_folding = NoFolding(doc_ids_to_fold=RuSentRelIOUtils.iter_collection_indices(version),
-                                 supported_data_types=[DataType.Train])
+        data_folding = NoFolding(doc_ids=RuSentRelIOUtils.iter_collection_indices(version),
+                                 supported_data_type=DataType.Train)
 
         sample_row_provider = CroppedBertSampleRowProvider(
             crop_window_size=50,
@@ -127,8 +127,8 @@ class TestRuSentRel(unittest.TestCase):
             text_parser=text_parser,
             labels_fmt=RuSentRelLabelsFormatter(pos_label_type=PositiveTo, neg_label_type=NegativeTo))
 
-        data_folding = NoFolding(doc_ids_to_fold=RuSentRelIOUtils.iter_collection_indices(version),
-                                 supported_data_types=[DataType.Train])
+        data_folding = NoFolding(doc_ids=RuSentRelIOUtils.iter_collection_indices(version),
+                                 supported_data_type=DataType.Train)
 
         serialize_nn(output_dir="_out/serialize-rusentrel-nn",
                      split_filepath=None,
