@@ -5,7 +5,6 @@ from entity.formatter import CustomEntitiesFormatter
 from models.bert.serialize import CroppedBertSampleRowProvider, serialize_bert
 from writers.opennre_json import OpenNREJsonWriter
 
-from SentiNEREL.labels.formatter import PosNegNeuRelationsLabelFormatter
 from SentiNEREL.labels.scaler import PosNegNeuRelationsLabelScaler
 
 
@@ -18,7 +17,6 @@ def do(writer):
         sample_row_provider=CroppedBertSampleRowProvider(
             crop_window_size=50,
             label_scaler=PosNegNeuRelationsLabelScaler(),
-            text_b_labels_fmt=PosNegNeuRelationsLabelFormatter(),
             text_b_template=BertTextBTemplates.NLI.value,
             text_terms_mapper=BertDefaultStringTextTermsMapper(
                 entity_formatter=CustomEntitiesFormatter(subject_fmt="#S", object_fmt="#O")

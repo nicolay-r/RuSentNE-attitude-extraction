@@ -22,7 +22,6 @@ from arekit.contrib.utils.pipelines.sources.ruattitudes.extract_text_opinions im
     create_text_opinion_extraction_pipeline
 from arekit.contrib.utils.processing.lemmatization.mystem import MystemWrapper
 
-from SentiNEREL.labels.formatter import PosNegNeuRelationsLabelFormatter
 from SentiNEREL.labels.scaler import PosNegNeuRelationsLabelScaler
 from SentiNEREL.labels.types import PositiveTo, NegativeTo
 from __run_evaluation import show_stat_for_samples
@@ -77,14 +76,13 @@ class TestRuAttitudes(unittest.TestCase):
         pipeline, ru_attitudes = create_text_opinion_extraction_pipeline(
             text_parser=text_parser, label_scaler=PosNegNeuRelationsLabelScaler())
 
-        data_folding = NoFolding(doc_ids_to_fold=ru_attitudes.keys(),
-                                 supported_data_types=[DataType.Train])
+        data_folding = NoFolding(doc_ids=ru_attitudes.keys(),
+                                 supported_data_type=[DataType.Train])
 
         sample_row_provider = CroppedBertSampleRowProvider(
             crop_window_size=50,
             label_scaler=PosNegNeuRelationsLabelScaler(),
             text_b_template=BertTextBTemplates.NLI.value,
-            text_b_labels_fmt=PosNegNeuRelationsLabelFormatter(),
             text_terms_mapper=BertDefaultStringTextTermsMapper(
                 entity_formatter=RuAttitudesEntitiesFormatter(subject_fmt="#S", object_fmt="#O")
         ))

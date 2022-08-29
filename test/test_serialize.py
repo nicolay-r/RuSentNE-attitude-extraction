@@ -47,7 +47,6 @@ class TestSerialize(unittest.TestCase):
                            crop_window_size=50,
                            text_b_template=BertTextBTemplates.NLI.value,
                            label_scaler=PosNegNeuRelationsLabelScaler(),
-                           text_b_labels_fmt=PosNegNeuRelationsLabelFormatter(),
                            text_terms_mapper=BertDefaultStringTextTermsMapper(
                                entity_formatter=CustomEntitiesFormatter(subject_fmt="#S", object_fmt="#O")
                            )))

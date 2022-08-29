@@ -28,12 +28,11 @@ class CroppedBertSampleRowProvider(BaseSampleRowProvider):
         не возникло проблемы отсечения ввиду огромного предложения.
     """
 
-    def __init__(self, crop_window_size, label_scaler, text_terms_mapper, text_b_template, text_b_labels_fmt=None):
+    def __init__(self, crop_window_size, label_scaler, text_terms_mapper, text_b_template):
 
         text_provider = BaseSingleTextProvider(text_terms_mapper=text_terms_mapper) \
-            if text_b_labels_fmt is None else PairTextProvider(text_b_template=text_b_template,
-                                                               text_b_labels_fmt=text_b_labels_fmt,
-                                                               text_terms_mapper=text_terms_mapper)
+            if text_b_template is None else PairTextProvider(text_b_template=text_b_template,
+                                                             text_terms_mapper=text_terms_mapper)
 
         super(CroppedBertSampleRowProvider, self).__init__(label_provider=MultipleLabelProvider(label_scaler),
                                                            text_provider=text_provider)

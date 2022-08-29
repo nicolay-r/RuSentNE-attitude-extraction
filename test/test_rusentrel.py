@@ -24,7 +24,6 @@ from arekit.contrib.utils.processing.lemmatization.mystem import MystemWrapper
 from arekit.contrib.utils.pipelines.sources.rusentrel.extract_text_opinions import \
     create_text_opinion_extraction_pipeline
 
-from SentiNEREL.labels.formatter import PosNegNeuRelationsLabelFormatter
 from SentiNEREL.labels.scaler import PosNegNeuRelationsLabelScaler
 from SentiNEREL.labels.types import PositiveTo, NegativeTo
 from __run_evaluation import show_stat_for_samples
@@ -87,7 +86,6 @@ class TestRuSentRel(unittest.TestCase):
             crop_window_size=50,
             label_scaler=PosNegNeuRelationsLabelScaler(),
             text_b_template=BertTextBTemplates.NLI.value,
-            text_b_labels_fmt=PosNegNeuRelationsLabelFormatter(),
             text_terms_mapper=BertDefaultStringTextTermsMapper(
                 entity_formatter=RuSentRelEntitiesFormatter(subject_fmt="#S", object_fmt="#O")
             ))
