@@ -7,7 +7,7 @@ from arekit.contrib.utils.bert.text_b_rus import BertTextBTemplates
 
 from SentiNEREL.labels.formatter import PosNegNeuRelationsLabelFormatter
 from SentiNEREL.labels.scaler import PosNegNeuRelationsLabelScaler
-from entity.formatter import CustomEntitiesFormatter
+from entity.formatter import CustomTypedEntitiesFormatter
 from models.bert.serialize import CroppedBertSampleRowProvider, serialize_bert
 from models.nn.serialize import serialize_nn
 from writers.opennre_json import OpenNREJsonWriter
@@ -48,7 +48,7 @@ class TestSerialize(unittest.TestCase):
                            text_b_template=BertTextBTemplates.NLI.value,
                            label_scaler=PosNegNeuRelationsLabelScaler(),
                            text_terms_mapper=BertDefaultStringTextTermsMapper(
-                               entity_formatter=CustomEntitiesFormatter(subject_fmt="#S", object_fmt="#O")
+                               entity_formatter=CustomTypedEntitiesFormatter(subject_fmt="#S", object_fmt="#O")
                            )))
 
     def test_bert_json_full(self):

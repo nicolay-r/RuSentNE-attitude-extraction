@@ -1,7 +1,7 @@
 from arekit.common.data.input.writers.tsv import TsvWriter
 from arekit.contrib.bert.terms.mapper import BertDefaultStringTextTermsMapper
 from arekit.contrib.utils.bert.text_b_rus import BertTextBTemplates
-from entity.formatter import CustomEntitiesFormatter
+from entity.formatter import CustomTypedEntitiesFormatter
 from models.bert.serialize import CroppedBertSampleRowProvider, serialize_bert
 from writers.opennre_json import OpenNREJsonWriter
 
@@ -19,7 +19,7 @@ def do(writer):
             label_scaler=PosNegNeuRelationsLabelScaler(),
             text_b_template=BertTextBTemplates.NLI.value,
             text_terms_mapper=BertDefaultStringTextTermsMapper(
-                entity_formatter=CustomEntitiesFormatter(subject_fmt="#S", object_fmt="#O")
+                entity_formatter=CustomTypedEntitiesFormatter(subject_fmt="#S", object_fmt="#O")
             )))
 
 

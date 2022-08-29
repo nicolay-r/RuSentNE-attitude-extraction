@@ -5,7 +5,14 @@ from arekit.common.entities.types import OpinionEntityType
 from entity.helper import EntityHelper
 
 
-class CustomEntitiesFormatter(StringEntitiesFormatter):
+class CustomTypedEntitiesFormatter(StringEntitiesFormatter):
+    """ Отображение типов вместо значения сущностей для всех именованных сущностей.
+    """
+    def to_string(self, original_value, entity_type):
+        return EntityHelper.format(original_value)
+
+
+class CustomMaskedEntitiesFormatter(StringEntitiesFormatter):
     """ Форматирование сущностей. Было принято решение использовать тип сущности в качетстве значений.
         Поскольку тексты русскоязычные, то и типы были руссифицированы из соображений более удачных embeddings.
 

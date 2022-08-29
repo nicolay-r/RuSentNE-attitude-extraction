@@ -25,7 +25,7 @@ from SentiNEREL.doc_ops import CollectionDocOperation
 from SentiNEREL.labels.formatter import SentimentLabelFormatter
 from SentiNEREL.labels.scaler import PosNegNeuRelationsLabelScaler
 from SentiNEREL.labels.types import PositiveTo, NegativeTo
-from entity.formatter import CustomEntitiesFormatter
+from entity.formatter import CustomTypedEntitiesFormatter
 from folding.factory import FoldingFactory
 from models.nn.ctx import CustomNetworkSerializationContext
 from pipelines.collection import prepare_data_pipelines
@@ -34,7 +34,7 @@ from writers.utils import create_writer_extension
 
 def serialize_nn(output_dir, split_filepath, writer, folding_type="fixed",
                  labels_scaler=PosNegNeuRelationsLabelScaler(),
-                 terms_per_context=50, entities_fmt=CustomEntitiesFormatter(),
+                 terms_per_context=50, entities_fmt=CustomTypedEntitiesFormatter(),
                  data_folding=None, data_type_pipelines=None, limit=None, suffix="nn"):
     """ Run data preparation process for neural networks, i.e.
         convolutional neural networks and recurrent-based neural networks.
