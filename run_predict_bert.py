@@ -13,7 +13,7 @@ def predict_bert(max_seq_length=128, bert_config=BERT_CONFIG_PATH, do_lowercase=
                  predict_dir="_out/serialize-bert", samples_dir="_out/serialize-bert",
                  full_model_name="bert", data_type=DataType.Test):
 
-    data_folding = NoFolding(doc_ids_to_fold=[], supported_data_types=[data_type]),
+    data_folding = NoFolding(doc_ids=[], supported_data_type=[data_type])
 
     ppl = BasePipeline([
         BertInferencePipelineItem(

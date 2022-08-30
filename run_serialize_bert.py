@@ -19,7 +19,7 @@ def do(writer):
             label_scaler=PosNegNeuRelationsLabelScaler(),
             text_b_template=BertTextBTemplates.NLI.value,
             text_terms_mapper=BertDefaultStringTextTermsMapper(
-                entity_formatter=CustomTypedEntitiesFormatter(subject_fmt="#S", object_fmt="#O")
+                entity_formatter=CustomTypedEntitiesFormatter()
             )))
 
 
