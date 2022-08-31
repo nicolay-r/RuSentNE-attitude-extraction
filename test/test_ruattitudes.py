@@ -76,8 +76,7 @@ class TestRuAttitudes(unittest.TestCase):
         pipeline, ru_attitudes = create_text_opinion_extraction_pipeline(
             text_parser=text_parser, label_scaler=PosNegNeuRelationsLabelScaler())
 
-        data_folding = NoFolding(doc_ids=ru_attitudes.keys(),
-                                 supported_data_type=[DataType.Train])
+        data_folding = NoFolding(doc_ids=ru_attitudes.keys(), supported_data_type=DataType.Train)
 
         sample_row_provider = CroppedBertSampleRowProvider(
             crop_window_size=50,
