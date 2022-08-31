@@ -3,6 +3,7 @@ from arekit.common.experiment.data_type import DataType
 from arekit.common.frames.variants.collection import FrameVariantsCollection
 from arekit.common.pipeline.base import BasePipeline
 from arekit.common.text.parser import BaseTextParser
+from arekit.contrib.networks.core.input.ctx_serialization import NetworkSerializationContext
 from arekit.contrib.networks.core.input.term_types import TermTypes
 from arekit.contrib.source.brat.entities.parser import BratTextEntitiesParser
 from arekit.contrib.source.rusentiframes.collection import RuSentiFramesCollection
@@ -27,7 +28,6 @@ from SentiNEREL.labels.scaler import PosNegNeuRelationsLabelScaler
 from SentiNEREL.labels.types import PositiveTo, NegativeTo
 from entity.formatter import CustomTypedEntitiesFormatter
 from folding.factory import FoldingFactory
-from models.nn.ctx import CustomNetworkSerializationContext
 from pipelines.collection import prepare_data_pipelines
 from writers.utils import create_writer_extension
 
@@ -60,11 +60,10 @@ def serialize_nn(output_dir, split_filepath, writer, folding_type="fixed",
         raise_error_on_existed_variant=False)
     frames_connotation_provider = RuSentiFramesConnotationProvider(frames_collection)
 
-    ctx = CustomNetworkSerializationContext(
+    ctx = NetworkSerializationContext(
         labels_scaler=labels_scaler,
         pos_tagger=pos_tagger,
-        frames_collection=frames_collection,
-        frame_variant_collection=frame_variant_collection,
+        frame_roles_label_scaler=labels_scaler,
         frames_connotation_provider=frames_connotation_provider)
 
     embedding = load_embedding_news_mystem_skipgram_1000_20_2015(stemmer)
@@ -104,7 +103,7 @@ def serialize_nn(output_dir, split_filepath, writer, folding_type="fixed",
         text_parser = BaseTextParser([
             BratTextEntitiesParser(),
             DefaultTextTokenizer(keep_tokens=True),
-            LemmasBasedFrameVariantsParser(frame_variants=ctx.FrameVariantCollection,
+            LemmasBasedFrameVariantsParser(frame_variants=frame_variant_collection,
                                            stemmer=stemmer)]
         )
 

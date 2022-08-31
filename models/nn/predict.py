@@ -146,7 +146,7 @@ def predict_nn(output_dir, embedding_dir, samples_dir, data_folding_name="fixed"
     assert(isinstance(embedding_dir, str))
     assert(isinstance(samples_dir, str))
 
-    data_folding = NoFolding(doc_ids_to_fold=[], supported_data_types=[data_type])
+    data_folding = NoFolding(doc_ids=[], supported_data_type=[data_type])
     full_model_name = "-".join([data_folding_name, model_name.value])
     model_io = NeuralNetworkModelIO(full_model_name=full_model_name,
                                     target_dir=output_dir,
