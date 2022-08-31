@@ -10,6 +10,7 @@ from arekit.contrib.source.rusentiframes.collection import RuSentiFramesCollecti
 from arekit.contrib.source.rusentiframes.labels_fmt import RuSentiFramesLabelsFormatter, \
     RuSentiFramesEffectLabelsFormatter
 from arekit.contrib.source.rusentiframes.types import RuSentiFramesVersions
+from arekit.contrib.source.sentinerel.labels import PositiveTo, NegativeTo
 from arekit.contrib.utils.connotations.rusentiframes_sentiment import RuSentiFramesConnotationProvider
 from arekit.contrib.utils.io_utils.embedding import NpEmbeddingIO
 from arekit.contrib.utils.io_utils.samples import SamplesIO
@@ -25,7 +26,6 @@ from arekit.contrib.utils.vectorizers.random_norm import RandomNormalVectorizer
 from SentiNEREL.doc_ops import CollectionDocOperation
 from SentiNEREL.labels.formatter import SentimentLabelFormatter
 from SentiNEREL.labels.scaler import PosNegNeuRelationsLabelScaler
-from SentiNEREL.labels.types import PositiveTo, NegativeTo
 from entity.formatter import CustomTypedEntitiesFormatter
 from folding.factory import FoldingFactory
 from pipelines.collection import prepare_data_pipelines

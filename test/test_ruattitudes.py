@@ -15,6 +15,7 @@ from arekit.contrib.source.rusentiframes.collection import RuSentiFramesCollecti
 from arekit.contrib.source.rusentiframes.labels_fmt import RuSentiFramesLabelsFormatter, \
     RuSentiFramesEffectLabelsFormatter
 from arekit.contrib.source.rusentiframes.types import RuSentiFramesVersions
+from arekit.contrib.source.sentinerel.labels import PositiveTo, NegativeTo
 from arekit.contrib.utils.bert.text_b_rus import BertTextBTemplates
 from arekit.contrib.utils.pipelines.items.text.frames_lemmatized import LemmasBasedFrameVariantsParser
 from arekit.contrib.utils.pipelines.items.text.tokenizer import DefaultTextTokenizer
@@ -23,7 +24,6 @@ from arekit.contrib.utils.pipelines.sources.ruattitudes.extract_text_opinions im
 from arekit.contrib.utils.processing.lemmatization.mystem import MystemWrapper
 
 from SentiNEREL.labels.scaler import PosNegNeuRelationsLabelScaler
-from SentiNEREL.labels.types import PositiveTo, NegativeTo
 from __run_evaluation import show_stat_for_samples
 from models.bert.serialize import serialize_bert, CroppedBertSampleRowProvider
 from models.nn.serialize import serialize_nn

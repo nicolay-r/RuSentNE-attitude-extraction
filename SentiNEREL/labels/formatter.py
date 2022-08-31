@@ -1,7 +1,6 @@
 from arekit.common.labels.base import NoLabel
 from arekit.common.labels.str_fmt import StringLabelsFormatter
-
-import SentiNEREL.labels.types as labels
+from arekit.contrib.source.sentinerel import labels
 
 
 class CustomLabelFormatter(StringLabelsFormatter):

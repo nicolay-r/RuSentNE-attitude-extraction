@@ -5,7 +5,6 @@ from arekit.common.data.input.writers.tsv import TsvWriter
 from arekit.contrib.bert.terms.mapper import BertDefaultStringTextTermsMapper
 from arekit.contrib.utils.bert.text_b_rus import BertTextBTemplates
 
-from SentiNEREL.labels.formatter import PosNegNeuRelationsLabelFormatter
 from SentiNEREL.labels.scaler import PosNegNeuRelationsLabelScaler
 from entity.formatter import CustomTypedEntitiesFormatter
 from models.bert.serialize import CroppedBertSampleRowProvider, serialize_bert
