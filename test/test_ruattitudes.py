@@ -67,9 +67,25 @@ class RuAttitudesTypedEntitiesFormatter(StringEntitiesFormatter):
         Поскольку тексты русскоязычные, то и типы были руссифицированы из соображений более удачных embeddings.
     """
 
+    fmts = {
+        'QUANTITY': "количество",
+        'ORG': "организация",
+        'LAW': "закон",
+        'FAC': "сооружение",
+        'PERCENT': "процент",
+        'NORP': "связь",
+        'GPE': "гео-сущность",
+        'CARDINAL': "число",
+        'LOC': "локация",
+    }
+
+    def __init__(self):
+        self.__st = set()
+
     def to_string(self, original_value, entity_type):
         assert(isinstance(original_value, Entity))
-        return EntityHelper.format(original_value)
+        return self.fmts[original_value.Type] if original_value.Type in self.fmts else\
+            EntityHelper.format(original_value)
 
 
 class TestRuAttitudes(unittest.TestCase):
