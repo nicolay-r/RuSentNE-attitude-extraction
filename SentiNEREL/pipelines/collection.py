@@ -7,7 +7,7 @@ from SentiNEREL.pipelines.etalon import create_etalon_pipeline, create_etalon_wi
 from SentiNEREL.pipelines.test import create_test_pipeline
 from SentiNEREL.pipelines.train import create_train_pipeline
 from annot import create_nolabel_text_opinion_annotator
-from entity.filter import CollectionEntityFilter
+from SentiNEREL.entity.filter import CollectionEntityFilter
 
 
 def prepare_data_pipelines(text_parser, doc_ops, label_formatter, terms_per_context):

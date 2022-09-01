@@ -2,7 +2,7 @@ from arekit.common.entities.base import Entity
 from arekit.common.entities.types import OpinionEntityType
 from arekit.contrib.utils.entities.filter import EntityFilter
 
-from entity.helper import EntityHelper
+from SentiNEREL.entity.helper import EntityHelper
 
 
 class CollectionEntityFilter(EntityFilter):

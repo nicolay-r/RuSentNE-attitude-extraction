@@ -26,7 +26,7 @@ from arekit.contrib.utils.processing.lemmatization.mystem import MystemWrapper
 
 from SentiNEREL.labels.scaler import PosNegNeuRelationsLabelScaler
 from __run_evaluation import show_stat_for_samples
-from entity.helper import EntityHelper
+from SentiNEREL.entity.helper import EntityHelper
 from models.bert.serialize import serialize_bert, CroppedBertSampleRowProvider
 from models.nn.serialize import serialize_nn
 
