@@ -1,4 +1,4 @@
-from folding.fixed import create_fixed_folding
+from SentiNEREL.folding.fixed import create_fixed_folding
 from utils import read_train_test
 
 

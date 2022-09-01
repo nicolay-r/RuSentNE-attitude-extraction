@@ -1,5 +1,6 @@
 from os.path import join
 
+from arekit.common.data.input.writers.tsv import TsvWriter
 from arekit.common.data.row_ids.multiple import MultipleIDProvider
 from arekit.common.data.storages.base import BaseRowsStorage
 from arekit.common.data.views.samples import LinkedSamplesStorageView
@@ -169,7 +170,9 @@ def predict_nn(output_dir, embedding_dir, samples_dir, data_folding_name="fixed"
     ])
 
     input_data = {
-        "samples_io": SamplesIO(target_dir=samples_dir),
+        # TODO. Here we artificially create writer to satisfy AREkit API requirements.
+        # TODO. Of course the writer is not required diring training.
+        "samples_io": SamplesIO(target_dir=samples_dir, writer=TsvWriter(True)),
         "emb_io": NpEmbeddingIO(target_dir=embedding_dir),
         "predict_root": output_dir
     }

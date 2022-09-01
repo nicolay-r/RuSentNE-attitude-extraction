@@ -1,5 +1,6 @@
 from os.path import join
 
+from arekit.common.data.input.writers.tsv import TsvWriter
 from arekit.common.experiment.data_type import DataType
 from arekit.common.pipeline.base import BasePipeline
 from arekit.contrib.networks.core.callback.hidden import HiddenStatesWriterCallback
@@ -17,7 +18,7 @@ from arekit.contrib.utils.io_utils.samples import SamplesIO
 from arekit.contrib.utils.np_utils.writer import NpzDataWriter
 from arekit.contrib.utils.processing.languages.ru.pos_service import PartOfSpeechTypesService
 
-from folding.factory import FoldingFactory
+from SentiNEREL.folding.factory import FoldingFactory
 
 
 def train_nn(output_dir, model_log_dir, split_filepath, folding_type="fixed",
@@ -74,7 +75,9 @@ def train_nn(output_dir, model_log_dir, split_filepath, folding_type="fixed",
         model_io=model_io,
         labels_count=labels_count,
         create_network_func=network_func,
-        samples_io=SamplesIO(target_dir=output_dir),
+        # TODO. Here we artificially create writer to satisfy AREkit API requirements.
+        # TODO. Of course the writer is not required diring training.
+        samples_io=SamplesIO(target_dir=output_dir, writer=TsvWriter(True)),
         emb_io=NpEmbeddingIO(target_dir=output_dir),
         config=config,
         bags_collection_type=SingleBagsCollection,

@@ -1,7 +1,7 @@
 from arekit.common.experiment.data_type import DataType
 from arekit.common.folding.fixed import FixedFolding
 
-from folding.utils import create_filenames_by_ids
+from SentiNEREL.folding.utils import create_filenames_by_ids
 
 
 def create_fixed_folding(train_filenames, test_filenames):

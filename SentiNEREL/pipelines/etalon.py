@@ -1,4 +1,4 @@
-from pipelines.train import create_train_pipeline
+from SentiNEREL.pipelines.train import create_train_pipeline
 
 
 def create_etalon_pipeline(text_parser, doc_ops, predefined_annot, text_opinion_filters):

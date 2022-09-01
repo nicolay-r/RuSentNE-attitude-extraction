@@ -13,11 +13,10 @@ from arekit.contrib.utils.io_utils.samples import SamplesIO
 from arekit.contrib.utils.pipelines.items.sampling.bert import BertExperimentInputSerializerPipelineItem
 from arekit.contrib.utils.pipelines.items.text.tokenizer import DefaultTextTokenizer
 
-from folding.factory import FoldingFactory
-from pipelines.collection import prepare_data_pipelines
-
 from SentiNEREL.doc_ops import CollectionDocOperation
+from SentiNEREL.folding.factory import FoldingFactory
 from SentiNEREL.labels.formatter import SentimentLabelFormatter
+from SentiNEREL.pipelines.collection import prepare_data_pipelines
 
 
 class CroppedBertSampleRowProvider(BaseSampleRowProvider):

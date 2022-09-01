@@ -1,6 +1,6 @@
 from arekit.common.experiment.api.ops_doc import DocumentOperations
 from arekit.common.text.parser import BaseTextParser
-from pipelines.train import text_opinion_extraction_pipeline
+from arekit.contrib.utils.pipelines.text_opinion.extraction import text_opinion_extraction_pipeline
 
 
 def create_test_pipeline(text_parser, doc_ops, annotators, text_opinion_filters):

@@ -3,11 +3,11 @@ from arekit.contrib.utils.pipelines.text_opinion.annot.predefined import Predefi
 from arekit.contrib.utils.pipelines.text_opinion.filters.distance_based import DistanceLimitedTextOpinionFilter
 from arekit.contrib.utils.pipelines.text_opinion.filters.entity_based import EntityBasedTextOpinionFilter
 
+from SentiNEREL.pipelines.etalon import create_etalon_pipeline, create_etalon_with_no_label_pipeline
+from SentiNEREL.pipelines.test import create_test_pipeline
+from SentiNEREL.pipelines.train import create_train_pipeline
 from annot import create_nolabel_text_opinion_annotator
 from entity.filter import CollectionEntityFilter
-from pipelines.etalon import create_etalon_pipeline, create_etalon_with_no_label_pipeline
-from pipelines.test import create_test_pipeline
-from pipelines.train import create_train_pipeline
 
 
 def prepare_data_pipelines(text_parser, doc_ops, label_formatter, terms_per_context):
