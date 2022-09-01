@@ -40,14 +40,14 @@ class TestSerialize(unittest.TestCase):
                        terms_per_context=50,
                        output_dir=self.output_bert_dir,
                        split_filepath="../data/split_fixed.txt",
-                       writer=OpenNREJsonWriter(text_columns_type="bert"),
+                       writer=OpenNREJsonWriter(text_columns=["text_a", "text_b"]),
                        folding_type="fixed",
                        sample_row_provider=CroppedBertSampleRowProvider(
                            crop_window_size=50,
                            text_b_template=BertTextBTemplates.NLI.value,
                            label_scaler=PosNegNeuRelationsLabelScaler(),
                            text_terms_mapper=BertDefaultStringTextTermsMapper(
-                               entity_formatter=CustomTypedEntitiesFormatter(subject_fmt="#S", object_fmt="#O")
+                               entity_formatter=CustomTypedEntitiesFormatter()
                            )))
 
     def test_bert_json_full(self):

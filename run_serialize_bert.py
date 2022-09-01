@@ -1,3 +1,4 @@
+from arekit.common.data.input.writers.opennre_json import OpenNREJsonWriter
 from arekit.common.data.input.writers.tsv import TsvWriter
 from arekit.contrib.bert.terms.mapper import BertDefaultStringTextTermsMapper
 from arekit.contrib.utils.bert.text_b_rus import BertTextBTemplates
@@ -24,5 +25,5 @@ def do(writer):
 
 if __name__ == '__main__':
 
-    do(TsvWriter(write_header=True))
-    # do(OpenNREJsonWriter("bert"))
+    # do(TsvWriter(write_header=True))
+    do(OpenNREJsonWriter(text_columns=["text_a", "text_b"]))
