@@ -52,11 +52,6 @@ def serialize_nn(output_dir, split_filepath, writer, folding_type="fixed",
         version=RuSentiFramesVersions.V20,
         labels_fmt=RuSentiFramesLabelsFormatter(pos_label_type=PositiveTo, neg_label_type=NegativeTo),
         effect_labels_fmt=RuSentiFramesEffectLabelsFormatter(pos_label_type=PositiveTo, neg_label_type=NegativeTo))
-    frame_variant_collection = FrameVariantsCollection()
-    frame_variant_collection.fill_from_iterable(
-        variants_with_id=frames_collection.iter_frame_id_and_variants(),
-        overwrite_existed_variant=True,
-        raise_error_on_existed_variant=False)
     frames_connotation_provider = RuSentiFramesConnotationProvider(frames_collection)
 
     ctx = NetworkSerializationContext(
@@ -96,6 +91,12 @@ def serialize_nn(output_dir, split_filepath, writer, folding_type="fixed",
 
     if data_type_pipelines is None:
         # considering a default pipeline.
+
+        frame_variant_collection = FrameVariantsCollection()
+        frame_variant_collection.fill_from_iterable(
+            variants_with_id=frames_collection.iter_frame_id_and_variants(),
+            overwrite_existed_variant=True,
+            raise_error_on_existed_variant=False)
 
         text_parser = BaseTextParser([
             BratTextEntitiesParser(),
