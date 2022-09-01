@@ -1,6 +1,7 @@
 import unittest
 from os.path import join
 
+from arekit.common.data.input.writers.opennre_json import OpenNREJsonWriter
 from arekit.common.data.input.writers.tsv import TsvWriter
 from arekit.common.entities.base import Entity
 from arekit.common.entities.str_fmt import StringEntitiesFormatter
@@ -25,9 +26,9 @@ from arekit.contrib.utils.processing.lemmatization.mystem import MystemWrapper
 
 from SentiNEREL.labels.scaler import PosNegNeuRelationsLabelScaler
 from __run_evaluation import show_stat_for_samples
+from entity.helper import EntityHelper
 from models.bert.serialize import serialize_bert, CroppedBertSampleRowProvider
 from models.nn.serialize import serialize_nn
-from writers.opennre_json import OpenNREJsonWriter
 
 
 class RuAttitudesEntitiesFormatter(StringEntitiesFormatter):
@@ -61,6 +62,16 @@ class RuAttitudesEntitiesFormatter(StringEntitiesFormatter):
         return None
 
 
+class RuAttitudesTypedEntitiesFormatter(StringEntitiesFormatter):
+    """ Форматирование сущностей. Было принято решение использовать тип сущности в качетстве значений.
+        Поскольку тексты русскоязычные, то и типы были руссифицированы из соображений более удачных embeddings.
+    """
+
+    def to_string(self, original_value, entity_type):
+        assert(isinstance(original_value, Entity))
+        return EntityHelper.format(original_value)
+
+
 class TestRuAttitudes(unittest.TestCase):
     """ This test is related to #232 issue of the AREkit
         It is expected that we may adopt existed pipeline,
@@ -83,7 +94,7 @@ class TestRuAttitudes(unittest.TestCase):
             label_scaler=PosNegNeuRelationsLabelScaler(),
             text_b_template=BertTextBTemplates.NLI.value,
             text_terms_mapper=BertDefaultStringTextTermsMapper(
-                entity_formatter=RuAttitudesEntitiesFormatter(subject_fmt="#S", object_fmt="#O")
+                entity_formatter=RuAttitudesTypedEntitiesFormatter()
         ))
 
         serialize_bert(output_dir="_out/serialize-ruattitudes-bert",
@@ -131,13 +142,13 @@ class TestRuAttitudes(unittest.TestCase):
         self.__test_serialize_bert(writer=TsvWriter(write_header=True))
 
     def test_serialize_bert_opennre(self):
-        self.__test_serialize_bert(writer=OpenNREJsonWriter("bert"))
+        self.__test_serialize_bert(writer=OpenNREJsonWriter(text_columns=["text_a", "text_b"]))
 
     def test_serialize_nn_csv(self):
         self.__test_serialize_nn(writer=TsvWriter(write_header=True))
 
     def test_serialize_nn_opennre(self):
-        self.__test_serialize_nn(writer=OpenNREJsonWriter())
+        self.__test_serialize_nn(writer=OpenNREJsonWriter(text_columns=["text_a"]))
 
     def test_show_stat(self):
         show_stat_for_samples(samples_filepath=join("_out/serialize-ruattitudes-bert", "sample-train-0.tsv.gz"),

@@ -3,7 +3,6 @@ from arekit.contrib.bert.terms.mapper import BertDefaultStringTextTermsMapper
 from arekit.contrib.utils.bert.text_b_rus import BertTextBTemplates
 from entity.formatter import CustomTypedEntitiesFormatter
 from models.bert.serialize import CroppedBertSampleRowProvider, serialize_bert
-from writers.opennre_json import OpenNREJsonWriter
 
 from SentiNEREL.labels.scaler import PosNegNeuRelationsLabelScaler
 

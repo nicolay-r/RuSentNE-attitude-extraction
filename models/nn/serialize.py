@@ -29,7 +29,6 @@ from SentiNEREL.labels.scaler import PosNegNeuRelationsLabelScaler
 from entity.formatter import CustomTypedEntitiesFormatter
 from folding.factory import FoldingFactory
 from pipelines.collection import prepare_data_pipelines
-from writers.utils import create_writer_extension
 
 
 def serialize_nn(output_dir, split_filepath, writer, folding_type="fixed",
@@ -78,9 +77,7 @@ def serialize_nn(output_dir, split_filepath, writer, folding_type="fixed",
             TermTypes.FRAME: bpe_vectorizer,
             TermTypes.TOKEN: norm_vectorizer
         },
-        samples_io=SamplesIO(target_dir=output_dir,
-                             writer=writer,
-                             target_extension=create_writer_extension(writer)),
+        samples_io=SamplesIO(target_dir=output_dir, writer=writer),
         emb_io=NpEmbeddingIO(target_dir=output_dir),
         str_entity_fmt=entities_fmt,
         balance_func=lambda data_type: data_type == DataType.Train,

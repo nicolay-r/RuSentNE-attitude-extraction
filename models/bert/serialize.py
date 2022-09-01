@@ -15,7 +15,6 @@ from arekit.contrib.utils.pipelines.items.text.tokenizer import DefaultTextToken
 
 from folding.factory import FoldingFactory
 from pipelines.collection import prepare_data_pipelines
-from writers.utils import create_writer_extension
 
 from SentiNEREL.doc_ops import CollectionDocOperation
 from SentiNEREL.labels.formatter import SentimentLabelFormatter
@@ -119,9 +118,7 @@ def serialize_bert(split_filepath, terms_per_context, writer, sample_row_provide
     pipeline = BasePipeline([
         BertExperimentInputSerializerPipelineItem(
             balance_func=lambda data_type: data_type == DataType.Train,
-            samples_io=SamplesIO(target_dir=output_dir,
-                                 writer=writer,
-                                 target_extension=create_writer_extension(writer)),
+            samples_io=SamplesIO(target_dir=output_dir, writer=writer),
             save_labels_func=lambda data_type: data_type != DataType.Test,
             sample_rows_provider=sample_row_provider)
     ])

@@ -1,6 +1,7 @@
 import unittest
 from os.path import join
 
+from arekit.common.data.input.writers.opennre_json import OpenNREJsonWriter
 from arekit.common.data.input.writers.tsv import TsvWriter
 from arekit.common.entities.base import Entity
 from arekit.common.entities.str_fmt import StringEntitiesFormatter
@@ -29,7 +30,6 @@ from SentiNEREL.labels.scaler import PosNegNeuRelationsLabelScaler
 from __run_evaluation import show_stat_for_samples
 from models.bert.serialize import serialize_bert, CroppedBertSampleRowProvider
 from models.nn.serialize import serialize_nn
-from writers.opennre_json import OpenNREJsonWriter
 
 
 class RuSentRelEntitiesFormatter(StringEntitiesFormatter):
@@ -63,6 +63,21 @@ class RuSentRelEntitiesFormatter(StringEntitiesFormatter):
         return None
 
 
+class RuSentRelTypedEntitiesFormatter(StringEntitiesFormatter):
+
+    type_formatter = {
+        "GEOPOLIT": "гео-сущность",
+        "ORG": "организация",
+        "PER": "личность",
+        "LOC": "локация",
+        "ОRG": "организация"
+    }
+
+    def to_string(self, original_value, entity_type):
+        assert(isinstance(original_value, Entity))
+        return self.type_formatter[original_value.Type]
+
+
 class TestRuSentRel(unittest.TestCase):
     """ TODO: This might be a test example for AREkit (utils).
     """
@@ -87,7 +102,7 @@ class TestRuSentRel(unittest.TestCase):
             label_scaler=PosNegNeuRelationsLabelScaler(),
             text_b_template=BertTextBTemplates.NLI.value,
             text_terms_mapper=BertDefaultStringTextTermsMapper(
-                entity_formatter=RuSentRelEntitiesFormatter(subject_fmt="#S", object_fmt="#O")
+                entity_formatter=RuSentRelTypedEntitiesFormatter()
             ))
 
         serialize_bert(output_dir="_out/serialize-rusentrel-bert",
@@ -139,13 +154,13 @@ class TestRuSentRel(unittest.TestCase):
         self.__test_serialize_bert(writer=TsvWriter(write_header=True))
 
     def test_serialize_bert_opennre(self):
-        self.__test_serialize_bert(writer=OpenNREJsonWriter("bert"))
+        self.__test_serialize_bert(writer=OpenNREJsonWriter(text_columns=["text_a", "text_b"]))
 
     def test_serialize_nn_csv(self):
         self.__test_serialize_nn(writer=TsvWriter(write_header=True))
 
     def test_serialize_nn_opennre(self):
-        self.__test_serialize_nn(writer=OpenNREJsonWriter())
+        self.__test_serialize_nn(writer=OpenNREJsonWriter(text_columns=["text_a"]))
 
     def test_show_stat(self):
         show_stat_for_samples(samples_filepath=join("_out/serialize-rusentrel-bert", "sample-train-0.tsv.gz"),

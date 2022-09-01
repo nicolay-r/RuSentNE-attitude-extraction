@@ -1,6 +1,7 @@
 import unittest
 from os.path import dirname, realpath, join
 
+from arekit.common.data.input.writers.opennre_json import OpenNREJsonWriter
 from arekit.common.data.input.writers.tsv import TsvWriter
 from arekit.contrib.bert.terms.mapper import BertDefaultStringTextTermsMapper
 from arekit.contrib.utils.bert.text_b_rus import BertTextBTemplates
@@ -9,7 +10,6 @@ from SentiNEREL.labels.scaler import PosNegNeuRelationsLabelScaler
 from entity.formatter import CustomTypedEntitiesFormatter
 from models.bert.serialize import CroppedBertSampleRowProvider, serialize_bert
 from models.nn.serialize import serialize_nn
-from writers.opennre_json import OpenNREJsonWriter
 
 
 class TestSerialize(unittest.TestCase):
@@ -31,7 +31,7 @@ class TestSerialize(unittest.TestCase):
         serialize_nn(limit=1,
                      output_dir=self.output_nn_dir,
                      folding_type="fixed",
-                     writer=OpenNREJsonWriter(),
+                     writer=OpenNREJsonWriter(text_columns=["text_a"]),
                      labels_scaler=PosNegNeuRelationsLabelScaler(),
                      split_filepath="../data/split_fixed.txt")
 
