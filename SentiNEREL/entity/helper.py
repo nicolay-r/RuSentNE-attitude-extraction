@@ -79,7 +79,7 @@ class EntityHelper(object):
         # IDEOLOGY,
         # PENALTY,
         # RELIGION,
-        # PROFESSION,
+        PROFESSION,
         NATIONALITY,            # NORP
         DATE,
         STATE_OR_PROVINCE,      # GPE-like
