@@ -1,8 +1,7 @@
 from os.path import join
 
-from arekit.common.data.input.writers.tsv import TsvWriter
+from arekit.common.data.input.readers.tsv import TsvReader
 from arekit.common.data.row_ids.multiple import MultipleIDProvider
-from arekit.common.data.storages.base import BaseRowsStorage
 from arekit.common.data.views.samples import LinkedSamplesStorageView
 from arekit.common.experiment.api.base_samples_io import BaseSamplesIO
 from arekit.common.experiment.data_type import DataType
@@ -95,8 +94,6 @@ class TensorflowNetworkInferencePipelineItem(BasePipelineItem):
             fmn=full_model_name, dtype=str(self.__data_type).lower().split('.')[-1]))
 
         # Fetch other required in furter information from input_data.
-        samples_filepath = samples_io.create_target(
-            data_type=self.__data_type, data_folding=self.__data_folding)
         embedding = emb_io.load_embedding(data_folding=self.__data_folding)
         vocab = emb_io.load_vocab(data_folding=self.__data_folding)
 
@@ -107,9 +104,10 @@ class TensorflowNetworkInferencePipelineItem(BasePipelineItem):
         inference_ctx.initialize(
             dtypes=[self.__data_type],
             bags_collection_type=self.__bags_collection_type,
-            create_samples_view_func=lambda data_type: LinkedSamplesStorageView(
-                storage=BaseRowsStorage.from_tsv(samples_filepath),
-                row_ids_provider=MultipleIDProvider()),
+            load_target_func=lambda data_type: samples_io.create_target(
+                data_type=data_type, data_folding=self.__data_folding),
+            samples_reader=TsvReader(),
+            samples_view=LinkedSamplesStorageView(row_ids_provider=MultipleIDProvider()),
             has_model_predefined_state=True,
             vocab=vocab,
             labels_count=self.__config.ClassesCount,
@@ -170,9 +168,7 @@ def predict_nn(output_dir, embedding_dir, samples_dir, data_folding_name="fixed"
     ])
 
     input_data = {
-        # TODO. Here we artificially create writer to satisfy AREkit API requirements.
-        # TODO. Of course the writer is not required diring training.
-        "samples_io": SamplesIO(target_dir=samples_dir, writer=TsvWriter(True)),
+        "samples_io": SamplesIO(target_dir=samples_dir, reader=TsvReader()),
         "emb_io": NpEmbeddingIO(target_dir=embedding_dir),
         "predict_root": output_dir
     }
