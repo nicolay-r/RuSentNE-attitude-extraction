@@ -1,5 +1,4 @@
 from SentiNEREL.folding.fixed import create_fixed_folding
-from utils import read_train_test
 
 
 class FoldingFactory:
@@ -13,7 +12,7 @@ class FoldingFactory:
             Можно ограничить число документов, чтобы например потестировать. (limit)
         """
 
-        train_filenames, test_filenames = read_train_test(fixed_split_filepath)
+        train_filenames, test_filenames = FoldingFactory.__read_train_test(fixed_split_filepath)
         if limit is not None:
             train_filenames = train_filenames[:limit]
             test_filenames = test_filenames[:limit]
@@ -21,3 +20,11 @@ class FoldingFactory:
                                                               test_filenames=test_filenames)
 
         return filenames_by_ids, data_folding
+
+    @staticmethod
+    def __read_train_test(filepath):
+        with open(filepath, "r") as f:
+            parts = []
+            for line in f.readlines():
+                parts.append(line.strip().split(','))
+        return parts[0], parts[1]
