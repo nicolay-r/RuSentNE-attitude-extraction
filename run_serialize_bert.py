@@ -25,5 +25,5 @@ def do(writer):
 
 if __name__ == '__main__':
 
-    # do(TsvWriter(write_header=True))
-    do(OpenNREJsonWriter(text_columns=["text_a", "text_b"]))
+    do(TsvWriter(write_header=True))
+    # do(OpenNREJsonWriter(text_columns=["text_a", "text_b"]))

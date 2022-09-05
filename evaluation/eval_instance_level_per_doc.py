@@ -15,9 +15,12 @@ from evaluation.eval_instance_level import extract_context_opinions_by_row_id
 from evaluation.utils import assign_labels, select_doc_ids, create_filter_labels_func, create_evaluator
 
 
-def __group_text_opinions_by_doc_id(linked_view):
+def __group_text_opinions_by_doc_id(view, storage):
+    assert(isinstance(view, LinkedSamplesStorageView))
+    assert(isinstance(storage, BaseRowsStorage))
+
     text_opinions_by_doc_id = OrderedDict()
-    for linkage in tqdm(linked_view):
+    for linkage in tqdm(view.iter_from_storage(storage)):
         for row in linkage:
             doc_id = row["doc_id"]
             if doc_id not in text_opinions_by_doc_id:
@@ -54,25 +57,25 @@ def text_opinion_per_document_result_evaluator(
     # TODO. #363 нужно переделать API на передачу просто меток, игнорируемых меток.
     no_label = label_scaler.uint_to_label(0)
 
+    etalon_samples_storage = BaseRowsStorage.from_tsv(filepath=etalon_samples_filepath)
+    test_samples_storage = BaseRowsStorage.from_tsv(filepath=test_samples_filepath)
+    predict_samples_storage = BaseRowsStorage.from_tsv(filepath=test_predict_filepath)
+
     # Setup views.
-    etalon_linked_view = LinkedSamplesStorageView(storage=BaseRowsStorage.from_tsv(filepath=etalon_samples_filepath),
-                                                  row_ids_provider=MultipleIDProvider())
-    test_linked_view = LinkedSamplesStorageView(storage=BaseRowsStorage.from_tsv(filepath=test_samples_filepath),
-                                                row_ids_provider=MultipleIDProvider())
-    predict_linked_view = LinkedSamplesStorageView(storage=BaseRowsStorage.from_tsv(filepath=test_predict_filepath),
-                                                   row_ids_provider=MultipleIDProvider())
+    view = LinkedSamplesStorageView(row_ids_provider=MultipleIDProvider())
 
     # Reading collection through storage views.
     etalon_context_opinions_by_row_id = extract_context_opinions_by_row_id(
-        linked_view=etalon_linked_view, label_scaler=label_scaler, no_label=no_label)
+        view=view, storage=etalon_samples_storage, label_scaler=label_scaler, no_label=no_label)
     test_context_opinions_by_row_id = extract_context_opinions_by_row_id(
-        linked_view=test_linked_view, label_scaler=label_scaler, no_label=no_label)
+        view=view, storage=test_samples_storage, label_scaler=label_scaler, no_label=no_label)
 
     # Gathering them by doc_id.
-    etalon_row_ids_by_doc_id = __group_text_opinions_by_doc_id(linked_view=etalon_linked_view)
-    test_row_ids_by_doc_id = __group_text_opinions_by_doc_id(linked_view=test_linked_view)
+    etalon_row_ids_by_doc_id = __group_text_opinions_by_doc_id(view=view, storage=etalon_samples_storage)
+    test_row_ids_by_doc_id = __group_text_opinions_by_doc_id(view=view, storage=test_samples_storage)
 
-    assign_labels(predict_linked_view=predict_linked_view,
+    assign_labels(view=view,
+                  storage=predict_samples_storage,
                   text_opinions=test_context_opinions_by_row_id.values(),
                   row_id_to_context_opin_id_func=lambda row_id: test_context_opinions_by_row_id[row_id].Tag,
                   label_scaler=label_scaler)

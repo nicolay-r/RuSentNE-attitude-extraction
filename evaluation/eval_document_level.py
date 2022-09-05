@@ -1,3 +1,4 @@
+from arekit.common.data.input.readers.tsv import TsvReader
 from tqdm import tqdm
 from os.path import exists
 from collections import OrderedDict
@@ -21,16 +22,17 @@ from evaluation.utils import row_to_context_opinion, row_to_opinion, \
     create_filter_labels_func, assign_labels, select_doc_ids, create_evaluator
 
 
-def __extract_context_opinions_from_test(test_linked_view, label_scaler, default_label):
+def __extract_context_opinions_from_test(test_linked_view, storage, label_scaler, default_label):
     """ return: dict { tid: TextOpinion },
         where:  tid -- is a TextOpininID
     """
     assert(isinstance(test_linked_view, LinkedSamplesStorageView))
+    assert(isinstance(storage, BaseRowsStorage))
     assert(isinstance(label_scaler, BaseLabelScaler))
 
     context_opinion_by_id = OrderedDict()
     context_opinion_by_row_id = OrderedDict()
-    for linkage in tqdm(test_linked_view):
+    for linkage in tqdm(test_linked_view.iter_from_storage(storage)):
         for row in linkage:
             context_opinion = row_to_context_opinion(
                 row=row, label_scaler=label_scaler, default_label=default_label)
@@ -40,16 +42,18 @@ def __extract_context_opinions_from_test(test_linked_view, label_scaler, default
     return context_opinion_by_id, context_opinion_by_row_id
 
 
-def __gather_opinion_and_group_ids_from_view(linked_view, label_scaler, default_label):
+def __gather_opinion_and_group_ids_from_view(linked_view, storage, label_scaler, default_label):
     """ Из связок берем только первое отношение и считаем его Opinion.
         А также группируем TextOpinons относительно первого id.
     """
+    assert(isinstance(linked_view, LinkedSamplesStorageView))
+    assert(isinstance(storage, BaseRowsStorage))
     assert(isinstance(default_label, Label))
 
     opinion_by_row_id = OrderedDict()
     context_opinion_ids_by_row_id = OrderedDict()
     opinions_by_doc_id = OrderedDict()
-    for linkage in tqdm(linked_view):
+    for linkage in tqdm(linked_view.iter_from_storage(storage)):
 
         first_row = linkage[0]
         first_row_id = first_row["id"]
@@ -181,25 +185,26 @@ def opinions_per_document_two_class_result_evaluation(
     no_label = label_scaler.uint_to_label(0)
 
     # Setup views.
-    test_linked_view = LinkedSamplesStorageView(storage=BaseRowsStorage.from_tsv(filepath=test_samples_filepath),
-                                                row_ids_provider=MultipleIDProvider())
-    etalon_linked_view = LinkedSamplesStorageView(storage=BaseRowsStorage.from_tsv(filepath=etalon_samples_filepath),
-                                                  row_ids_provider=MultipleIDProvider())
-    predict_linked_view = LinkedSamplesStorageView(storage=BaseRowsStorage.from_tsv(filepath=test_predict_filepath),
-                                                   row_ids_provider=MultipleIDProvider())
+    reader = TsvReader()
+    test_samples_storage = reader.read(test_samples_filepath)
+    etalon_samples_storage = reader.read(etalon_samples_filepath)
+    test_predict_storage = reader.read(test_predict_filepath)
+
+    view = LinkedSamplesStorageView(row_ids_provider=MultipleIDProvider())
 
     test_context_opinions_by_id, test_context_opinions_by_row_id = __extract_context_opinions_from_test(
-        test_linked_view=test_linked_view, label_scaler=label_scaler, default_label=no_label)
+        test_linked_view=view, storage=test_samples_storage, label_scaler=label_scaler, default_label=no_label)
 
     etalon_opinions_by_row_id, etalon_context_opinion_ids_by_row_id, etalon_opinions_by_doc_id = \
-        __gather_opinion_and_group_ids_from_view(linked_view=etalon_linked_view, label_scaler=label_scaler,
-                                                 default_label=no_label)
+        __gather_opinion_and_group_ids_from_view(
+            linked_view=view, storage=etalon_samples_storage, label_scaler=label_scaler, default_label=no_label)
 
     test_opinions_by_row_id, test_context_opinion_ids_by_row_id, orig_test_opinion_by_doc_id = \
-        __gather_opinion_and_group_ids_from_view(linked_view=test_linked_view, label_scaler=label_scaler,
-                                                 default_label=no_label)
+        __gather_opinion_and_group_ids_from_view(
+            linked_view=view, storage=test_samples_storage, label_scaler=label_scaler, default_label=no_label)
 
-    assign_labels(predict_linked_view=predict_linked_view,
+    assign_labels(view=view,
+                  storage=test_predict_storage,
                   text_opinions=test_context_opinions_by_id.values(),
                   row_id_to_context_opin_id_func=lambda row_id: test_context_opinions_by_row_id[row_id].Tag,
                   label_scaler=label_scaler)

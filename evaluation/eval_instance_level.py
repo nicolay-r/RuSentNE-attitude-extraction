@@ -1,10 +1,11 @@
+from arekit.common.data.input.readers.tsv import TsvReader
+from arekit.common.data.storages.base import BaseRowsStorage
 from tqdm import tqdm
 from collections import OrderedDict
 from os.path import exists
 
 from arekit.common.data.views.samples import LinkedSamplesStorageView
 from arekit.common.data.row_ids.multiple import MultipleIDProvider
-from arekit.common.data.storages.base import BaseRowsStorage
 from arekit.common.evaluation.comparators.text_opinions import TextOpinionBasedComparator
 from arekit.common.evaluation.evaluators.modes import EvaluationModes
 from arekit.common.evaluation.pairs.single import SingleDocumentDataPairsToCompare
@@ -13,13 +14,16 @@ from SentiNEREL.labels.scaler import PosNegNeuRelationsLabelScaler
 from evaluation.utils import assign_labels, row_to_context_opinion, create_evaluator, create_filter_labels_func
 
 
-def extract_context_opinions_by_row_id(linked_view, label_scaler, no_label):
+def extract_context_opinions_by_row_id(view, storage, label_scaler, no_label):
     """ Reading data from tsv-gz via storage view
         returns: dict
             (row_id, text_opinion)
     """
+    assert(isinstance(view, LinkedSamplesStorageView))
+    assert(isinstance(storage, BaseRowsStorage))
+
     context_opinions_by_row_id = OrderedDict()
-    for linkage in tqdm(linked_view):
+    for linkage in tqdm(view.iter_from_storage(storage)):
         for row in linkage:
             context_opinions_by_row_id[row["id"]] = row_to_context_opinion(
                 row=row, label_scaler=label_scaler, default_label=no_label)
@@ -55,13 +59,12 @@ def text_opinion_per_collection_result_evaluator(
     # TODO. #363 нужно переделать API на передачу просто меток, игнорируемых меток.
     no_label = label_scaler.uint_to_label(0)
 
-    # Setup views.
-    etalon_linked_view = LinkedSamplesStorageView(storage=BaseRowsStorage.from_tsv(filepath=etalon_samples_filepath),
-                                                  row_ids_provider=MultipleIDProvider())
-    test_linked_view = LinkedSamplesStorageView(storage=BaseRowsStorage.from_tsv(filepath=test_samples_filepath),
-                                                row_ids_provider=MultipleIDProvider())
-    predict_linked_view = LinkedSamplesStorageView(storage=BaseRowsStorage.from_tsv(filepath=test_predict_filepath),
-                                                   row_ids_provider=MultipleIDProvider())
+    reader = TsvReader()
+    etalon_samples_storage = reader.read(target=etalon_samples_filepath)
+    test_samples_storage = reader.read(target=test_samples_filepath)
+    predict_samples_storage = reader.read(target=test_predict_filepath)
+
+    view = LinkedSamplesStorageView(row_ids_provider=MultipleIDProvider())
 
     # Setup filter
     filter_context_opinion_func = create_filter_labels_func(
@@ -71,10 +74,11 @@ def text_opinion_per_collection_result_evaluator(
 
     # Reading collection through storage views.
     etalon_context_opinions_by_row_id = extract_context_opinions_by_row_id(
-        linked_view=etalon_linked_view, label_scaler=label_scaler, no_label=no_label)
+        view=view, storage=etalon_samples_storage, label_scaler=label_scaler, no_label=no_label)
     test_context_opinions_by_row_id = extract_context_opinions_by_row_id(
-        linked_view=test_linked_view, label_scaler=label_scaler, no_label=no_label)
-    assign_labels(predict_linked_view=predict_linked_view,
+        view=view, storage=test_samples_storage, label_scaler=label_scaler, no_label=no_label)
+    assign_labels(view=view,
+                  storage=predict_samples_storage,
                   text_opinions=test_context_opinions_by_row_id.values(),
                   row_id_to_context_opin_id_func=lambda row_id:
                       test_context_opinions_by_row_id[row_id].Tag,

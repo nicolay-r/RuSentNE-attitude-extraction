@@ -2,6 +2,9 @@ from collections import Iterable
 from itertools import chain
 
 import numpy as np
+from arekit.common.data import const
+from arekit.common.data.storages.base import BaseRowsStorage
+from arekit.common.data.views.samples import LinkedSamplesStorageView
 from arekit.common.evaluation.comparators.text_opinions import TextOpinionBasedComparator
 from arekit.common.evaluation.context_opinion import ContextOpinion
 from arekit.common.labels.base import Label
@@ -12,9 +15,11 @@ from arekit.contrib.utils.evaluation.evaluators.two_class import TwoClassEvaluat
 from tqdm import tqdm
 
 
-def assign_labels(predict_linked_view, text_opinions, row_id_to_context_opin_id_func, label_scaler):
+def assign_labels(view, storage, text_opinions, row_id_to_context_opin_id_func, label_scaler):
     """ Назначение меток с результата разметки на TextOpinion соответствующего множества.
     """
+    assert(isinstance(view, LinkedSamplesStorageView))
+    assert(isinstance(storage, BaseRowsStorage))
     assert(callable(row_id_to_context_opin_id_func))
 
     text_opinons_by_id = {}
@@ -22,9 +27,9 @@ def assign_labels(predict_linked_view, text_opinions, row_id_to_context_opin_id_
         assert (isinstance(context_opinion, ContextOpinion))
         text_opinons_by_id[context_opinion.Tag] = context_opinion
 
-    for linkage in tqdm(predict_linked_view):
+    for linkage in tqdm(view.iter_from_storage(storage)):
         for row in linkage:
-            text_opinion_id = row_id_to_context_opin_id_func(row["id"])
+            text_opinion_id = row_id_to_context_opin_id_func(row[const.ID])
             context_opinion = text_opinons_by_id[text_opinion_id]
             uint_labels = [int(row[str(c)]) for c in range(label_scaler.classes_count())]
             context_opinion.set_label(label_scaler.uint_to_label(int(np.argmax(uint_labels))))
