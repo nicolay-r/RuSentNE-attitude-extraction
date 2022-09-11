@@ -170,6 +170,8 @@ class TestEvaluation(unittest.TestCase):
         self.__test_core(doc_ids_modes=doc_ids_modes, evaluator_types=evaluator_types, data_types=data_types)
 
     def test_three_class(self):
+        """ Оценка по трем классам для всех моеделей (то есть учитываем разметку нейтрального в оценке)
+        """
         doc_ids_modes = ["etalon"]
         evaluator_types = ["three_class"]
         data_types = [DataType.Train, DataType.Dev]
