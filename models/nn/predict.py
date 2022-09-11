@@ -35,6 +35,8 @@ from SentiNEREL.labels.scaler import PosNegNeuRelationsLabelScaler
 
 
 class TensorflowNetworkInferencePipelineItem(BasePipelineItem):
+    """ TODO: This is going to be an external component for AREnets. Within next AREkit release.
+    """
 
     def __init__(self, model_name, bags_collection_type, model_input_type, predict_writer,
                  data_type, bag_size, bags_per_minibatch, nn_io, labels_scaler, callbacks,
