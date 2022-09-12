@@ -50,11 +50,11 @@ class TestEvaluation(unittest.TestCase):
 
     samples = {
         # for 2 classes only [test].
-        "test": ["serialize-{}", "sample-test-0.tsv.gz", "sample-etalon-0.tsv.gz"],
+        "test": ["sample-test-0.tsv.gz", "sample-etalon-0.tsv.gz"],
         # for 2 and 3 classes [train].
-        "train": ["serialize-{}", "sample-train-0.tsv.gz", "sample-train-0.tsv.gz"],
+        "train": ["sample-train-0.tsv.gz", "sample-train-0.tsv.gz"],
         # for 3 classes only [test].
-        "dev": ["serialize-{}", "sample-test-0.tsv.gz", "sample-dev-0.tsv.gz"]
+        "dev": ["sample-test-0.tsv.gz", "sample-dev-0.tsv.gz"]
     }
 
     @staticmethod
@@ -72,8 +72,10 @@ class TestEvaluation(unittest.TestCase):
     @staticmethod
     def show_acc(total_result, line_end=''):
         assert(isinstance(total_result, OrderedDict))
-        data = ",".join([str(round(total_result["acc"], 4))])
-        print(data + ",", end=line_end)
+        data = ",".join([str(round(total_result["acc"], 4))]).strip()
+        if data[-1] != ',':
+            data += ","
+        print(data, end=line_end)
 
     @staticmethod
     def do_analysis(td_result, test_samples_filepath, etalon_samples_filepath, test_predict_filepath):
@@ -91,6 +93,8 @@ class TestEvaluation(unittest.TestCase):
         if not os.path.exists(test_samples_filepath) or \
             not os.path.exists(etalon_samples_filepath) or \
                 not os.path.exists(test_predict_filepath):
+            print("NOT FOUND: {}".format(etalon_samples_filepath))
+            print("NOT FOUND: {}".format(test_predict_filepath))
             return
 
         print("Evaluate for [{predict}], using {dataset}".format(
@@ -133,9 +137,11 @@ class TestEvaluation(unittest.TestCase):
         # show_acc(td_result.TotalResult)
         # show_acc(o_result.TotalResult, line_end="\n")
 
-    def __run_test(self, data_type, serialize_dir, samples_test, samples_etalon, evaluator_types, doc_ids_modes):
+    def __run_test(self, data_type, samples_test, samples_etalon, evaluator_types, doc_ids_modes):
+        for model_template in self.__models:
 
-        for model_template in self.models:
+            serialize_dir = "serialize-bert" if "bert-" in model_template else "serialize-nn"
+
             source_filename = model_template.format(self.datatypes_mapping[data_type])
             test_predict_filepath = join(self.__output_dir, serialize_dir, source_filename)
             etalon_samples_filepath = join(self.__output_dir, serialize_dir, samples_etalon)
@@ -151,13 +157,11 @@ class TestEvaluation(unittest.TestCase):
 
     def __test_core(self, doc_ids_modes, evaluator_types, data_types):
         for data_type in data_types:
-            serialize_dir, samples_test, samples_etalon = self.samples[self.datatypes_mapping[data_type]]
-            serialize_dir = serialize_dir.format("bert" if "bert-" in serialize_dir else "nn")
+            samples_test, samples_etalon = self.samples[self.datatypes_mapping[data_type]]
 
             self.__run_test(data_type=data_type,
                             doc_ids_modes=doc_ids_modes,
                             evaluator_types=evaluator_types,
-                            serialize_dir=serialize_dir,
                             samples_test=samples_test,
                             samples_etalon=samples_etalon)
 
