@@ -138,7 +138,7 @@ class TestEvaluation(unittest.TestCase):
         # show_acc(o_result.TotalResult, line_end="\n")
 
     def __run_test(self, data_type, samples_test, samples_etalon, evaluator_types, doc_ids_modes):
-        for model_template in self.__models:
+        for model_template in self.models:
 
             serialize_dir = "serialize-bert" if "bert-" in model_template else "serialize-nn"
 
