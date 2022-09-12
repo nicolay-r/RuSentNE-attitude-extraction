@@ -17,7 +17,7 @@ class BertInferencePipelineItem(BasePipelineItem):
 
     def __init__(self, bert_config_file, model_checkpoint_path, vocab_filepath,
                  predict_writer, labels_scaler, max_seq_length, do_lowercase,
-                 data_type, data_folding, batch_size=10):
+                 data_type, batch_size=10):
         assert(isinstance(predict_writer, BasePredictWriter))
         assert(isinstance(labels_scaler, BaseLabelScaler))
         assert(isinstance(do_lowercase, bool))
@@ -41,7 +41,6 @@ class BertInferencePipelineItem(BasePipelineItem):
         self.__predict_provider = BasePredictProvider()
         self.__batch_size = batch_size
         self.__data_type = data_type
-        self.__data_folding = data_folding
 
     def apply_core(self, input_data, pipeline_ctx):
         assert(isinstance(input_data, dict))
