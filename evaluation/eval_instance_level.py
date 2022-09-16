@@ -84,11 +84,6 @@ def text_opinion_per_collection_result_evaluator(
                       test_context_opinions_by_row_id[row_id].Tag,
                   label_scaler=label_scaler)
 
-    eee = len(etalon_context_opinions_by_row_id)
-    ttt = len(test_context_opinions_by_row_id)
-    print(eee)
-    print(ttt)
-
     # Remove the one with NoLabel instance.
     test_context_opinions_by_row_id = {
         row_id: text_opinion for row_id, text_opinion in test_context_opinions_by_row_id.items()
@@ -99,11 +94,6 @@ def text_opinion_per_collection_result_evaluator(
         row_id: text_opinion for row_id, text_opinion in etalon_context_opinions_by_row_id.items()
         if filter_context_opinion_func(text_opinion)
     }
-
-    eee = len(etalon_context_opinions_by_row_id)
-    ttt = len(test_context_opinions_by_row_id)
-    print(eee)
-    print(ttt)
 
     # Composing evaluator.
     evaluator = create_evaluator(evaluator_type=evaluator_type,
