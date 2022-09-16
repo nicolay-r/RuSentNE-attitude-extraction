@@ -16,7 +16,7 @@ from arekit.contrib.utils.pipelines.items.text.tokenizer import DefaultTextToken
 from SentiNEREL.doc_ops import CollectionDocOperation
 from SentiNEREL.folding.factory import FoldingFactory
 from SentiNEREL.labels.formatter import SentimentLabelFormatter
-from SentiNEREL.pipelines.collection import prepare_data_pipelines
+from SentiNEREL.pipelines.data import prepare_data_pipelines
 
 
 class CroppedBertSampleRowProvider(BaseSampleRowProvider):

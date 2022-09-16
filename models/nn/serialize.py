@@ -27,8 +27,8 @@ from SentiNEREL.doc_ops import CollectionDocOperation
 from SentiNEREL.folding.factory import FoldingFactory
 from SentiNEREL.labels.formatter import SentimentLabelFormatter
 from SentiNEREL.labels.scaler import PosNegNeuRelationsLabelScaler
-from SentiNEREL.pipelines.collection import prepare_data_pipelines
 from SentiNEREL.entity.formatter import CustomTypedEntitiesFormatter
+from SentiNEREL.pipelines.data import prepare_data_pipelines
 
 
 def serialize_nn(output_dir, split_filepath, writer, folding_type="fixed",
