@@ -50,11 +50,11 @@ class TestEvaluation(unittest.TestCase):
 
     samples = {
         # for 2 classes only [test].
-        "test": ["sample-test-0.tsv.gz", "sample-etalon-0.tsv.gz"],
+        "test": [DataType.Test, "sample-test-0.tsv.gz", "sample-etalon-0.tsv.gz"],
         # for 2 and 3 classes [train].
-        "train": ["sample-train-0.tsv.gz", "sample-train-0.tsv.gz"],
+        "train": [DataType.Train, "sample-train-0.tsv.gz", "sample-train-0.tsv.gz"],
         # for 3 classes only [test].
-        "dev": ["sample-test-0.tsv.gz", "sample-dev-0.tsv.gz"]
+        "dev": [DataType.Test, "sample-test-0.tsv.gz", "sample-dev-0.tsv.gz"]
     }
 
     @staticmethod
@@ -101,7 +101,7 @@ class TestEvaluation(unittest.TestCase):
             predict=test_predict_filepath, dataset=etalon_samples_filepath))
 
         labels_stat = calculate_predicted_count_per_label(test_predict_filepath)
-        print("Labels stat:")
+        print("Labels stat: {}".format(test_predict_filepath))
         print(list(sorted(labels_stat.items(), key=lambda item: item[0])))
 
         to_result = text_opinion_per_collection_result_evaluator(
@@ -137,12 +137,12 @@ class TestEvaluation(unittest.TestCase):
         # show_acc(td_result.TotalResult)
         # show_acc(o_result.TotalResult, line_end="\n")
 
-    def __run_test(self, data_type, samples_test, samples_etalon, evaluator_types, doc_ids_modes):
+    def __run_test(self, predict_data_type, samples_test, samples_etalon, evaluator_types, doc_ids_modes):
         for model_template in self.models:
 
             serialize_dir = "serialize-bert" if "bert-" in model_template else "serialize-nn"
 
-            source_filename = model_template.format(self.datatypes_mapping[data_type])
+            source_filename = model_template.format(self.datatypes_mapping[predict_data_type])
             test_predict_filepath = join(self.__output_dir, serialize_dir, source_filename)
             etalon_samples_filepath = join(self.__output_dir, serialize_dir, samples_etalon)
             test_samples_filepath = join(self.__output_dir, serialize_dir, samples_test)
@@ -157,9 +157,9 @@ class TestEvaluation(unittest.TestCase):
 
     def __test_core(self, doc_ids_modes, evaluator_types, data_types):
         for data_type in data_types:
-            samples_test, samples_etalon = self.samples[self.datatypes_mapping[data_type]]
+            predict_data_type, samples_test, samples_etalon = self.samples[self.datatypes_mapping[data_type]]
 
-            self.__run_test(data_type=data_type,
+            self.__run_test(predict_data_type=predict_data_type,
                             doc_ids_modes=doc_ids_modes,
                             evaluator_types=evaluator_types,
                             samples_test=samples_test,
@@ -170,7 +170,7 @@ class TestEvaluation(unittest.TestCase):
         """
         doc_ids_modes = ["etalon"]
         evaluator_types = ["two_class"]
-        data_types = [DataType.Train, DataType.Test]
+        data_types = [DataType.Test, DataType.Train]
         self.__test_core(doc_ids_modes=doc_ids_modes, evaluator_types=evaluator_types, data_types=data_types)
 
     def test_three_class(self):
@@ -178,7 +178,7 @@ class TestEvaluation(unittest.TestCase):
         """
         doc_ids_modes = ["etalon"]
         evaluator_types = ["three_class"]
-        data_types = [DataType.Train, DataType.Dev]
+        data_types = [DataType.Dev]
         self.__test_core(doc_ids_modes=doc_ids_modes, evaluator_types=evaluator_types, data_types=data_types)
 
     def test_collections_stat(self):
