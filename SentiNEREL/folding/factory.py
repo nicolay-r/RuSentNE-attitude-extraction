@@ -12,7 +12,7 @@ class FoldingFactory:
             Можно ограничить число документов, чтобы например потестировать. (limit)
         """
 
-        train_filenames, test_filenames = FoldingFactory.__read_train_test(fixed_split_filepath)
+        train_filenames, test_filenames = FoldingFactory._read_train_test(fixed_split_filepath)
         if limit is not None:
             train_filenames = train_filenames[:limit]
             test_filenames = test_filenames[:limit]
@@ -22,7 +22,7 @@ class FoldingFactory:
         return filenames_by_ids, data_folding
 
     @staticmethod
-    def __read_train_test(filepath):
+    def _read_train_test(filepath):
         with open(filepath, "r") as f:
             parts = []
             for line in f.readlines():
