@@ -5,6 +5,7 @@ from os.path import join, dirname, realpath
 sys.path.append('../')
 
 from arekit.common.entities.base import Entity
+from arekit.contrib.source.sentinerel.io_utils import SentiNerelVersions
 from arekit.contrib.source.brat.entities.compound import BratCompoundEntity
 from arekit.contrib.source.sentinerel.reader import SentiNerelDocReader
 
@@ -50,10 +51,14 @@ class TestNestedRelations(unittest.TestCase):
     def test_reading(self):
         train_filenames, test_filenames = FoldingFactory._read_train_test("../data/split_fixed.txt")
 
-        total = 0
+        total = {
+            "POSITIVE_TO": 0,
+            "NEGATIVE_TO": 0
+        }
 
         for file_name in train_filenames + test_filenames:
-            news = SentiNerelDocReader.read_document(file_name, doc_id=0, entities_to_ignore=[])
+            news = SentiNerelDocReader.read_document(file_name, doc_id=0, entities_to_ignore=[],
+                                                     version=SentiNerelVersions.V2)
 
             top = {}
             nested = {}
