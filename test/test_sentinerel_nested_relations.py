@@ -58,7 +58,7 @@ class TestNestedRelations(unittest.TestCase):
 
         for file_name in train_filenames + test_filenames:
             news = SentiNerelDocReader.read_document(file_name, doc_id=0, entities_to_ignore=[],
-                                                     version=SentiNerelVersions.V2)
+                                                     version=SentiNerelVersions.V21)
 
             top = {}
             nested = {}
