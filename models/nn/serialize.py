@@ -26,7 +26,7 @@ from arekit.contrib.utils.vectorizers.random_norm import RandomNormalVectorizer
 from SentiNEREL.doc_ops import CollectionDocOperation
 from SentiNEREL.folding.factory import FoldingFactory
 from SentiNEREL.labels.formatter import SentimentLabelFormatter
-from SentiNEREL.labels.scaler import PosNegNeuRelationsLabelScaler
+from SentiNEREL.labels.scaler import PosNegNeuRelationsLabelScaler, ThreeLabelScaler
 from SentiNEREL.entity.formatter import CustomTypedEntitiesFormatter
 from SentiNEREL.pipelines.data import prepare_data_pipelines
 
@@ -57,7 +57,7 @@ def serialize_nn(output_dir, split_filepath, writer, folding_type="fixed",
     ctx = NetworkSerializationContext(
         labels_scaler=labels_scaler,
         pos_tagger=pos_tagger,
-        frame_roles_label_scaler=labels_scaler,
+        frame_roles_label_scaler=ThreeLabelScaler(),
         frames_connotation_provider=frames_connotation_provider)
 
     embedding = load_embedding_news_mystem_skipgram_1000_20_2015(stemmer)
