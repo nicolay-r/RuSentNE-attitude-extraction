@@ -10,6 +10,8 @@ from arekit.contrib.utils.pipelines.text_opinion.annot.predefined import Predefi
 from arekit.contrib.utils.pipelines.text_opinion.filters.distance_based import DistanceLimitedTextOpinionFilter
 from arekit.contrib.utils.pipelines.text_opinion.filters.entity_based import EntityBasedTextOpinionFilter
 from arekit.contrib.utils.processing.lemmatization.mystem import MystemWrapper
+from arekit.contrib.utils.sources.sentinerel.text_opinion.prof_per_org_filter import \
+    ProfessionAsCharacteristicSentimentTextOpinionFilter
 from arekit.contrib.utils.synonyms.stemmer_based import StemmerBasedSynonymCollection
 
 from SentiNEREL.pipelines.etalon import create_etalon_pipeline, create_etalon_with_no_label_pipeline
@@ -27,6 +29,7 @@ def prepare_data_pipelines(text_parser, doc_ops, label_formatter, terms_per_cont
 
     text_opinion_filters = [
         EntityBasedTextOpinionFilter(entity_filter=CollectionEntityFilter()),
+        ProfessionAsCharacteristicSentimentTextOpinionFilter(),
         DistanceLimitedTextOpinionFilter(terms_per_context)
     ]
 
