@@ -186,6 +186,7 @@ class TestEvaluation(unittest.TestCase):
         show_stat_for_samples(samples_filepath=join(self.__output_dir, "serialize-nn", "sample-train-0.tsv.gz"), no_label_uint=0)
         show_stat_for_samples(samples_filepath=join(self.__output_dir, "serialize-nn", "sample-test-0.tsv.gz"), no_label_uint=0)
         show_stat_for_samples(samples_filepath=join(self.__output_dir, "serialize-nn", "sample-etalon-0.tsv.gz"), no_label_uint=0)
+        show_stat_for_samples(samples_filepath=join(self.__output_dir, "serialize-nn", "sample-dev-0.tsv.gz"), no_label_uint=0)
 
         # show_stat_for_samples(samples_filepath=join(self.__output_dir, "serialize-rusentrel-bert", "sample-train-0.tsv.gz"), no_label_uint=0)
         # show_stat_for_samples(samples_filepath=join(self.__output_dir, "serialize-rusentrel-bert", "sample-test-0.tsv.gz"), no_label_uint=0)
