@@ -23,6 +23,35 @@ Powered by [AREkit-0.23.0](https://github.com/nicolay-r/AREkit) framework, based
 pip install -r dependencies.txt
 ```
 
+### Serialize Collection
+
+For conventional neural networks:
+```python
+from models.nn.serialize import serialize_nn
+
+serialize_nn(output_dir="_out/serialize-nn", 
+             split_filepath="data/split_fixed.txt", 
+             writer=TsvWriter(write_header=True))
+```
+
+For `BERT` model:
+```python
+from models.bert.serialize import CroppedBertSampleRowProvider, serialize_bert
+
+serialize_bert(
+    terms_per_context=50,
+    output_dir="_out/serialize-bert/",
+    split_filepath="data/split_fixed.txt",
+    writer=TsvWriter(),
+    sample_row_provider=CroppedBertSampleRowProvider(
+        crop_window_size=50,
+        label_scaler=PosNegNeuRelationsLabelScaler(),
+        text_b_template=BertTextBTemplates.NLI.value,
+        text_terms_mapper=BertDefaultStringTextTermsMapper(
+            entity_formatter=CustomTypedEntitiesFormatter()
+        )))
+```
+
 ### Training Neural Networks (Tensorflow-based)
 
 Using the embedded `tensorflow`-based models.
@@ -31,6 +60,8 @@ dedicated for the sentiment relation extraction (`ModelNames` enum type).
 Model training process, based on the SentiNEREL could be launched as follows:
 
 ```python
+from models.nn.train import train_nn
+
 train_nn(output_dir="_out/serialize-nn",
          model_log_dir="_model",
          model_name=ModelNames.AttEndsCNN,
