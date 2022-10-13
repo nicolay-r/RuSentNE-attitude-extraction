@@ -23,6 +23,23 @@ Powered by [AREkit-0.23.0](https://github.com/nicolay-r/AREkit) framework, based
 pip install -r dependencies.txt
 ```
 
+### Training Neural Networks (Tensorflow-based)
+
+Using the embedded `tensorflow`-based models.
+The related AREkit module provides a list of the already implemented NN models,
+dedicated for the sentiment relation extraction (`ModelNames` enum type).
+Model training process, based on the SentiNEREL could be launched as follows:
+
+```python
+train_nn(output_dir="_out/serialize-nn",
+         model_log_dir="_model",
+         model_name=ModelNames.AttEndsCNN,
+         split_filepath="data/split_fixed.txt")
+```
+
+The latter produces the model at `_out/serialize_nn` with logging information at `_model` dir, and 
+data split based on the `data/split_fixed.txt` file.
+
 ### Sponsors
 
 <p align="left">
