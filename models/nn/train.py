@@ -8,7 +8,7 @@ from arekit.contrib.networks.core.callback.hidden_input import InputHiddenStates
 from arekit.contrib.networks.core.callback.stat import TrainingStatProviderCallback
 from arekit.contrib.networks.core.callback.train_limiter import TrainingLimiterCallback
 from arekit.contrib.networks.core.feeding.bags.collection.single import SingleBagsCollection
-from arekit.contrib.networks.core.model_io import NeuralNetworkModelIO
+from arekit.contrib.networks.core.model_io import TensorflowNeuralNetworkModelIO
 from arekit.contrib.networks.enum_input_types import ModelInputType
 from arekit.contrib.networks.enum_name_types import ModelNames
 from arekit.contrib.networks.factory import create_network_and_network_config_funcs
@@ -25,25 +25,16 @@ def train_nn(output_dir, model_log_dir, split_filepath, folding_type="fixed",
              epochs_count=100, labels_count=3, model_name=ModelNames.CNN,
              bags_per_minibatch=32, bag_size=1, terms_per_context=50,
              learning_rate=0.01, embedding_dropout_keep_prob=1.0,
-             dropout_keep_prob=0.9, train_acc_limit=0.99, finetune_existed=True):
+             dropout_keep_prob=0.9, train_acc_limit=0.99):
     """ Training TensorFlow-based model (version 1.14),
         provided by contributional part of the AREkit framework.
         From the list of the predefined moels.
-
-        finetune_existed: bool
-            flag that shows wheter there is need to keep saved state and proceed with its finetunning.
     """
     assert(isinstance(output_dir, str))
-    assert(isinstance(finetune_existed, bool))
 
     full_model_name = "-".join([folding_type, model_name.value])
     model_target_dir = join(model_log_dir, full_model_name)
-
-    model_io = NeuralNetworkModelIO(full_model_name=full_model_name,
-                                    target_dir=output_dir,
-                                    source_dir=output_dir if finetune_existed else None,
-                                    model_name_tag=u'')
-
+    model_io = TensorflowNeuralNetworkModelIO(model_name=full_model_name, target_dir=output_dir)
     data_writer = NpzDataWriter()
 
     network_func, network_config_func = create_network_and_network_config_funcs(

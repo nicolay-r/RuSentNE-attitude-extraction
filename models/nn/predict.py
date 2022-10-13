@@ -16,7 +16,7 @@ from arekit.contrib.networks.core.embedding_io import BaseEmbeddingIO
 from arekit.contrib.networks.core.feeding.bags.collection.single import SingleBagsCollection
 from arekit.contrib.networks.core.model import BaseTensorflowModel
 from arekit.contrib.networks.core.model_ctx import TensorflowModelContext
-from arekit.contrib.networks.core.model_io import NeuralNetworkModelIO
+from arekit.contrib.networks.core.model_io import TensorflowNeuralNetworkModelIO
 from arekit.contrib.networks.core.pipeline.item_fit import MinibatchFittingPipelineItem
 from arekit.contrib.networks.core.pipeline.item_keep_hidden import MinibatchHiddenFetcherPipelineItem
 from arekit.contrib.networks.core.pipeline.item_predict import EpochLabelsPredictorPipelineItem
@@ -148,11 +148,9 @@ def predict_nn(output_dir, embedding_dir, samples_dir, data_folding_name="fixed"
     assert(isinstance(samples_dir, str))
 
     data_folding = NoFolding(doc_ids=[], supported_data_type=[data_type])
-    full_model_name = "-".join([data_folding_name, model_name.value])
-    model_io = NeuralNetworkModelIO(full_model_name=full_model_name,
-                                    target_dir=output_dir,
-                                    source_dir=output_dir,
-                                    model_name_tag=u'')
+    model_io = TensorflowNeuralNetworkModelIO(
+        model_name="-".join([data_folding_name, model_name.value]),
+        source_dir=output_dir)
 
     ppl = BasePipeline(pipeline=[
         TensorflowNetworkInferencePipelineItem(
