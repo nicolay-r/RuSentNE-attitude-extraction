@@ -25,19 +25,19 @@ class TestEvaluation(unittest.TestCase):
 
     models = [
         # ----- nn-based
-        "predict-opennre-pcnn-{}.tsv.gz",
-        "predict-opennre-cnn-{}.tsv.gz",
-        "predict-cnn-{}.tsv.gz",
-        "predict-pcnn-{}.tsv.gz",
-        "predict-att-cnn-{}.tsv.gz",
-        "predict-att-pcnn-{}.tsv.gz",
-        "predict-rnn-{}.tsv.gz",
-        "predict-rcnn-{}.tsv.gz",
-        "predict-ian-ends-{}.tsv.gz",
-        "predict-self-att-bilstm-{}.tsv.gz",
+        # "predict-opennre-pcnn-{}.tsv.gz",
+        # "predict-opennre-cnn-{}.tsv.gz",
+        # "predict-cnn-{}.tsv.gz",
+        # "predict-pcnn-{}.tsv.gz",
+        # "predict-att-cnn-{}.tsv.gz",
+        # "predict-att-pcnn-{}.tsv.gz",
+        # "predict-rnn-{}.tsv.gz",
+        # "predict-rcnn-{}.tsv.gz",
+        # "predict-ian-ends-{}.tsv.gz",
+        # "predict-self-att-bilstm-{}.tsv.gz",
         # ------ bert-based
-        "predict-bert-ra-{}.tsv.gz",
-        "predict-bert-ra-rsr-{}.tsv.gz",
+        # "predict-bert-ra-{}.tsv.gz",
+        # "predict-bert-ra-rsr-{}.tsv.gz",
         "predict-bert-ra-rsr-ft-{}.tsv.gz",
         "predict-bert-base-multilingual-cased-{}.tsv.gz",
         "predict-DeepPavlov-rubert-base-cased-{}.tsv.gz",
@@ -87,7 +87,8 @@ class TestEvaluation(unittest.TestCase):
         eval_errors_df.to_csv(target, compression='infer', sep="\t", encoding='utf-8')
 
     @staticmethod
-    def do_eval(evaluator_type, test_predict_filepath, etalon_samples_filepath, test_samples_filepath, doc_ids_mode):
+    def do_eval(evaluator_type, test_predict_filepath, etalon_samples_filepath, test_samples_filepath, doc_ids_mode,
+                do_analysis=False):
         assert(isinstance(doc_ids_mode, str))
 
         if not os.path.exists(test_samples_filepath) or \
@@ -117,10 +118,11 @@ class TestEvaluation(unittest.TestCase):
             etalon_samples_filepath=etalon_samples_filepath,
             test_samples_filepath=test_samples_filepath)
 
-        TestEvaluation.do_analysis(td_result=td_result,
-                                   test_samples_filepath=test_samples_filepath,
-                                   etalon_samples_filepath=etalon_samples_filepath,
-                                   test_predict_filepath=test_predict_filepath)
+        if do_analysis:
+            TestEvaluation.do_analysis(td_result=td_result,
+                                       test_samples_filepath=test_samples_filepath,
+                                       etalon_samples_filepath=etalon_samples_filepath,
+                                       test_predict_filepath=test_predict_filepath)
 
         o_result = opinions_per_document_two_class_result_evaluation(
             evaluator_type=evaluator_type,
@@ -178,7 +180,7 @@ class TestEvaluation(unittest.TestCase):
         """
         doc_ids_modes = ["etalon"]
         evaluator_types = ["three_class"]
-        data_types = [DataType.Dev]
+        data_types = [DataType.Train]
         self.__test_core(doc_ids_modes=doc_ids_modes, evaluator_types=evaluator_types, data_types=data_types)
 
     def test_collections_stat(self):

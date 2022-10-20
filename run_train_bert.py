@@ -1,13 +1,13 @@
 from arekit.common.pipeline.base import BasePipeline
 from models.bert.states import BERT_CONFIG_PATH, BERT_DO_LOWERCASE, BERT_CKPT_PATH, BERT_VOCAB_PATH, \
-    BERT_FINETUNED2_MODEL_PATHDIR
+    BERT_FINETUNED2_MODEL_PATHDIR, BERT_FINETUNED_CKPT_PATH
 from models.bert.train import BertFinetunePipelineItem
 
 if __name__ == '__main__':
 
     ppl = BasePipeline([
         BertFinetunePipelineItem(bert_config_file=BERT_CONFIG_PATH,
-                                 model_checkpoint_path=BERT_CKPT_PATH,
+                                 model_checkpoint_path=BERT_FINETUNED_CKPT_PATH,
                                  vocab_filepath=BERT_VOCAB_PATH,
                                  do_lowercase=BERT_DO_LOWERCASE,
                                  max_seq_length=128,
