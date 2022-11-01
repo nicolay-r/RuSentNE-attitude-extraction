@@ -19,7 +19,7 @@ Powered by [AREkit-0.23.0](https://github.com/nicolay-r/AREkit) framework, based
 * [Installation](#installation)
 * [Serialize SentiNEREL](#serialize-collection)
 * [Training](#training)
-    * [CNN/RNN-based models (`tensorflow` based)](#neural-networks-tensorflow-based)
+    * [CNN/RNN-based models](#neural-networks)
 
 ## Installation
 
