@@ -1,10 +1,11 @@
-## SentiNEREL Sentiment Attitude Extraction Studies
+## RuSentNE Sentiment Attitude Extraction Studies
 
 ![](https://img.shields.io/badge/Python-3.6-brightgreen.svg)
 ![](https://img.shields.io/badge/AREkit-0.23.0-orange.svg)
 
 This repository represents studies related to sentiment attitude extraction, provided for 
-sentiment relations of the [NEREL dataset](https://github.com/nerel-ds/nerel).
+sentiment relations of the [NEREL-based dataset](https://github.com/nerel-ds/nerel), dubbed as **SentiNEREL**.
+
 The following spreadsheet represents ML-models benchmark evaluation results
 obtained for the sentiment attitude relation extraction:
 
