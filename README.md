@@ -13,9 +13,12 @@ obtained for the sentiment attitude relation extraction:
 Powered by [AREkit-0.23.0](https://github.com/nicolay-r/AREkit) framework, based on the tutorial:
 [Binding a custom annotated collection for Relation Extraction](https://nicolay-r.github.io/blog/articles/2022-08/arekit-collection-bind).
 
-<p align="center">
-    <img src="data/images/nerel.png"/>
-</p>
+## Contents
+
+* [Installation](#installation)
+* [Serialize SentiNEREL](#serialize-collection)
+* [Training](#training)
+    * [CNN/RNN-based models (`tensorflow` based)](#neural-networks-tensorflow-based)
 
 ## Installation
 
@@ -23,7 +26,7 @@ Powered by [AREkit-0.23.0](https://github.com/nicolay-r/AREkit) framework, based
 pip install -r dependencies.txt
 ```
 
-### Serialize Collection
+## Serialize Collection
 
 For conventional neural networks:
 ```python
@@ -52,10 +55,15 @@ serialize_bert(
         )))
 ```
 
-### Training Neural Networks (Tensorflow-based)
+[Back to Top](#contents)
+
+## Training 
+
+### Neural Networks
 
 Using the embedded `tensorflow`-based models.
-The related AREkit module provides a list of the already implemented NN models,
+The related AREkit module provides a 
+[list of the supported models](https://github.com/nicolay-r/AREkit/tree/0.22.1-rc/arekit/contrib/networks#models-list),
 dedicated for the sentiment relation extraction (`ModelNames` enum type).
 Model training process, based on the SentiNEREL could be launched as follows:
 
@@ -70,6 +78,8 @@ train_nn(output_dir="_out/serialize-nn",
 
 The latter produces the model at `_out/serialize_nn` with logging information at `_model` dir, and 
 data split based on the `data/split_fixed.txt` file.
+
+[Back to Top](#contents)
 
 ### Sponsors
 
