@@ -58,6 +58,19 @@ serialize_bert(
 
 [Back to Top](#contents)
 
+## Download
+List of the `OpenNRE` pretrained, BERT-based models:
+* [ra4_DeepPavlov-rubert-base-cased_cls.pth](https://disk.yandex.ru/d/fuGqPNBXPigttQ)
+   * RuAttitudes (4 epochs), with `cls` based pooling scheme;
+* [ra4_DeepPavlov-rubert-base-cased_entity.pth](https://disk.yandex.ru/d/ep_O-c1YVgu3Dw)
+   * RuAttitudes (4 epochs), with `entity` based pooling scheme;
+* [ra4-rsr1_DeepPavlov-rubert-base-cased_cls.pth](https://disk.yandex.ru/d/OwA6h5BioA9LOw)
+   * RuAttitudes (4 epochs) + RuSentRel (1 epoch), with `cls` pooling scheme;
+* [ra4-rsr1_DeepPavlov-rubert-base-cased_entity.pth](https://disk.yandex.ru/d/_SoRgM5pLVgVoQ)
+   * RuAttitudes (4 epochs),+ RuSentRel (1 epoch), with `entity` pooling scheme;
+* [ra4-rsr1-rsne4_DeepPavlov-rubert-base-cased_cls.pth](https://disk.yandex.ru/d/Ae09HxlKoOodHw) 
+   * RuAttitudes (4 epochs) + RuSentRel (1 epoch) + SentiNEREL (4 epochs), with `cls` based pooling scheme;
+
 ## Training 
 
 ### Neural Networks
