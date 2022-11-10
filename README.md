@@ -32,6 +32,7 @@ pip install -r dependencies.txt
 
 For conventional neural networks:
 ```python
+from arekit.common.data.input.writers.tsv import TsvWriter
 from models.nn.serialize import serialize_nn
 
 serialize_nn(output_dir="_out/serialize-nn", 
@@ -41,20 +42,29 @@ serialize_nn(output_dir="_out/serialize-nn",
 
 For `BERT` model:
 ```python
+from SentiNEREL.entity.formatter import CustomTypedEntitiesFormatter
+from SentiNEREL.labels.scaler import PosNegNeuRelationsLabelScaler
+from arekit.common.data.input.writers.tsv import TsvWriter
+from arekit.contrib.bert.terms.mapper import BertDefaultStringTextTermsMapper
+from arekit.contrib.utils.bert.text_b_rus import BertTextBTemplates
 from models.bert.serialize import CroppedBertSampleRowProvider, serialize_bert
 
-serialize_bert(
-    terms_per_context=50,
-    output_dir="_out/serialize-bert/",
-    split_filepath="data/split_fixed.txt",
-    writer=TsvWriter(),
-    sample_row_provider=CroppedBertSampleRowProvider(
-        crop_window_size=50,
-        label_scaler=PosNegNeuRelationsLabelScaler(),
-        text_b_template=BertTextBTemplates.NLI.value,
-        text_terms_mapper=BertDefaultStringTextTermsMapper(
-            entity_formatter=CustomTypedEntitiesFormatter()
-        )))
+def do(writer):
+    serialize_bert(
+        terms_per_context=50,
+        output_dir="_out/serialize-bert/",
+        split_filepath="data/split_fixed.txt",
+        writer=TsvWriter(write_header=True),
+        sample_row_provider=CroppedBertSampleRowProvider(
+            crop_window_size=50,
+            label_scaler=PosNegNeuRelationsLabelScaler(),
+            text_b_template=BertTextBTemplates.NLI.value,
+            text_terms_mapper=BertDefaultStringTextTermsMapper(
+                entity_formatter=CustomTypedEntitiesFormatter()
+            )))
+
+do(TsvWriter(write_header=True))        # CSV-based output
+# do(OpenNREJsonWriter(text_columns=["text_a", "text_b"]))  # JSONL-based output
 ```
 
 [Back to Top](#contents)
