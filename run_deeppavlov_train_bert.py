@@ -1,7 +1,7 @@
 from arekit.common.pipeline.base import BasePipeline
-from models.bert.states import BERT_CONFIG_PATH, BERT_DO_LOWERCASE, BERT_CKPT_PATH, BERT_VOCAB_PATH, \
+from framework.deeppavlov.states import BERT_CONFIG_PATH, BERT_DO_LOWERCASE, BERT_VOCAB_PATH, \
     BERT_FINETUNED2_MODEL_PATHDIR, BERT_FINETUNED_CKPT_PATH
-from models.bert.train import BertFinetunePipelineItem
+from framework.deeppavlov.train import BertFinetunePipelineItem
 
 if __name__ == '__main__':
 

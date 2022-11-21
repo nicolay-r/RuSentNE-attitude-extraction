@@ -2,7 +2,7 @@ import os
 import tarfile
 from arekit.common import utils
 
-from models.bert.states import BERT_PRETRAINED_MODEL_TAR, BERT_FINETUNED_MODEL_TAR
+from framework.deeppavlov.states import BERT_PRETRAINED_MODEL_TAR, BERT_FINETUNED_MODEL_TAR
 
 
 def download_data():

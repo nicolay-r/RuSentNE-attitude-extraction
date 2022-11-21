@@ -33,7 +33,7 @@ pip install -r dependencies.txt
 For conventional neural networks:
 ```python
 from arekit.common.data.input.writers.tsv import TsvWriter
-from models.nn.serialize import serialize_nn
+from framework.arenets.serialize import serialize_nn
 
 serialize_nn(output_dir="_out/serialize-nn", 
              split_filepath="data/split_fixed.txt", 
@@ -47,7 +47,7 @@ from SentiNEREL.labels.scaler import PosNegNeuRelationsLabelScaler
 from arekit.common.data.input.writers.tsv import TsvWriter
 from arekit.contrib.bert.terms.mapper import BertDefaultStringTextTermsMapper
 from arekit.contrib.utils.bert.text_b_rus import BertTextBTemplates
-from models.bert.serialize import CroppedBertSampleRowProvider, serialize_bert
+from framework.deeppavlov.serialize import CroppedBertSampleRowProvider, serialize_bert
 
 def do(writer):
     serialize_bert(
@@ -97,7 +97,8 @@ dedicated for the sentiment relation extraction (`ModelNames` enum type).
 Model training process, based on the SentiNEREL could be launched as follows:
 
 ```python
-from models.nn.train import train_nn
+from arekit.contrib.networks.enum_name_types import ModelNames
+from framework.arenets.train import train_nn
 
 train_nn(output_dir="_out/serialize-nn",
          model_log_dir="_model",

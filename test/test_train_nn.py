@@ -1,8 +1,8 @@
 import unittest
 from os.path import dirname, realpath, join
 
-from models.nn.predict import predict_nn
-from models.nn.train import train_nn
+from framework.arenets.predict import predict_nn
+from models.nn import train_nn
 
 
 class TestNetworkTraining(unittest.TestCase):

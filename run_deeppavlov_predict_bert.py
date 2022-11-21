@@ -1,11 +1,10 @@
 from arekit.common.experiment.data_type import DataType
-from arekit.common.folding.nofold import NoFolding
 from arekit.common.pipeline.base import BasePipeline
 from arekit.contrib.networks.core.predict.tsv_writer import TsvPredictWriter
 
 from SentiNEREL.labels.scaler import PosNegNeuRelationsLabelScaler
-from models.bert.predict import BertInferencePipelineItem
-from models.bert.states import BERT_CONFIG_PATH, BERT_FINETUNED_CKPT_PATH, BERT_VOCAB_PATH, BERT_DO_LOWERCASE
+from framework.deeppavlov.predict import BertInferencePipelineItem
+from framework.deeppavlov.states import BERT_CONFIG_PATH, BERT_FINETUNED_CKPT_PATH, BERT_VOCAB_PATH, BERT_DO_LOWERCASE
 
 
 def predict_bert(max_seq_length=128, bert_config=BERT_CONFIG_PATH, do_lowercase=BERT_DO_LOWERCASE,

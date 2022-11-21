@@ -8,8 +8,8 @@ from arekit.contrib.utils.bert.text_b_rus import BertTextBTemplates
 
 from SentiNEREL.labels.scaler import PosNegNeuRelationsLabelScaler
 from SentiNEREL.entity.formatter import CustomTypedEntitiesFormatter
-from models.bert.serialize import CroppedBertSampleRowProvider, serialize_bert
-from models.nn.serialize import serialize_nn
+from framework.deeppavlov.serialize import CroppedBertSampleRowProvider, serialize_bert
+from framework.arenets.serialize import serialize_nn
 
 
 class TestSerialize(unittest.TestCase):

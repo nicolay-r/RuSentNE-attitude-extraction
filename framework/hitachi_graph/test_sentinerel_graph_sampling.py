@@ -28,8 +28,8 @@ class TestGraph(unittest.TestCase):
     def test(self, rel_filter=lambda r_type: r_type in ["POSITIVE_TO", "NEGATIVE_TO"]):
         assert(callable(rel_filter))
 
-        train_filenames, test_filenames = FoldingFactory._read_train_test("../data/split_fixed.txt")
-        with open("putput.jsonl", "w") as json_out:
+        train_filenames, test_filenames = FoldingFactory._read_train_test("../../data/split_fixed.txt")
+        with open("../../test/putput.jsonl", "w") as json_out:
             for file_name in tqdm((train_filenames + test_filenames)[:10]):
                 news = SentiNerelDocReader.read_document(file_name, doc_id=0, entities_to_ignore=[],
                                                          version=SentiNerelVersions.V21)

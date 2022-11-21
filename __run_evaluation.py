@@ -38,14 +38,15 @@ class TestEvaluation(unittest.TestCase):
         # ------ bert-based
         # "predict-bert-ra-{}.tsv.gz",
         # "predict-bert-ra-rsr-{}.tsv.gz",
-        "predict-bert-ra-rsr-ft-{}.tsv.gz",
-        "predict-bert-base-multilingual-cased-{}.tsv.gz",
-        "predict-DeepPavlov-rubert-base-cased-{}.tsv.gz",
-        "predict-bert-base-multilingual-cased-entity-{}.tsv.gz",
-        "predict-col-DeepPavlov-rubert-base-cased-cls-{}.tsv.gz",
-        "predict-ra-DeepPavlov-rubert-base-cased-cls-{}.tsv.gz",
-        "predict-ra-col-DeepPavlov-rubert-base-cased-cls-{}.tsv.gz",
-        "predict-ra-rsr-col-DeepPavlov-rubert-base-cased-cls-{}.tsv.gz",
+        # "predict-bert-ra-rsr-ft-{}.tsv.gz",
+        # "predict-bert-base-multilingual-cased-{}.tsv.gz",
+        # "predict-DeepPavlov-rubert-base-cased-{}.tsv.gz",
+        # "predict-bert-base-multilingual-cased-entity-{}.tsv.gz",
+        # "predict-rsne2-DeepPavlov-rubert-base-cased-entity-{}.tsv.gz",
+        # "predict-rsne6-DeepPavlov-rubert-base-cased-cls-{}.tsv.gz",
+        "predict-rsne8-DeepPavlov-rubert-base-cased-cls-{}.tsv.gz",
+        # "predict-ra4-rsne2-DeepPavlov-rubert-base-cased-entity-{}.tsv.gz",
+        # "predict-ra4-rsr1-rsne4-DeepPavlov-rubert-base-cased-entity-{}.tsv.gz",
     ]
 
     samples = {
@@ -180,7 +181,7 @@ class TestEvaluation(unittest.TestCase):
         """
         doc_ids_modes = ["etalon"]
         evaluator_types = ["three_class"]
-        data_types = [DataType.Train]
+        data_types = [DataType.Dev]
         self.__test_core(doc_ids_modes=doc_ids_modes, evaluator_types=evaluator_types, data_types=data_types)
 
     def test_collections_stat(self):
