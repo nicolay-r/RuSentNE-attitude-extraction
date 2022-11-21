@@ -1,4 +1,4 @@
-from arekit.common.data.input.readers.tsv import TsvReader
+from arekit.contrib.utils.data.readers.csv_pd import PandasCsvReader
 from tqdm import tqdm
 from os.path import exists
 from collections import OrderedDict
@@ -185,7 +185,7 @@ def opinions_per_document_two_class_result_evaluation(
     no_label = label_scaler.uint_to_label(0)
 
     # Setup views.
-    reader = TsvReader()
+    reader = PandasCsvReader()
     test_samples_storage = reader.read(test_samples_filepath)
     etalon_samples_storage = reader.read(etalon_samples_filepath)
     test_predict_storage = reader.read(test_predict_filepath)

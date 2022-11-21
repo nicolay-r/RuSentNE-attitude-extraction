@@ -1,6 +1,5 @@
 from os.path import join
 
-from arekit.common.data.input.readers.tsv import TsvReader
 from arekit.common.experiment.data_type import DataType
 from arekit.common.pipeline.base import BasePipeline
 from arekit.contrib.networks.core.callback.hidden import HiddenStatesWriterCallback
@@ -13,6 +12,7 @@ from arekit.contrib.networks.enum_input_types import ModelInputType
 from arekit.contrib.networks.enum_name_types import ModelNames
 from arekit.contrib.networks.factory import create_network_and_network_config_funcs
 from arekit.contrib.networks.pipelines.items.training import NetworksTrainingPipelineItem
+from arekit.contrib.utils.data.readers.csv_pd import PandasCsvReader
 from arekit.contrib.utils.io_utils.embedding import NpEmbeddingIO
 from arekit.contrib.utils.io_utils.samples import SamplesIO
 from arekit.contrib.utils.np_utils.writer import NpzDataWriter
@@ -66,7 +66,7 @@ def train_nn(output_dir, model_log_dir, split_filepath, folding_type="fixed",
         model_io=model_io,
         labels_count=labels_count,
         create_network_func=network_func,
-        samples_io=SamplesIO(target_dir=output_dir, reader=TsvReader()),
+        samples_io=SamplesIO(target_dir=output_dir, reader=PandasCsvReader()),
         emb_io=NpEmbeddingIO(target_dir=output_dir),
         config=config,
         bags_collection_type=SingleBagsCollection,

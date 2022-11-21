@@ -2,15 +2,15 @@ import numpy as np
 from tqdm import tqdm
 from os.path import exists
 from arekit.common.data import const
-from arekit.common.data.input.readers.tsv import TsvReader
 from arekit.common.data.row_ids.multiple import MultipleIDProvider
 from arekit.common.data.views.samples import LinkedSamplesStorageView
+from arekit.contrib.utils.data.readers.csv_pd import PandasCsvReader
 
 from SentiNEREL.labels.scaler import PosNegNeuRelationsLabelScaler
 
 
 def calculate_predicted_count_per_label(test_predict_filepath,
-                                        reader=TsvReader(),
+                                        reader=PandasCsvReader(),
                                         label_scaler=PosNegNeuRelationsLabelScaler()):
     assert(isinstance(test_predict_filepath, str))
 

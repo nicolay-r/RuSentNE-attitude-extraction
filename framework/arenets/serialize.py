@@ -1,4 +1,3 @@
-from arekit.common.data.input.writers.base import BaseWriter
 from arekit.common.experiment.data_type import DataType
 from arekit.common.frames.variants.collection import FrameVariantsCollection
 from arekit.common.pipeline.base import BasePipeline
@@ -12,6 +11,7 @@ from arekit.contrib.source.rusentiframes.labels_fmt import RuSentiFramesLabelsFo
 from arekit.contrib.source.rusentiframes.types import RuSentiFramesVersions
 from arekit.contrib.source.sentinerel.labels import PositiveTo, NegativeTo
 from arekit.contrib.utils.connotations.rusentiframes_sentiment import RuSentiFramesConnotationProvider
+from arekit.contrib.utils.data.writers.base import BaseWriter
 from arekit.contrib.utils.io_utils.embedding import NpEmbeddingIO
 from arekit.contrib.utils.io_utils.samples import SamplesIO
 from arekit.contrib.utils.pipelines.items.sampling.networks import NetworksInputSerializerPipelineItem

@@ -1,10 +1,10 @@
 import unittest
 from os.path import dirname, realpath, join
 
-from arekit.common.data.input.writers.opennre_json import OpenNREJsonWriter
-from arekit.common.data.input.writers.tsv import TsvWriter
 from arekit.contrib.bert.terms.mapper import BertDefaultStringTextTermsMapper
 from arekit.contrib.utils.bert.text_b_rus import BertTextBTemplates
+from arekit.contrib.utils.data.writers.csv_pd import PandasCsvWriter
+from arekit.contrib.utils.data.writers.json_opennre import OpenNREJsonWriter
 
 from SentiNEREL.labels.scaler import PosNegNeuRelationsLabelScaler
 from SentiNEREL.entity.formatter import CustomTypedEntitiesFormatter
@@ -23,7 +23,7 @@ class TestSerialize(unittest.TestCase):
         serialize_nn(limit=1,
                      output_dir=self.output_nn_dir,
                      folding_type="fixed",
-                     writer=TsvWriter(write_header=True),
+                     writer=PandasCsvWriter(write_header=True),
                      labels_scaler=PosNegNeuRelationsLabelScaler(),
                      split_filepath="../data/split_fixed.txt")
 

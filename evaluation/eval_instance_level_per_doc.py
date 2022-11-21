@@ -1,4 +1,6 @@
 from arekit.common.data.views.samples import LinkedSamplesStorageView
+from arekit.contrib.utils.data.readers.csv_pd import PandasCsvReader
+from arekit.contrib.utils.data.storages.pandas_based import PandasBasedRowsStorage
 from tqdm import tqdm
 from collections import OrderedDict
 from os.path import exists
@@ -57,9 +59,10 @@ def text_opinion_per_document_result_evaluator(
     # TODO. #363 нужно переделать API на передачу просто меток, игнорируемых меток.
     no_label = label_scaler.uint_to_label(0)
 
-    etalon_samples_storage = BaseRowsStorage.from_tsv(filepath=etalon_samples_filepath)
-    test_samples_storage = BaseRowsStorage.from_tsv(filepath=test_samples_filepath)
-    predict_samples_storage = BaseRowsStorage.from_tsv(filepath=test_predict_filepath)
+    reader = PandasCsvReader()
+    etalon_samples_storage = PandasBasedRowsStorage(df=reader.read(etalon_samples_filepath))
+    test_samples_storage = PandasBasedRowsStorage(df=reader.read(test_samples_filepath))
+    predict_samples_storage = PandasBasedRowsStorage(df=reader.read(test_predict_filepath))
 
     # Setup views.
     view = LinkedSamplesStorageView(row_ids_provider=MultipleIDProvider())

@@ -2,7 +2,7 @@ import unittest
 from os.path import dirname, realpath, join
 
 from framework.arenets.predict import predict_nn
-from models.nn import train_nn
+from framework.arenets.train import train_nn
 
 
 class TestNetworkTraining(unittest.TestCase):
@@ -14,7 +14,7 @@ class TestNetworkTraining(unittest.TestCase):
 
         train_nn(output_dir=output_nn_dir,
                  model_log_dir=join(current_dir, "_model"),
-                 split_filepath=join(current_dir, "..", "data/split_fixed.txt"))
+                 split_filepath=join(current_dir, "../..", "data/split_fixed.txt"))
 
         predict_nn(output_dir=output_nn_dir, embedding_dir=output_nn_dir, samples_dir=output_nn_dir)
 

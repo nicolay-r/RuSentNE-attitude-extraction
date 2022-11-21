@@ -1,14 +1,14 @@
-from arekit.common.data.input.readers.tsv import TsvReader
-from arekit.common.data.storages.base import BaseRowsStorage
 from tqdm import tqdm
 from collections import OrderedDict
 from os.path import exists
 
+from arekit.common.data.storages.base import BaseRowsStorage
 from arekit.common.data.views.samples import LinkedSamplesStorageView
 from arekit.common.data.row_ids.multiple import MultipleIDProvider
 from arekit.common.evaluation.comparators.text_opinions import TextOpinionBasedComparator
 from arekit.common.evaluation.evaluators.modes import EvaluationModes
 from arekit.common.evaluation.pairs.single import SingleDocumentDataPairsToCompare
+from arekit.contrib.utils.data.readers.csv_pd import PandasCsvReader
 
 from SentiNEREL.labels.scaler import PosNegNeuRelationsLabelScaler
 from evaluation.utils import assign_labels, row_to_context_opinion, create_evaluator, create_filter_labels_func
@@ -59,7 +59,7 @@ def text_opinion_per_collection_result_evaluator(
     # TODO. #363 нужно переделать API на передачу просто меток, игнорируемых меток.
     no_label = label_scaler.uint_to_label(0)
 
-    reader = TsvReader()
+    reader = PandasCsvReader()
     etalon_samples_storage = reader.read(target=etalon_samples_filepath)
     test_samples_storage = reader.read(target=test_samples_filepath)
     predict_samples_storage = reader.read(target=test_predict_filepath)

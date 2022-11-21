@@ -1,9 +1,10 @@
 from os.path import join
 
+from arekit.contrib.utils.data.readers.csv_pd import PandasCsvReader
+from arekit.contrib.utils.data.storages.pandas_based import PandasBasedRowsStorage
 from deeppavlov.models.bert import bert_classifier
 from deeppavlov.models.preprocessors.bert_preprocessor import BertPreprocessor
 
-from arekit.common.data.storages.base import BaseRowsStorage
 from arekit.common.labels.scaler.base import BaseLabelScaler
 from arekit.common.pipeline.context import PipelineContext
 from arekit.common.pipeline.items.base import BasePipelineItem
@@ -49,7 +50,8 @@ class BertInferencePipelineItem(BasePipelineItem):
         assert("predict_dir" in input_data)             # То, куда нужно записать результат.
 
         def __iter_predict_result(tsv_filepath):
-            samples = BaseRowsStorage.from_tsv(tsv_filepath)
+            reader = PandasCsvReader()
+            samples = PandasBasedRowsStorage(reader.read(tsv_filepath))
 
             used_row_ids = set()
 

@@ -1,8 +1,6 @@
 import unittest
 from os.path import join
 
-from arekit.common.data.input.writers.opennre_json import OpenNREJsonWriter
-from arekit.common.data.input.writers.tsv import TsvWriter
 from arekit.common.entities.base import Entity
 from arekit.common.entities.str_fmt import StringEntitiesFormatter
 from arekit.common.entities.types import OpinionEntityType
@@ -20,6 +18,8 @@ from arekit.contrib.source.rusentrel.io_utils import RuSentRelVersions, RuSentRe
 from arekit.contrib.source.rusentrel.labels_fmt import RuSentRelLabelsFormatter
 from arekit.contrib.source.sentinerel.labels import PositiveTo, NegativeTo
 from arekit.contrib.utils.bert.text_b_rus import BertTextBTemplates
+from arekit.contrib.utils.data.writers.csv_pd import PandasCsvWriter
+from arekit.contrib.utils.data.writers.json_opennre import OpenNREJsonWriter
 from arekit.contrib.utils.pipelines.items.text.frames_lemmatized import LemmasBasedFrameVariantsParser
 from arekit.contrib.utils.pipelines.items.text.tokenizer import DefaultTextTokenizer
 from arekit.contrib.utils.processing.lemmatization.mystem import MystemWrapper
@@ -151,13 +151,13 @@ class TestRuSentRel(unittest.TestCase):
                      writer=writer)
 
     def test_serialize_bert_csv(self):
-        self.__test_serialize_bert(writer=TsvWriter(write_header=True))
+        self.__test_serialize_bert(writer=PandasCsvWriter(write_header=True))
 
     def test_serialize_bert_opennre(self):
         self.__test_serialize_bert(writer=OpenNREJsonWriter(text_columns=["text_a", "text_b"]))
 
     def test_serialize_nn_csv(self):
-        self.__test_serialize_nn(writer=TsvWriter(write_header=True))
+        self.__test_serialize_nn(writer=PandasCsvWriter(write_header=True))
 
     def test_serialize_nn_opennre(self):
         self.__test_serialize_nn(writer=OpenNREJsonWriter(text_columns=["text_a"]))

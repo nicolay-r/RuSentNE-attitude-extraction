@@ -1,6 +1,5 @@
 from os.path import join
 
-from arekit.common.data.input.readers.tsv import TsvReader
 from arekit.common.data.row_ids.multiple import MultipleIDProvider
 from arekit.common.data.views.samples import LinkedSamplesStorageView
 from arekit.common.experiment.api.base_samples_io import BaseSamplesIO
@@ -27,6 +26,7 @@ from arekit.contrib.networks.enum_input_types import ModelInputType
 from arekit.contrib.networks.enum_name_types import ModelNames
 from arekit.contrib.networks.factory import create_network_and_network_config_funcs
 from arekit.contrib.networks.shapes import NetworkInputShapes
+from arekit.contrib.utils.data.readers.csv_pd import PandasCsvReader
 from arekit.contrib.utils.io_utils.embedding import NpEmbeddingIO
 from arekit.contrib.utils.io_utils.samples import SamplesIO
 from arekit.contrib.utils.processing.languages.ru.pos_service import PartOfSpeechTypesService
@@ -108,7 +108,7 @@ class TensorflowNetworkInferencePipelineItem(BasePipelineItem):
             bags_collection_type=self.__bags_collection_type,
             load_target_func=lambda data_type: samples_io.create_target(
                 data_type=data_type, data_folding=self.__data_folding),
-            samples_reader=TsvReader(),
+            samples_reader=PandasCsvReader(),
             samples_view=LinkedSamplesStorageView(row_ids_provider=MultipleIDProvider()),
             has_model_predefined_state=True,
             vocab=vocab,
@@ -168,7 +168,7 @@ def predict_nn(output_dir, embedding_dir, samples_dir, data_folding_name="fixed"
     ])
 
     input_data = {
-        "samples_io": SamplesIO(target_dir=samples_dir, reader=TsvReader()),
+        "samples_io": SamplesIO(target_dir=samples_dir, reader=PandasCsvReader()),
         "emb_io": NpEmbeddingIO(target_dir=embedding_dir),
         "predict_root": output_dir
     }
