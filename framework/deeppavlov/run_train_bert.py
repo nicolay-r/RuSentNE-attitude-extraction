@@ -1,7 +1,10 @@
+from os.path import dirname, realpath, join
+
 from arekit.common.pipeline.base import BasePipeline
 from framework.deeppavlov.states import BERT_CONFIG_PATH, BERT_DO_LOWERCASE, BERT_VOCAB_PATH, \
     BERT_FINETUNED2_MODEL_PATHDIR, BERT_FINETUNED_CKPT_PATH
 from framework.deeppavlov.train import BertFinetunePipelineItem
+
 
 if __name__ == '__main__':
 
@@ -15,5 +18,6 @@ if __name__ == '__main__':
                                  save_path=BERT_FINETUNED2_MODEL_PATHDIR)
         ])
 
-    ppl.run(input_data="_out/serialize-bert/sample-train-0.tsv.gz",
+    current_dir = dirname(realpath(__file__))
+    ppl.run(input_data=join(current_dir, "_out/serialize-bert/sample-train-0.tsv.gz"),
             params_dict={"epochs_count": 2, "batch_size": 6})

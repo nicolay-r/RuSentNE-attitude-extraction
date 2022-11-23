@@ -76,29 +76,17 @@ do(PandasCsvWriter(write_header=True))        # CSV-based output
 
 # Frameworks
    
-* [opennre](framework/opennre/readme.md) -- based on OpenNRE toolkit (BERT-based models).
-* [arenets](framework/arenets/readme.md) -- based on AREkit, tensorflow-based module 
+* [opennre](framework/opennre/) -- based on OpenNRE toolkit (BERT-based models).
+* [arenets](framework/arenets/) -- based on AREkit, tensorflow-based module 
 for neural network training/finetunning/inferring.
-* [deeppavlov](framework/deeppavlov/readme.md) `[legacy]` -- based on DeepPavlov framework (BERT-based models).
-* [hittachi-graph-based](framework/hitachi_graph/readme.md) -- provides implementation of the graph-based 
+* [deeppavlov](framework/deeppavlov/) `[legacy]` -- based on DeepPavlov framework (BERT-based models).
+* [hittachi-graph-based](framework/hitachi_graph/) -- provides implementation of the graph-based 
 approaches over transformers.
 
 [Back to Top](#contents)
 
 # Pretrained states
-List of the `OpenNRE` pretrained, BERT-based models:
-* [ra4_DeepPavlov-rubert-base-cased_cls.pth](https://disk.yandex.ru/d/fuGqPNBXPigttQ)
-   * RuAttitudes (4 ep.), with `cls` based pooling scheme;
-* [ra4_DeepPavlov-rubert-base-cased_entity.pth](https://disk.yandex.ru/d/ep_O-c1YVgu3Dw)
-   * RuAttitudes (4 ep.), with `entity` based pooling scheme;
-* [ra4-rsr1_DeepPavlov-rubert-base-cased_cls.pth](https://disk.yandex.ru/d/OwA6h5BioA9LOw)
-   * RuAttitudes (4 ep.) + RuSentRel (1 ep.), with `cls` pooling scheme;
-* [ra4-rsr1_DeepPavlov-rubert-base-cased_entity.pth](https://disk.yandex.ru/d/_SoRgM5pLVgVoQ)
-   * RuAttitudes (4 ep.),+ RuSentRel (1 ep.), with `entity` pooling scheme;
-* [ra4-rsr1-rsne4_DeepPavlov-rubert-base-cased_cls.pth](https://disk.yandex.ru/d/Ae09HxlKoOodHw) 
-   * RuAttitudes (4 ep.) + RuSentRel (1 ep.) + SentiNEREL-train (4 ep.), with `cls` based pooling scheme;
-* [ra4-rsr1-rsne4_DeepPavlov-rubert-base-cased_entity.pth](https://disk.yandex.ru/d/5YLbxDBR5EsJvg) 
-   * RuAttitudes (4 ep.) + RuSentRel (1 ep.) + SentiNEREL-train (4 ep.), with `entity` based pooling scheme;
+* [OpenNRE states](framework/opennre/)
 
 [Back to Top](#contents)
 

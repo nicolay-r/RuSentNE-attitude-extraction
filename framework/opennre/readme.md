@@ -7,7 +7,7 @@ installed in a separated folder.
 
 ## Dependencies
 
-Here, is a list of the related dependencies:
+List of the related dependencies:
 
 ```
 torch==1.6.0
@@ -25,8 +25,28 @@ The [complete pip packages lists](pip-freeze-list.txt) experiments were provided
 
 ### Data
 
-You need to provide data in `JSONL` format.
+You need to provide data in `JSONL` format at `data` folder.
+
+### List of the pretrained states
+
+You need to provide the pre-trained state (if you will) at `ckpt`:
+
+* [ra4_DeepPavlov-rubert-base-cased_cls.pth](https://disk.yandex.ru/d/fuGqPNBXPigttQ)
+   * RuAttitudes (4 ep.), with `cls` based pooling scheme;
+* [ra4_DeepPavlov-rubert-base-cased_entity.pth](https://disk.yandex.ru/d/ep_O-c1YVgu3Dw)
+   * RuAttitudes (4 ep.), with `entity` based pooling scheme;
+* [ra4-rsr1_DeepPavlov-rubert-base-cased_cls.pth](https://disk.yandex.ru/d/OwA6h5BioA9LOw)
+   * RuAttitudes (4 ep.) + RuSentRel (1 ep.), with `cls` pooling scheme;
+* [ra4-rsr1_DeepPavlov-rubert-base-cased_entity.pth](https://disk.yandex.ru/d/_SoRgM5pLVgVoQ)
+   * RuAttitudes (4 ep.),+ RuSentRel (1 ep.), with `entity` pooling scheme;
+* [ra4-rsr1-rsne4_DeepPavlov-rubert-base-cased_cls.pth](https://disk.yandex.ru/d/Ae09HxlKoOodHw) 
+   * RuAttitudes (4 ep.) + RuSentRel (1 ep.) + SentiNEREL-train (4 ep.), with `cls` based pooling scheme;
+* [ra4-rsr1-rsne4_DeepPavlov-rubert-base-cased_entity.pth](https://disk.yandex.ru/d/5YLbxDBR5EsJvg) 
+   * RuAttitudes (4 ep.) + RuSentRel (1 ep.) + SentiNEREL-train (4 ep.), with `entity` based pooling scheme;
 
 ### Training and Inferring
 
-Please refer to a simple scripts `test_training.py` and `test_infer.py` for a greater details.
+> [test_training.py](test_training.py) 
+
+>[test_infer.py](test_infer.py)
+
