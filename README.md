@@ -20,10 +20,10 @@ Powered by [AREkit-0.23.0](https://github.com/nicolay-r/AREkit) framework, based
 * [Download Finetuned Models](#download-finetuned-models)
 * [Serialize SentiNEREL](#serialize-collection)
 * [Frameworks](#frameworks)
-    * `[AREnets](framework/arenets)`
-    * `[OpenNRE](framework/opennre)`
-    * `[DeepPavlov](framework/deeppavlov)`
-    * `[Hitachi-graph-based](framework/hitachi_graph)`
+    * [AREnets](framework/arenets) directory
+    * [OpenNRE](framework/opennre) directory
+    * [DeepPavlov](framework/deeppavlov) directory
+    * [Hitachi-graph-based](framework/hitachi_graph) directory
 * [Pretrained States](#pretrained-states)
 * [Sponsors](#sponsors)
 
