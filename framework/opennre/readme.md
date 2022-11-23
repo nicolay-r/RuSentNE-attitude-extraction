@@ -31,7 +31,7 @@ By default, we provide a cropped by `100` entries:
 * `nn-collection` (for CNN-based neural networks)
 * `bert-collection` for bert-based models.
 
-### List of the pretrained states
+### Pretrained states
 
 You need to provide the pre-trained state (if you will) at `ckpt`:
 
