@@ -19,8 +19,13 @@ Powered by [AREkit-0.23.0](https://github.com/nicolay-r/AREkit) framework, based
 * [Installation](#installation)
 * [Download Finetuned Models](#download-finetuned-models)
 * [Serialize SentiNEREL](#serialize-collection)
-* [Training](#training)
-    * [CNN/RNN-based models](#neural-networks)
+* [Frameworks](#frameworks)
+    * `[AREnets](framework/arenets)`
+    * `[OpenNRE](framework/opennre)`
+    * `[DeepPavlov](framework/deeppavlov)`
+    * `[Hitachi-graph-based](framework/hitachi_graph)`
+* [Pretrained States](#pretrained-states)
+* [Sponsors](#sponsors)
 
 ## Installation
 
@@ -69,7 +74,18 @@ do(PandasCsvWriter(write_header=True))        # CSV-based output
 
 [Back to Top](#contents)
 
-## Download Finetuned Models
+# Frameworks
+   
+* [opennre](framework/opennre/readme.md) -- based on OpenNRE toolkit (BERT-based models).
+* [arenets](framework/arenets/readme.md) -- based on AREkit, tensorflow-based module 
+for neural network training/finetunning/inferring.
+* [deeppavlov](framework/deeppavlov/readme.md) `[legacy]` -- based on DeepPavlov framework (BERT-based models).
+* [hittachi-graph-based](framework/hitachi_graph/readme.md) -- provides implementation of the graph-based 
+approaches over transformers.
+
+[Back to Top](#contents)
+
+# Pretrained states
 List of the `OpenNRE` pretrained, BERT-based models:
 * [ra4_DeepPavlov-rubert-base-cased_cls.pth](https://disk.yandex.ru/d/fuGqPNBXPigttQ)
    * RuAttitudes (4 ep.), with `cls` based pooling scheme;
@@ -83,31 +99,6 @@ List of the `OpenNRE` pretrained, BERT-based models:
    * RuAttitudes (4 ep.) + RuSentRel (1 ep.) + SentiNEREL-train (4 ep.), with `cls` based pooling scheme;
 * [ra4-rsr1-rsne4_DeepPavlov-rubert-base-cased_entity.pth](https://disk.yandex.ru/d/5YLbxDBR5EsJvg) 
    * RuAttitudes (4 ep.) + RuSentRel (1 ep.) + SentiNEREL-train (4 ep.), with `entity` based pooling scheme;
-
-[Back to Top](#contents)
-
-## Training 
-
-### Neural Networks
-
-Using the embedded `tensorflow`-based models.
-The related AREkit module provides a 
-[list of the supported models](https://github.com/nicolay-r/AREkit/tree/0.22.1-rc/arekit/contrib/networks#models-list),
-dedicated for the sentiment relation extraction (`ModelNames` enum type).
-Model training process, based on the SentiNEREL could be launched as follows:
-
-```python
-from arekit.contrib.networks.enum_name_types import ModelNames
-from framework.arenets.train import train_nn
-
-train_nn(output_dir="_out/serialize-nn",
-         model_log_dir="_model",
-         model_name=ModelNames.AttEndsCNN,
-         split_filepath="data/split_fixed.txt")
-```
-
-The latter produces the model at `_out/serialize_nn` with logging information at `_model` dir, and 
-data split based on the `data/split_fixed.txt` file.
 
 [Back to Top](#contents)
 

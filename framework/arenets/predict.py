@@ -97,7 +97,7 @@ class TensorflowNetworkInferencePipelineItem(BasePipelineItem):
 
         # Fetch other required in furter information from input_data.
         embedding = emb_io.load_embedding(data_folding=self.__data_folding)
-        vocab = emb_io.load_vocab(data_folding=self.__data_folding)
+        terms_vocab = emb_io.load_vocab(data_folding=self.__data_folding)
 
         # Setup config parameters.
         self.__config.set_term_embedding(embedding)
@@ -111,7 +111,7 @@ class TensorflowNetworkInferencePipelineItem(BasePipelineItem):
             samples_reader=PandasCsvReader(),
             samples_view=LinkedSamplesStorageView(row_ids_provider=MultipleIDProvider()),
             has_model_predefined_state=True,
-            vocab=vocab,
+            terms_vocab=terms_vocab,
             labels_count=self.__config.ClassesCount,
             input_shapes=NetworkInputShapes(iter_pairs=[
                 (NetworkInputShapes.FRAMES_PER_CONTEXT, self.__config.FramesPerContext),
