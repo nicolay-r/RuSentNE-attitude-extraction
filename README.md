@@ -37,7 +37,7 @@ pip install -r dependencies.txt
 
 For conventional neural networks:
 ```python
-from framework.arenets.serialize import serialize_nn
+from framework.arekit.serialize_nn import serialize_nn
 from arekit.contrib.utils.data.writers.csv_pd import PandasCsvWriter
 
 serialize_nn(output_dir="_out/serialize-nn", 
@@ -52,7 +52,7 @@ from SentiNEREL.labels.scaler import PosNegNeuRelationsLabelScaler
 from arekit.contrib.bert.terms.mapper import BertDefaultStringTextTermsMapper
 from arekit.contrib.utils.bert.text_b_rus import BertTextBTemplates
 from arekit.contrib.utils.data.writers.csv_pd import PandasCsvWriter
-from framework.deeppavlov.serialize import CroppedBertSampleRowProvider, serialize_bert
+from framework.arekit.serialize_bert import CroppedBertSampleRowProvider, serialize_bert
 
 def do(writer):
     serialize_bert(

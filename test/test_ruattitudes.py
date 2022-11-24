@@ -28,7 +28,7 @@ from SentiNEREL.labels.scaler import PosNegNeuRelationsLabelScaler
 from __run_evaluation import show_stat_for_samples
 from SentiNEREL.entity.helper import EntityHelper
 from framework.deeppavlov.serialize import serialize_bert, CroppedBertSampleRowProvider
-from framework.arenets.serialize import serialize_nn
+from framework.arekit.serialize import serialize_nn
 
 
 class RuAttitudesEntitiesFormatter(StringEntitiesFormatter):

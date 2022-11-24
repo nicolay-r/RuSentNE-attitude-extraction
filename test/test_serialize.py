@@ -8,8 +8,8 @@ from arekit.contrib.utils.data.writers.json_opennre import OpenNREJsonWriter
 
 from SentiNEREL.labels.scaler import PosNegNeuRelationsLabelScaler
 from SentiNEREL.entity.formatter import CustomTypedEntitiesFormatter
-from framework.deeppavlov.serialize import CroppedBertSampleRowProvider, serialize_bert
-from framework.arenets.serialize import serialize_nn
+from framework.arekit.serialize_bert import serialize_bert, CroppedBertSampleRowProvider
+from framework.arekit.serialize_nn import serialize_nn
 
 
 class TestSerialize(unittest.TestCase):
