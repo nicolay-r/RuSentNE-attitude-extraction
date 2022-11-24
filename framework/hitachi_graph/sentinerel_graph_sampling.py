@@ -1,7 +1,8 @@
 import json
 import unittest
 from tqdm import tqdm
-
+from os import makedirs
+from os.path import exists, join
 from arekit.common.bound import Bound
 from arekit.contrib.source.brat.entities.compound import BratCompoundEntity
 from arekit.contrib.source.brat.sentence import BratSentence
@@ -25,16 +26,29 @@ class TestGraph(unittest.TestCase):
 
         return None
 
-    def test(self, rel_filter=lambda r_type: r_type in ["POSITIVE_TO", "NEGATIVE_TO"]):
+    def test(self, limit=None, output_dir="_out",
+             rel_filter=lambda r_type: r_type in ["POSITIVE_TO", "NEGATIVE_TO"]):
+        """ Serialize graph-based input JSONL for the SentiNEREL collection.
+        """
         assert(callable(rel_filter))
 
         train_filenames, test_filenames = FoldingFactory._read_train_test("../../data/split_fixed.txt")
-        with open("../../test/putput.jsonl", "w") as json_out:
-            for file_name in tqdm((train_filenames + test_filenames)[:10]):
+
+        if not exists(output_dir):
+            makedirs(output_dir)
+
+        with open(join(output_dir, "graph-sampled.jsonl"), "w") as json_out:
+
+            # Keep all files of fixed amound by the pre-defined limit.
+            files = (train_filenames + test_filenames)
+            if limit is not None:
+                files = files[:limit]
+
+            for file_name in tqdm(files):
                 news = SentiNerelDocReader.read_document(file_name, doc_id=0, entities_to_ignore=[],
                                                          version=SentiNerelVersions.V21)
 
-                json_doc = {"input": "", "flavor": 0, "nodes": [], "edges": []}
+                json_doc = {"filename": file_name, "input": "", "flavor": 0, "nodes": [], "edges": []}
                 top = {}
                 nested = {}
 
@@ -70,6 +84,10 @@ class TestGraph(unittest.TestCase):
 
                     e_source = TestGraph.find_entity(brat_relation.SourceID, top=top)
                     e_target = TestGraph.find_entity(brat_relation.TargetID, top=top)
+
+                    if e_source is None or e_target is None:
+                        continue
+
                     json_doc["edges"].append({
                         "source": e_source.ID,
                         "target": e_target.ID,
