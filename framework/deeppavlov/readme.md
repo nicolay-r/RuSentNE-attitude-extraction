@@ -1,13 +1,13 @@
 # DeepPavlov
 
-Adopting TensorFlow based [BERT implementation](http://docs.deeppavlov.ai/en/0.11.0/features/models/bert.html) wrapper for:
-* Serialization
-* Training
-* Prediction
+Adopting TensorFlow based [BERT implementation](http://docs.deeppavlov.ai/en/0.11.0/features/models/bert.html) 
+wrapper for train and predict.
 
-## Downloading models
+## Download Pretrained models
 
-Please follow the `download.py` script
+```bash
+python download.py
+```
 
 ## Train
 
