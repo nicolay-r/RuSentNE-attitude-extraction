@@ -6,7 +6,7 @@ from framework.deeppavlov.states import BERT_PRETRAINED_MODEL_TAR, BERT_FINETUNE
 
 
 def download_data():
-    root_dir = "_model"
+    root_dir = "../../_model"
 
     data = {
         BERT_PRETRAINED_MODEL_TAR: "https://www.dropbox.com/s/cr6nejxjiqbyd5o/ra-20-srubert-large-neut-nli-pretrained-3l.tar.gz?dl=1",
