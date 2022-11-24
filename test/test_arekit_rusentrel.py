@@ -9,37 +9,39 @@ from arekit.common.folding.nofold import NoFolding
 from arekit.common.frames.variants.collection import FrameVariantsCollection
 from arekit.common.text.parser import BaseTextParser
 from arekit.contrib.bert.terms.mapper import BertDefaultStringTextTermsMapper
-from arekit.contrib.source.ruattitudes.entity.parser import RuAttitudesTextEntitiesParser
+from arekit.contrib.source.brat.entities.parser import BratTextEntitiesParser
 from arekit.contrib.source.rusentiframes.collection import RuSentiFramesCollection
 from arekit.contrib.source.rusentiframes.labels_fmt import RuSentiFramesLabelsFormatter, \
     RuSentiFramesEffectLabelsFormatter
 from arekit.contrib.source.rusentiframes.types import RuSentiFramesVersions
+from arekit.contrib.source.rusentrel.io_utils import RuSentRelVersions, RuSentRelIOUtils
+from arekit.contrib.source.rusentrel.labels_fmt import RuSentRelLabelsFormatter
 from arekit.contrib.source.sentinerel.labels import PositiveTo, NegativeTo
 from arekit.contrib.utils.bert.text_b_rus import BertTextBTemplates
 from arekit.contrib.utils.data.writers.csv_pd import PandasCsvWriter
 from arekit.contrib.utils.data.writers.json_opennre import OpenNREJsonWriter
 from arekit.contrib.utils.pipelines.items.text.frames_lemmatized import LemmasBasedFrameVariantsParser
 from arekit.contrib.utils.pipelines.items.text.tokenizer import DefaultTextTokenizer
-from arekit.contrib.utils.pipelines.sources.ruattitudes.extract_text_opinions import \
-    create_text_opinion_extraction_pipeline
 from arekit.contrib.utils.processing.lemmatization.mystem import MystemWrapper
+from arekit.contrib.utils.pipelines.sources.rusentrel.extract_text_opinions import \
+    create_text_opinion_extraction_pipeline
 
 from SentiNEREL.labels.scaler import PosNegNeuRelationsLabelScaler
 from __run_evaluation import show_stat_for_samples
-from SentiNEREL.entity.helper import EntityHelper
-from framework.deeppavlov.serialize import serialize_bert, CroppedBertSampleRowProvider
-from framework.arekit.serialize import serialize_nn
+from framework.arekit.serialize_bert import serialize_bert, CroppedBertSampleRowProvider
+from framework.arekit.serialize_nn import serialize_nn
 
 
-class RuAttitudesEntitiesFormatter(StringEntitiesFormatter):
+class RuSentRelEntitiesFormatter(StringEntitiesFormatter):
     """ Форматирование сущностей. Было принято решение использовать тип сущности в качетстве значений.
         Поскольку тексты русскоязычные, то и типы были руссифицированы из соображений более удачных embeddings.
     """
 
     type_formatter = {
-        "GPE": "гео-сущность",
-        "PERSON": "личность",
-        "LOCAL": "локация",
+        "GEOPOLIT": "гео-сущность",
+        "ORG": "организация",
+        "PER": "личность",
+        "LOC": "локация",
         "ОRG": "организация"
     }
 
@@ -52,8 +54,7 @@ class RuAttitudesEntitiesFormatter(StringEntitiesFormatter):
         assert(isinstance(entity_type, OpinionEntityType))
 
         if entity_type == OpinionEntityType.Other:
-            return self.type_formatter[original_value.Type] \
-                if original_value.Type in self.type_formatter else original_value.Value
+            return RuSentRelEntitiesFormatter.type_formatter[original_value.Type]
         elif entity_type == OpinionEntityType.Object or entity_type == OpinionEntityType.SynonymObject:
             return self.__object_fmt
         elif entity_type == OpinionEntityType.Subject or entity_type == OpinionEntityType.SynonymSubject:
@@ -62,58 +63,49 @@ class RuAttitudesEntitiesFormatter(StringEntitiesFormatter):
         return None
 
 
-class RuAttitudesTypedEntitiesFormatter(StringEntitiesFormatter):
-    """ Форматирование сущностей. Было принято решение использовать тип сущности в качетстве значений.
-        Поскольку тексты русскоязычные, то и типы были руссифицированы из соображений более удачных embeddings.
-    """
+class RuSentRelTypedEntitiesFormatter(StringEntitiesFormatter):
 
-    fmts = {
-        'QUANTITY': "количество",
-        'ORG': "организация",
-        'LAW': "закон",
-        'FAC': "сооружение",
-        'PERCENT': "процент",
-        'NORP': "связь",
-        'GPE': "гео-сущность",
-        'CARDINAL': "число",
-        'LOC': "локация",
+    type_formatter = {
+        "GEOPOLIT": "гео-сущность",
+        "ORG": "организация",
+        "PER": "личность",
+        "LOC": "локация",
+        "ОRG": "организация"
     }
-
-    def __init__(self):
-        self.__st = set()
 
     def to_string(self, original_value, entity_type):
         assert(isinstance(original_value, Entity))
-        return self.fmts[original_value.Type] if original_value.Type in self.fmts else\
-            EntityHelper.format(original_value)
+        return self.type_formatter[original_value.Type]
 
 
-class TestRuAttitudes(unittest.TestCase):
-    """ This test is related to #232 issue of the AREkit
-        It is expected that we may adopt existed pipeline,
-        based on text-opinions for RuAttitudes collection reading.
-        TODO. This test could be moved into AREkit. (#232)
+class TestRuSentRel(unittest.TestCase):
+    """ TODO: This might be a test example for AREkit (utils).
     """
 
     def __test_serialize_bert(self, writer):
 
-        text_parser = BaseTextParser(pipeline=[RuAttitudesTextEntitiesParser(),
+        version = RuSentRelVersions.V11
+
+        text_parser = BaseTextParser(pipeline=[BratTextEntitiesParser(),
                                                DefaultTextTokenizer()])
 
-        pipeline, ru_attitudes = create_text_opinion_extraction_pipeline(
-            text_parser=text_parser, label_scaler=PosNegNeuRelationsLabelScaler())
+        pipeline = create_text_opinion_extraction_pipeline(
+            rusentrel_version=version,
+            text_parser=text_parser,
+            labels_fmt=RuSentRelLabelsFormatter(pos_label_type=PositiveTo, neg_label_type=NegativeTo))
 
-        data_folding = NoFolding(doc_ids=ru_attitudes.keys(), supported_data_type=DataType.Train)
+        data_folding = NoFolding(doc_ids=RuSentRelIOUtils.iter_collection_indices(version),
+                                 supported_data_type=DataType.Train)
 
         sample_row_provider = CroppedBertSampleRowProvider(
             crop_window_size=50,
             label_scaler=PosNegNeuRelationsLabelScaler(),
             text_b_template=BertTextBTemplates.NLI.value,
             text_terms_mapper=BertDefaultStringTextTermsMapper(
-                entity_formatter=RuAttitudesTypedEntitiesFormatter()
-        ))
+                entity_formatter=RuSentRelTypedEntitiesFormatter()
+            ))
 
-        serialize_bert(output_dir="_out/serialize-ruattitudes-bert",
+        serialize_bert(output_dir="_out/serialize-rusentrel-bert",
                        terms_per_context=50,
                        split_filepath=None,
                        data_type_pipelines={DataType.Train: pipeline},
@@ -123,6 +115,8 @@ class TestRuAttitudes(unittest.TestCase):
                        writer=writer)
 
     def __test_serialize_nn(self, writer):
+
+        version = RuSentRelVersions.V11
 
         stemmer = MystemWrapper()
         frames_collection = RuSentiFramesCollection.read_collection(
@@ -135,19 +129,21 @@ class TestRuAttitudes(unittest.TestCase):
             overwrite_existed_variant=True,
             raise_error_on_existed_variant=False)
 
-        text_parser = BaseTextParser(pipeline=[RuAttitudesTextEntitiesParser(),
+        text_parser = BaseTextParser(pipeline=[BratTextEntitiesParser(),
                                                DefaultTextTokenizer(keep_tokens=True),
                                                LemmasBasedFrameVariantsParser(
                                                    frame_variants=frame_variant_collection,
                                                    stemmer=stemmer)])
 
-        pipeline, ru_attitudes = create_text_opinion_extraction_pipeline(
-            text_parser=text_parser, label_scaler=PosNegNeuRelationsLabelScaler())
+        pipeline = create_text_opinion_extraction_pipeline(
+            rusentrel_version=version,
+            text_parser=text_parser,
+            labels_fmt=RuSentRelLabelsFormatter(pos_label_type=PositiveTo, neg_label_type=NegativeTo))
 
-        data_folding = NoFolding(doc_ids=ru_attitudes.keys(),
+        data_folding = NoFolding(doc_ids=RuSentRelIOUtils.iter_collection_indices(version),
                                  supported_data_type=DataType.Train)
 
-        serialize_nn(output_dir="_out/serialize-ruattitudes-nn",
+        serialize_nn(output_dir="_out/serialize-rusentrel-nn",
                      split_filepath=None,
                      data_type_pipelines={DataType.Train: pipeline},
                      folding_type=None,
@@ -167,5 +163,5 @@ class TestRuAttitudes(unittest.TestCase):
         self.__test_serialize_nn(writer=OpenNREJsonWriter(text_columns=["text_a"]))
 
     def test_show_stat(self):
-        show_stat_for_samples(samples_filepath=join("_out/serialize-ruattitudes-bert", "sample-train-0.tsv.gz"),
+        show_stat_for_samples(samples_filepath=join("_out/serialize-rusentrel-bert", "sample-train-0.tsv.gz"),
                               no_label_uint=0)
