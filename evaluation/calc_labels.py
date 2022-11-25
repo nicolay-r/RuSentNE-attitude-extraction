@@ -32,7 +32,7 @@ def calculate_predicted_count_per_label(test_predict_filepath,
     return labels_stat
 
 
-def calculate_samples_count_per_label(samples_filepath, no_label_uint, reader=TsvReader()):
+def calculate_samples_count_per_label(samples_filepath, no_label_uint, reader=PandasCsvReader()):
     assert(isinstance(samples_filepath, str))
 
     if not exists(samples_filepath):
