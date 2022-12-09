@@ -8,6 +8,7 @@ from arekit.common.experiment.data_type import DataType
 from arekit.common.folding.nofold import NoFolding
 from arekit.common.frames.variants.collection import FrameVariantsCollection
 from arekit.common.text.parser import BaseTextParser
+from arekit.contrib.bert.input.providers.cropped_sample import CroppedBertSampleRowProvider
 from arekit.contrib.bert.terms.mapper import BertDefaultStringTextTermsMapper
 from arekit.contrib.source.brat.entities.parser import BratTextEntitiesParser
 from arekit.contrib.source.rusentiframes.collection import RuSentiFramesCollection
@@ -28,7 +29,7 @@ from arekit.contrib.utils.pipelines.sources.rusentrel.extract_text_opinions impo
 
 from SentiNEREL.labels.scaler import PosNegNeuRelationsLabelScaler
 from __run_evaluation import show_stat_for_samples
-from framework.arekit.serialize_bert import serialize_bert, CroppedBertSampleRowProvider
+from framework.arekit.serialize_bert import serialize_bert
 from framework.arekit.serialize_nn import serialize_nn
 
 

@@ -1,4 +1,5 @@
-# SentiNEREL collection Serialization
+class CroppedBertSampleRowProvider:
+pass# SentiNEREL collection Serialization
 
 This README represents a list of scripts tutorial required to perform SentiNEREL collection serialization.
 
@@ -21,7 +22,8 @@ from SentiNEREL.labels.scaler import PosNegNeuRelationsLabelScaler
 from arekit.contrib.bert.terms.mapper import BertDefaultStringTextTermsMapper
 from arekit.contrib.utils.bert.text_b_rus import BertTextBTemplates
 from arekit.contrib.utils.data.writers.csv_pd import PandasCsvWriter
-from framework.arekit.serialize_bert import CroppedBertSampleRowProvider, serialize_bert
+from arekit.contrib.bert.input.providers.cropped_sample import CroppedBertSampleRowProvider
+from framework.arekit.serialize_bert import serialize_bert
 
 def do(writer):
     serialize_bert(
