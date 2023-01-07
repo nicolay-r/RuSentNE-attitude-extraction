@@ -1,2 +1,2 @@
 deeppavlov==0.11.0
-arekit @ git+https://github.com/nicolay-r/AREkit@0.23.0
+arekit @ git+https://github.com/nicolay-r/AREkit@13dfd2c9233f687b6043a1a098e81603f04ef76c
