@@ -64,7 +64,8 @@ def prepare_data_pipelines(text_parser, doc_ops, label_formatter, terms_per_cont
 
 
 def create_nolabel_text_opinion_annotator(terms_per_context, dist_in_sents=0, synonyms=None):
-    """ TODO. Embeding this into AREkit.
+    """ This code now is a part of the AREkit library.
+        https://github.com/nicolay-r/AREkit/issues/439
     """
     assert(isinstance(terms_per_context, int))
     assert(isinstance(synonyms, SynonymsCollection) or synonyms is None)
