@@ -3,6 +3,8 @@
 ![](https://img.shields.io/badge/Python-3.6-brightgreen.svg)
 ![](https://img.shields.io/badge/AREkit-0.23.0-orange.svg)
 
+> **UPD February 1'st, 2023:** `SentiNEREL` collection reader is become a part of [AREkit=0.23.1](https://github.com/nicolay-r/AREkit/issues/439)!
+
 This repository represents studies related to sentiment attitude extraction, provided for 
 sentiment relations of the [NEREL-based dataset](https://github.com/nerel-ds/nerel), dubbed as **SentiNEREL**.
 
