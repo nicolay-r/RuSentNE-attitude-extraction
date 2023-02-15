@@ -36,7 +36,7 @@ class TestSerialize(unittest.TestCase):
                      labels_scaler=PosNegNeuRelationsLabelScaler(),
                      split_filepath="../data/split_fixed.txt")
 
-    def test_bert_json(self, limit=None):
+    def test_bert_json(self, limit=1):
         serialize_bert(limit=limit,
                        terms_per_context=50,
                        output_dir=self.output_bert_dir,
