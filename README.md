@@ -3,6 +3,8 @@
 ![](https://img.shields.io/badge/Python-3.6-brightgreen.svg)
 ![](https://img.shields.io/badge/AREkit-0.23.0-orange.svg)
 
+> **UPD May 6'th, 2023:** Launched [arekit-eval](https://github.com/nicolay-r?tab=repositories) project for [AREkit](https://github.com/nicolay-r/AREkit) resources evaluation!
+
 > **UPD February 1'st, 2023:** `SentiNEREL` collection reader is become a part of [AREkit=0.23.1](https://github.com/nicolay-r/AREkit/issues/439)!
 
 This repository represents studies related to sentiment attitude extraction, provided for 
