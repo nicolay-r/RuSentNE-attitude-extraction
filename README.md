@@ -2,6 +2,7 @@
 
 ![](https://img.shields.io/badge/Python-3.6-brightgreen.svg)
 ![](https://img.shields.io/badge/AREkit-0.23.0-orange.svg)
+> **UPD July 28'th, 2023:"" `SentiNEREL` collection is now a part of the [`arekit-ss` project](https://github.com/nicolay-r/arekit-ss) and it is possible to serialize collections just with a single shiell cmd script!
 
 > **UPD May 6'th, 2023:** Launched [arekit-eval](https://github.com/nicolay-r?tab=repositories) project for [AREkit](https://github.com/nicolay-r/AREkit) resources evaluation!
 
